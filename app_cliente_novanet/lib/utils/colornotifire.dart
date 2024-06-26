@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'color.dart';
 
 class ColorNotifire with ChangeNotifier {
-  bool isDark = false;
+  bool isDark = true;
 
   set setIsDark(value) {
     isDark = value;
@@ -41,5 +41,8 @@ class ColorNotifire with ChangeNotifier {
 
   get getlightbackColorhome => isDark ? lightbackColorhome : lightbackColorhome;
 
+  get getprimerycolorlogin => isDark ? darkPrimeryColorLogin : primeryColor;
+
+  get gettabwhitecolorlogin => isDark ? darktabwhiteColorLogin : lighttabwhiteColor;
 
 }

@@ -56,12 +56,13 @@ class LoginTxt {
       padding: EdgeInsets.symmetric(horizontal: width / 18),
       child: Container(
         color: Colors.transparent,
-        height: height / 15,
+       height: height / 13,
         child: TextField(
           controller: controller,
+          
           autofocus: false,
           style: TextStyle(
-            fontSize: height / 50,
+            fontSize: 15,
             color: textclr,
           ),
           decoration: InputDecoration(
@@ -102,7 +103,7 @@ class Registrar {
       padding: EdgeInsets.symmetric(horizontal: width / 18),
       child: Container(
         color: Colors.transparent,
-        height: height / 15,
+        height: height / 13,
         child: TextField(
           readOnly: enable,
           controller: controller,

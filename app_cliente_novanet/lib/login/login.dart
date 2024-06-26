@@ -69,7 +69,7 @@ class _LoginState extends State<Login> {
     double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: notifire.getprimerycolor,
+      backgroundColor: notifire.gettabwhitecolor,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -95,7 +95,8 @@ class _LoginState extends State<Login> {
                             height: height / 1.2,
                             width: width / 1.1,
                             decoration: BoxDecoration(
-                              color: notifire.gettabwhitecolor,
+                              color: notifire.getprimerycolor,
+                              border: Border.all(color: Colors.black12,width: 3),
                               borderRadius: const BorderRadius.only(
                                 topRight: Radius.circular(40),
                                 topLeft: Radius.circular(40),
@@ -125,7 +126,7 @@ class _LoginState extends State<Login> {
                                 ),
                                 LoginTxt.textField(
                                     notifire.getdarkscolor,
-                                    notifire.getdarkgreycolor,
+                                    notifire.getdarkscolor,
                                     notifire.getbluecolor,
                                     "images/email.png",
                                     CustomStrings.emailhint,
@@ -153,7 +154,7 @@ class _LoginState extends State<Login> {
                                 ),
                                 passwordTextField(
                                   notifire.getdarkscolor,
-                                  notifire.getdarkgreycolor,
+                                  notifire.getdarkscolor,
                                   notifire.getbluecolor,
                                   "images/password.png",
                                   CustomStrings.passwordhint,
@@ -282,11 +283,11 @@ class _LoginState extends State<Login> {
                         Positioned(
                           left: 0,
                           right: 0,
-                          top: -55,
+                          top: -105,
                           child: Center(
                             child: Image.asset(
                               "images/NOVANETLOGO.png",
-                              height: height / 12.5,
+                              height: height / 15.5,
                             ),
                           ),
                         ),
@@ -326,13 +327,13 @@ class _LoginState extends State<Login> {
           horizontal: MediaQuery.of(context).size.width / 18),
       child: Container(
         color: Colors.transparent,
-        height: MediaQuery.of(context).size.height / 15,
+        height: MediaQuery.of(context).size.height / 13,
         child: TextField(
           controller: controller,
           autofocus: false,
           obscureText: obscureText,
           style: TextStyle(
-            fontSize: MediaQuery.of(context).size.height / 50,
+            fontSize: 15,
             color: textclr,
           ),
           decoration: InputDecoration(

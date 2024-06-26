@@ -167,32 +167,32 @@ class _ProfileState extends State<Profile> with RouteAware {
                     SizedBox(
                       height: height / 80,
                     ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: width / 20),
-                      child: Divider(
-                        thickness: 0.8,
-                        color: Colors.grey.withOpacity(0.4),
-                      ),
-                    ),
+                    // Padding(
+                    //   padding: EdgeInsets.symmetric(horizontal: width / 20),
+                    //   child: Divider(
+                    //     thickness: 0.8,
+                    //     color: Colors.grey.withOpacity(0.4),
+                    //   ),
+                    // ),
                     
-                     SizedBox(
-                      height: height / 50,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AdduserFamily(),
-                          ),
-                        );
-                      },
-                      child: settingtype(
-                          "images/familia.png", CustomStrings.usuariosFamiliares),
-                    ),
-                    SizedBox(
-                      height: height / 80,
-                    ),
+                    //  SizedBox(
+                    //   height: height / 50,
+                    // ),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => const AdduserFamily(),
+                    //       ),
+                    //     );
+                    //   },
+                    //   child: settingtype(
+                    //       "images/familia.png", CustomStrings.usuariosFamiliares),
+                    // ),
+                    // SizedBox(
+                    //   height: height / 80,
+                    // ),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: width / 20),
                       child: Divider(
@@ -274,43 +274,43 @@ class _ProfileState extends State<Profile> with RouteAware {
                       ),
                     ),
                     SizedBox(height: height / 50),
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: width / 20,
-                        ),
-                        const Text(
-                          CustomStrings.general,
-                          style: TextStyle(
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: height / 50,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const Notificationindex(
-                                CustomStrings.notification),
-                          ),
-                        );
-                      },
-                      child: settingtype("images/notification.png",
-                          CustomStrings.notification),
-                    ),
-                    SizedBox(height: height / 80),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: width / 20),
-                      child: Divider(
-                        thickness: 0.6,
-                        color: Colors.grey.withOpacity(0.4),
-                      ),
-                    ),
+                    // Row(
+                    //   children: [
+                    //     SizedBox(
+                    //       width: width / 20,
+                    //     ),
+                    //     const Text(
+                    //       CustomStrings.general,
+                    //       style: TextStyle(
+                    //         color: Colors.grey,
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
+                    // SizedBox(
+                    //   height: height / 50,
+                    // ),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => const Notificationindex(
+                    //             CustomStrings.notification),
+                    //       ),
+                    //     );
+                    //   },
+                    //   child: settingtype("images/notification.png",
+                    //       CustomStrings.notification),
+                    // ),
+                    // SizedBox(height: height / 80),
+                    // Padding(
+                    //   padding: EdgeInsets.symmetric(horizontal: width / 20),
+                    //   child: Divider(
+                    //     thickness: 0.6,
+                    //     color: Colors.grey.withOpacity(0.4),
+                    //   ),
+                    // ),
                     SizedBox(height: height / 80),
                     GestureDetector(
                       onTap: () {

@@ -34,9 +34,12 @@ class _HomeState extends State<Home> {
   String fcNombreUsuario = '';
   List produtosdelservicioactual = [];
   List json2 = [];
+  List cuotas = [];
   List listadodepagos = [];
+
   bool _isExpanded = false;
   double CuotaMensual = 0.00;
+  int _currentPage = 0;
 
   late final listadodepagosoriginal = List.from(listadodepagos);
 
@@ -60,6 +63,7 @@ class _HomeState extends State<Home> {
 
     for (var cuota in data2) {
       sumaCuotas += cuota["fnCuotaMensual"] ?? 0.00;
+      cuotas.add(cuota["fnCuotaMensual"] ?? 0.00);
     }
     setState(() {
       produtosdelservicioactual = jsonDecode(dataAsString);
@@ -127,11 +131,42 @@ class _HomeState extends State<Home> {
     }
   }
 
+  late PageController _pageController;
+
   @override
   void initState() {
     _loadData();
     selectedMonth = '1';
     super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _previousPage() {
+    if (_currentPage > 0) {
+      _currentPage--;
+      _pageController.animateToPage(
+        _currentPage,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _nextPage() {
+    if (_currentPage < cuotas.length - 1) {
+      _currentPage++;
+      _pageController.animateToPage(
+        _currentPage,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   String _getMonthName(int op) {
@@ -163,28 +198,28 @@ class _HomeState extends State<Home> {
               style: TextStyle(
                   color: notifire.getwhite,
                   fontWeight: FontWeight.w400,
-                  fontSize: 20,
+                  fontSize: 18,
                   fontFamily: 'Gilroy'),
             ),
           ],
         ),
         actions: [
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const Notificationindex(CustomStrings.notification),
-                ),
-              );
-            },
-            child: Image.asset(
-              "images/notification.png",
-              color: notifire.getwhite,
-              scale: 4,
-            ),
-          ),
+          // GestureDetector(
+          //   onTap: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) =>
+          //             const Notificationindex(CustomStrings.notification),
+          //       ),
+          //     );
+          //   },
+          //   child: Image.asset(
+          //     "images/notification.png",
+          //     color: notifire.getwhite,
+          //     scale: 4,
+          //   ),
+          // ),
           const SizedBox(
             width: 10,
           ),
@@ -233,7 +268,7 @@ class _HomeState extends State<Home> {
                   Stack(
                     children: [
                       Container(
-                          color: notifire.getbackcolor,
+                          color: notifire.getprimerycolor,
                           child: Image.asset("images/backphoto.png")),
                       Column(
                         children: [
@@ -251,49 +286,86 @@ class _HomeState extends State<Home> {
                                 ),
                                 color: notifire.getorangeprimerycolor,
                               ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Stack(
                                 children: [
-                                  Center(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "Cuota Mensual",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: height / 50,
-                                            fontFamily: 'Gilroy Medium',
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Center(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          NumberFormat.currency(
-                                            locale: 'es',
-                                            symbol: '\$',
-                                          ).format(
-                                            double.parse(
-                                              CuotaMensual.toString(),
+                                  PageView.builder(
+                                    controller: _pageController,
+                                    onPageChanged: (index) {
+                                      setState(() {
+                                        _currentPage = index;
+                                      });
+                                    },
+                                    itemCount: cuotas.length,
+                                    itemBuilder: (context, index) {
+                                      return Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Center(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'Cuota Mensual Servicio #${index + 1}',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: height / 50,
+                                                    fontFamily: 'Gilroy Medium',
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: height / 35,
-                                            fontFamily: 'Gilroy Bold',
+                                          Center(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  NumberFormat.currency(
+                                                    locale: 'es',
+                                                    symbol: '\$',
+                                                  ).format(cuotas[index]),
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: height / 35,
+                                                    fontFamily: 'Gilroy Bold',
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                  if (_currentPage > 0)
+                                    Positioned(
+                                      left: 0,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: IconButton(
+                                        icon: const Icon(
+                                            Icons.arrow_back_ios_new,
+                                            color: Colors.white),
+                                        onPressed: _previousPage,
+                                      ),
                                     ),
-                                  )
+                                  if (_currentPage < cuotas.length - 1)
+                                    Positioned(
+                                      right: 0,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: IconButton(
+                                        icon: const Icon(
+                                            Icons.arrow_forward_ios_rounded,
+                                            color: Colors.white),
+                                        onPressed: _nextPage,
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
@@ -332,13 +404,24 @@ class _HomeState extends State<Home> {
                                           children: [
                                             GestureDetector(
                                               onTap: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        const Scan(),
-                                                  ),
-                                                );
+                                                // Navigator.push(
+                                                //   context,
+                                                //   MaterialPageRoute(
+                                                //     builder: (context) =>
+                                                //         const Scan(),
+                                                //   ),
+                                                // );
+                                                CherryToast.info(
+                                                  backgroundColor:
+                                                      notifire.getbackcolor,
+                                                  title: Text('Proximamente',
+                                                      style: TextStyle(
+                                                          color: notifire
+                                                              .getdarkscolor),
+                                                      textAlign:
+                                                          TextAlign.start),
+                                                  borderRadius: 5,
+                                                ).show(context);
                                               },
                                               child: Container(
                                                 height: height / 15,
@@ -591,411 +674,310 @@ class _HomeState extends State<Home> {
                   SizedBox(
                     height: height / 50,
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: width * 0.05,
-                      vertical: height * 0.01,
-                    ),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isExpanded = !_isExpanded;
-                        });
-                      },
-                      child: Card(
-                        color: notifire.getbackcolor,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            width: 2,
-                            color: Colors.grey.withOpacity(0.2),
-                          ),
-                          borderRadius: BorderRadius.circular(10),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: json2.length,
+                    itemBuilder: (context, index) {
+                      List detalles = json.decode(json2[index]["Detalles"]);
+
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: width * 0.05,
+                          vertical: height * 0.01,
                         ),
-                        child: ExpansionTile(
-                          initiallyExpanded: false,
-                          title: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: width * 0.02,
-                              vertical: height * 0.005,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: height * 0.07,
-                                      width: height * 0.07,
-                                      decoration: BoxDecoration(
-                                        color: notifire.getprimerycolor,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Center(
-                                        child: Icon(
-                                          Icons.wifi,
-                                          color: notifire.getdarkscolor,
-                                          size: height * 0.035,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: width * 0.02),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(height: height * 0.01),
-                                          Text(
-                                            "Estado Actual de Servicio",
-                                            style: TextStyle(
-                                              fontFamily: "Gilroy Bold",
-                                              color: notifire.getdarkscolor,
-                                              fontSize: height * 0.015,
-                                            ),
-                                          ),
-                                          SizedBox(height: height * 0.005),
-                                          Text(
-                                            'Fecha Inicio Servicio: ' +
-                                                DateFormat('dd/MM/yyyy')
-                                                    .format(DateTime.parse(
-                                                  json2[0][
-                                                          "fdFechaCreacionSolicitud"]
-                                                      .toString(),
-                                                )),
-                                            style: TextStyle(
-                                              fontFamily: "Gilroy Medium",
-                                              color: notifire.getdarkscolor
-                                                  .withOpacity(0.6),
-                                              fontSize: height * 0.013,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(width: width * 0.02),
-                                    Column(
-                                      children: [
-                                        SizedBox(height: height * 0.04),
-                                        Text(
-                                          json2[0]["fcEstadoSolicitud"]
-                                              .toString(),
-                                          style: TextStyle(
-                                            fontFamily: "Gilroy Bold",
-                                            color: Colors.green,
-                                            fontSize: height * 0.02,
-                                          ),
-                                        ),
-                                        SizedBox(height: height * 0.04),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: height * 0.005),
-                              ],
-                            ),
-                          ),
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: width * 0.02),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  'Plazo Seleccionado',
-                                                  style: TextStyle(
-                                                    fontFamily: "Gilroy Medium",
-                                                    color: notifire
-                                                        .getdarkscolor
-                                                        .withOpacity(0.6),
-                                                    fontSize: height * 0.013,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  'Departamento',
-                                                  style: TextStyle(
-                                                    fontFamily: "Gilroy Medium",
-                                                    color: notifire
-                                                        .getdarkscolor
-                                                        .withOpacity(0.6),
-                                                    fontSize: height * 0.013,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  'Municipio',
-                                                  style: TextStyle(
-                                                    fontFamily: "Gilroy Medium",
-                                                    color: notifire
-                                                        .getdarkscolor
-                                                        .withOpacity(0.6),
-                                                    fontSize: height * 0.013,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  'Barrio',
-                                                  style: TextStyle(
-                                                    fontFamily: "Gilroy Medium",
-                                                    color: notifire
-                                                        .getdarkscolor
-                                                        .withOpacity(0.6),
-                                                    fontSize: height * 0.013,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  'Dirección Exacta',
-                                                  style: TextStyle(
-                                                    fontFamily: "Gilroy Medium",
-                                                    color: notifire
-                                                        .getdarkscolor
-                                                        .withOpacity(0.6),
-                                                    fontSize: height * 0.013,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: width * 0.02),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  json2[0][
-                                                          "fiPlazoSeleccionado"]
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontFamily: "Gilroy Medium",
-                                                    color: notifire
-                                                        .getdarkscolor
-                                                        .withOpacity(0.6),
-                                                    fontSize: height * 0.013,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Align(
-                                                alignment: Alignment
-                                                    .centerLeft, // Centrado vertical
-                                                child: Text(
-                                                  json2[0]["fcDepartamento"]
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontFamily: "Gilroy Medium",
-                                                    color: notifire
-                                                        .getdarkscolor
-                                                        .withOpacity(0.6),
-                                                    fontSize: height * 0.013,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  json2[0]["fcMunicipio"]
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontFamily: "Gilroy Medium",
-                                                    color: notifire
-                                                        .getdarkscolor
-                                                        .withOpacity(0.6),
-                                                    fontSize: height * 0.013,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  json2[0]["fcBarrio"]
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontFamily: "Gilroy Medium",
-                                                    color: notifire
-                                                        .getdarkscolor
-                                                        .withOpacity(0.6),
-                                                    fontSize: height * 0.013,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  json2[0][
-                                                          "fcDireccionDetallada"]
-                                                      .toString()
-                                                      .toUpperCase(),
-                                                  style: TextStyle(
-                                                    fontFamily: "Gilroy Medium",
-                                                    color: notifire
-                                                        .getdarkscolor
-                                                        .withOpacity(0.6),
-                                                    fontSize: height * 0.013,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Divider(),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: width * 0.02),
-                              child: Text(
-                                'Productos',
-                                style: TextStyle(
-                                  fontFamily: "Gilroy Medium",
-                                  color:
-                                      notifire.getdarkscolor.withOpacity(0.6),
-                                  fontSize: height * 0.013,
-                                ),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _isExpanded = !_isExpanded;
+                            });
+                          },
+                          child: Card(
+                            color: notifire.getbackcolor,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                width: 2,
+                                color: Colors.grey.withOpacity(0.2),
                               ),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: width * 0.02),
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    itemCount: produtosdelservicioactual.length,
-                                    itemBuilder: (context, index) => Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: height * 0.01),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Icon(
-                                                Icons.arrow_forward_ios_rounded,
-                                                color: notifire.getdarkscolor,
-                                                size: 10,
-                                              ),
-                                            ],
+                            child: ExpansionTile(
+                              initiallyExpanded: false,
+                              title: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: width * 0.02,
+                                  vertical: height * 0.005,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: height * 0.07,
+                                          width: height * 0.07,
+                                          decoration: BoxDecoration(
+                                            color: notifire.getprimerycolor,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
-                                          SizedBox(width: width * 0.02),
-                                          Column(
+                                          child: Center(
+                                            child: Icon(
+                                              Icons.wifi,
+                                              color: notifire.getdarkscolor,
+                                              size: height * 0.035,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: width * 0.02),
+                                        Expanded(
+                                          child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
+                                              SizedBox(height: height * 0.01),
                                               Text(
-                                                produtosdelservicioactual[index]
-                                                    ["fcProducto"],
+                                                "Estado Actual de Servicio #${index + 1}",
+                                                style: TextStyle(
+                                                  fontFamily: "Gilroy Bold",
+                                                  color: notifire.getdarkscolor,
+                                                  fontSize: height * 0.015,
+                                                ),
+                                              ),
+                                              SizedBox(height: height * 0.005),
+                                              Text(
+                                                'Fecha Inicio Servicio: ' +
+                                                    DateFormat('dd/MM/yyyy')
+                                                        .format(
+                                                      DateTime.parse(
+                                                        json2[index][
+                                                                "fdFechaCreacionSolicitud"]
+                                                            .toString(),
+                                                      ),
+                                                    ),
                                                 style: TextStyle(
                                                   fontFamily: "Gilroy Medium",
                                                   color: notifire.getdarkscolor
                                                       .withOpacity(0.6),
                                                   fontSize: height * 0.013,
-                                                  letterSpacing: 1.5,
                                                 ),
                                               ),
                                             ],
                                           ),
+                                        ),
+                                        SizedBox(width: width * 0.02),
+                                        Column(
+                                          children: [
+                                            SizedBox(height: height * 0.04),
+                                            Text(
+                                              // json2[index]["fcEstadoSolicitud"]
+                                              //     .toString(),
+                                              'Activo',
+                                              style: TextStyle(
+                                                fontFamily: "Gilroy Bold",
+                                                color: Colors.green,
+                                                fontSize: height * 0.02,
+                                              ),
+                                            ),
+                                            SizedBox(height: height * 0.04),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: height * 0.005),
+                                  ],
+                                ),
+                              ),
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: width * 0.02,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                _buildDetailRow(
+                                                    "Plazo Seleccionado",
+                                                    json2[index][
+                                                            "fiPlazoSeleccionado"]
+                                                        .toString()),
+                                                const SizedBox(height: 10),
+                                                _buildDetailRow(
+                                                    "Departamento",
+                                                    json2[index]
+                                                            ["fcDepartamento"]
+                                                        .toString()),
+                                                const SizedBox(height: 10),
+                                                _buildDetailRow(
+                                                    "Municipio",
+                                                    json2[index]["fcMunicipio"]
+                                                        .toString()),
+                                                const SizedBox(height: 10),
+                                                _buildDetailRow(
+                                                    "Barrio",
+                                                    json2[index]["fcBarrio"]
+                                                        .toString()),
+                                                const SizedBox(height: 10),
+                                                _buildDetailRow(
+                                                    "Dirección Exacta",
+                                                    json2[index][
+                                                            "fcDireccionDetallada"]
+                                                        .toString()
+                                                        .toUpperCase()),
+                                              ],
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
+                                  ],
+                                ),
+                                const Divider(),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: width * 0.02),
+                                  child: Text(
+                                    'Productos',
+                                    style: TextStyle(
+                                      fontFamily: "Gilroy Medium",
+                                      color: notifire.getdarkscolor
+                                          .withOpacity(0.6),
+                                      fontSize: height * 0.013,
+                                    ),
                                   ),
                                 ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: width * 0.02),
+                                      child: ListView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        itemCount: (detalles.length / 2).ceil(),
+                                        itemBuilder: (context, detallesIndex) {
+                                          int firstIndex = detallesIndex * 2;
+                                          int secondIndex = firstIndex + 1;
+
+                                          return Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: height * 0.01),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                // First Column
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .arrow_forward_ios_rounded,
+                                                        color: notifire
+                                                            .getdarkscolor,
+                                                        size: 10,
+                                                      ),
+                                                      SizedBox(
+                                                          width: width * 0.02),
+                                                      Expanded(
+                                                        child: Text(
+                                                          detalles[firstIndex]
+                                                              ["fcProducto"],
+                                                          style: TextStyle(
+                                                            fontFamily:
+                                                                "Gilroy Medium",
+                                                            color: notifire
+                                                                .getdarkscolor
+                                                                .withOpacity(
+                                                                    0.6),
+                                                            fontSize:
+                                                                height * 0.013,
+                                                            letterSpacing: 1.5,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          softWrap: true,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(width: width * 0.02),
+                                                // Second Column
+                                                Expanded(
+                                                  child: secondIndex <
+                                                          detalles.length
+                                                      ? Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons
+                                                                  .arrow_forward_ios_rounded,
+                                                              color: notifire
+                                                                  .getdarkscolor,
+                                                              size: 10,
+                                                            ),
+                                                            SizedBox(
+                                                                width: width *
+                                                                    0.02),
+                                                            Expanded(
+                                                              child: Text(
+                                                                detalles[
+                                                                        secondIndex]
+                                                                    [
+                                                                    "fcProducto"],
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontFamily:
+                                                                      "Gilroy Medium",
+                                                                  color: notifire
+                                                                      .getdarkscolor
+                                                                      .withOpacity(
+                                                                          0.6),
+                                                                  fontSize:
+                                                                      height *
+                                                                          0.013,
+                                                                  letterSpacing:
+                                                                      1.5,
+                                                                ),
+                                                                maxLines: 1,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                softWrap: true,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        )
+                                                      : Container(),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                )
                               ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                   SizedBox(
                     height: height / 80,
@@ -1063,165 +1045,212 @@ class _HomeState extends State<Home> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          height: MediaQuery.of(context).size.height,
-                          color: Colors.transparent,
-                          child: listadodepagos.isEmpty
-                              ? SingleChildScrollView(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Image.asset(
-                                        "images/sin-dinero.png",
-                                        color: notifire.getorangeprimerycolor,
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.10,
-                                      ),
-                                      const SizedBox(height: 20),
-                                      Text(
-                                        "Sin pagos realizados",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: notifire.getdarkscolor,
+                            height: MediaQuery.of(context).size.height,
+                            color: Colors.transparent,
+                            child: listadodepagos.isEmpty
+                                ? SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Image.asset(
+                                          "images/sin-dinero.png",
+                                          color: notifire.getorangeprimerycolor,
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.10,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: listadodepagos.length,
-                                  itemBuilder: (context, index) => Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: width * 0.05,
-                                      vertical: height * 0.01,
-                                    ),
-                                    child: Card(
-                                      color: notifire.getbackcolor,
-                                      elevation: 0,
-                                      shape: RoundedRectangleBorder(
-                                        side: BorderSide(
-                                          width: 2,
-                                          color: Colors.grey.withOpacity(0.2),
-                                        ),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: ListTile(
-                                        title: Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: width * 0.02,
-                                            vertical: height * 0.005,
+                                        const SizedBox(height: 20),
+                                        Text(
+                                          "Sin pagos realizados",
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: notifire.getdarkscolor,
                                           ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                    height: height * 0.07,
-                                                    width: width / 7,
-                                                    decoration: BoxDecoration(
-                                                      color: notifire
-                                                          .getprimerycolor,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10),
-                                                    ),
-                                                    child: Center(
-                                                      child: Image.asset(
-                                                        "images/logos.png",
-                                                        height: height / 30,
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemCount: listadodepagos.length,
+                                    itemBuilder: (context, index) => Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: width * 0.05,
+                                        vertical: height * 0.01,
+                                      ),
+                                      child: Card(
+                                        color: notifire.getbackcolor,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          side: BorderSide(
+                                            width: 2,
+                                            color: Colors.grey.withOpacity(0.2),
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: ListTile(
+                                          title: Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: width * 0.02,
+                                              vertical: height * 0.005,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      height: height * 0.07,
+                                                      width: width / 7,
+                                                      decoration: BoxDecoration(
+                                                        color: notifire
+                                                            .getprimerycolor,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
                                                       ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: width * 0.02),
-                                                  Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        listadodepagos[index][
-                                                                    'fiIDTransaccion']
-                                                                .toString() +
-                                                            ' - ' +
-                                                            listadodepagos[
-                                                                    index]
-                                                                ['fcOperacion'],
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              "Gilroy Bold",
-                                                          color: notifire
-                                                              .getdarkscolor,
-                                                          fontSize:
-                                                              height * 0.015,
+                                                      child: Center(
+                                                        child: Image.asset(
+                                                          "images/logos.png",
+                                                          height: height / 30,
                                                         ),
-                                                        maxLines: 2,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
                                                       ),
-                                                      SizedBox(
-                                                          height:
-                                                              height * 0.005),
-                                                      Text(
-                                                        DateFormat('dd/MM/yyyy')
-                                                            .format(
-                                                          DateTime.parse(
+                                                    ),
+                                                    SizedBox(
+                                                        width: width * 0.02),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            listadodepagos[index]
+                                                                        [
+                                                                        'fiIDTransaccion']
+                                                                    .toString() +
+                                                                ' - ' +
+                                                                listadodepagos[
+                                                                        index][
+                                                                    'fcOperacion'],
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  "Gilroy Bold",
+                                                              color: notifire
+                                                                  .getdarkscolor,
+                                                              fontSize: height *
+                                                                  0.015,
+                                                            ),
+                                                            maxLines: 2,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            softWrap: true,
+                                                          ),
+                                                          SizedBox(
+                                                              height: height *
+                                                                  0.005),
+                                                          Text(
                                                             listadodepagos[
                                                                     index][
-                                                                'fdFechaTransaccion'],
+                                                                'fcLugarResidencia'],
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  "Gilroy Medium",
+                                                              color: notifire
+                                                                  .getdarkscolor
+                                                                  .withOpacity(
+                                                                      0.6),
+                                                              fontSize: height *
+                                                                  0.013,
+                                                            ),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            softWrap: true,
                                                           ),
-                                                        ),
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              "Gilroy Medium",
-                                                          color: notifire
-                                                              .getdarkscolor
-                                                              .withOpacity(0.6),
-                                                          fontSize:
-                                                              height * 0.013,
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                          height:
-                                                              height * 0.005),
-                                                      Text(
-                                                        NumberFormat.currency(
-                                                          locale: 'es',
-                                                          symbol: '\$',
-                                                        ).format(
-                                                          double.parse(
-                                                            listadodepagos[
+                                                          SizedBox(
+                                                              height: height *
+                                                                  0.005),
+                                                          Text(
+                                                            DateFormat(
+                                                                    'dd/MM/yyyy')
+                                                                .format(
+                                                              DateTime.parse(
+                                                                listadodepagos[
                                                                         index][
-                                                                    'fnValorAbonado']
-                                                                .toString(),
+                                                                    'fdFechaTransaccion'],
+                                                              ),
+                                                            ),
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  "Gilroy Medium",
+                                                              color: notifire
+                                                                  .getdarkscolor
+                                                                  .withOpacity(
+                                                                      0.6),
+                                                              fontSize: height *
+                                                                  0.013,
+                                                            ),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            softWrap: true,
                                                           ),
-                                                        ),
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              "Gilroy Bold",
-                                                          color: notifire
-                                                              .getdarkscolor,
-                                                          fontSize:
-                                                              height * 0.02,
-                                                        ),
+                                                          SizedBox(
+                                                              height: height *
+                                                                  0.005),
+                                                          Text(
+                                                            NumberFormat
+                                                                .currency(
+                                                              locale: 'es',
+                                                              symbol: '\$',
+                                                            ).format(
+                                                              double.parse(
+                                                                listadodepagos[
+                                                                            index]
+                                                                        [
+                                                                        'fnValorAbonado']
+                                                                    .toString(),
+                                                              ),
+                                                            ),
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  "Gilroy Bold",
+                                                              color: notifire
+                                                                  .getdarkscolor,
+                                                              fontSize:
+                                                                  height * 0.02,
+                                                            ),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            softWrap: true,
+                                                          ),
+                                                        ],
                                                       ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(height: height * 0.005),
-                                            ],
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(
+                                                    height: height * 0.005),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                        ),
+                                  )),
                       ]),
                   SizedBox(
                     height: height / 20,
@@ -1236,135 +1265,200 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _showWPDialog(BuildContext context) async {
-  return showDialog<void>(
-    context: context,
-    builder: (BuildContext context) {
-      return Dialog(
-        backgroundColor: Colors.transparent,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                image: const DecorationImage(
-                  image: AssetImage(
-                    'images/fondo.png',
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  image: const DecorationImage(
+                    image: AssetImage(
+                      'images/fondo.png',
+                    ),
+                    fit: BoxFit.cover,
                   ),
-                  fit: BoxFit.cover,
+                  borderRadius: BorderRadius.circular(10.0),
                 ),
-                borderRadius: BorderRadius.circular(10.0),
+                margin: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.all(25),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () => _launchUrl('SOPORTE'),
+                      child: Container(
+                        height: 40,
+                        width: 180,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Image(
+                              image: AssetImage('images/wp.png'),
+                              height: 20,
+                              width: 20,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'SOPORTE',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'Gilroy Bold',
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    GestureDetector(
+                      onTap: () => _launchUrl('PAGOS'),
+                      child: Container(
+                        height: 40,
+                        width: 180,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Image(
+                              image: AssetImage('images/wp.png'),
+                              height: 20,
+                              width: 20,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'PAGOS',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'Gilroy Bold',
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    GestureDetector(
+                      onTap: () => _launchUrl('CONTRATAR'),
+                      child: Container(
+                        height: 40,
+                        width: 180,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Image(
+                              image: AssetImage('images/wp.png'),
+                              height: 20,
+                              width: 20,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'CONTRATAR',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'Gilroy Bold',
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              margin: const EdgeInsets.all(15.0),
-              padding: const EdgeInsets.all(25),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: () => _launchUrl('SOPORTE'),
-                    child: Container(
-                      height: 40,
-                      width: 180,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Image(
-                            image: AssetImage('images/wp.png'),
-                            height: 20,
-                            width: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            'SOPORTE',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'Gilroy Bold',
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 15,
-                  ),
-                  GestureDetector(
-                    onTap: () => _launchUrl('PAGOS'),
-                    child: Container(
-                      height: 40,
-                      width: 180,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Image(
-                            image: AssetImage('images/wp.png'),
-                            height: 20,
-                            width: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            'PAGOS',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'Gilroy Bold',
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 15,
-                  ),
-                  GestureDetector(
-                    onTap: () => _launchUrl('CONTRATAR'),
-                    child: Container(
-                      height: 40,
-                      width: 180,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Image(
-                            image: AssetImage('images/wp.png'),
-                            height: 20,
-                            width: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            'CONTRATAR',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'Gilroy Bold',
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+            ],
+          ),
+        );
+      },
+    );
+  }
 
+  Widget _buildDetailRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            fontFamily: "Gilroy Medium",
+                            color: notifire.getdarkscolor.withOpacity(0.6),
+                            fontSize: height * 0.013,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          value,
+                          style: TextStyle(
+                            fontFamily: "Gilroy Medium",
+                            color: notifire.getdarkscolor.withOpacity(0.6),
+                            fontSize: height * 0.013,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   Future<void> _launchUrl(String opcion) async {
     final prefs = await SharedPreferences.getInstance();

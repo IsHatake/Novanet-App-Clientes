@@ -41,4 +41,6 @@ Color lightbackColorhome = const Color.fromARGB(255, 255, 247, 214);
 ExactAssetImage bgLight = const ExactAssetImage('images/bg.png');
 ExactAssetImage bgDark = const ExactAssetImage('images/bg-dark.png');
 
+Color darkPrimeryColorLogin = const Color(0xff595766);
 
+Color darktabwhiteColorLogin = const Color(0xff4b4b5a);

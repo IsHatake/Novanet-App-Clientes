@@ -49,7 +49,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
   Future<void> Productos_ListaPorCliente() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      var fiIDSolicitud = prefs.getString("piIDSolicitud");
+      var fiIDSolicitud = prefs.getString("fiIDCliente");
 
       final response = await http.get(Uri.parse(
           '${apiUrl}Servicio/Productos_ListaPorCliente?piIDSolicitud=$fiIDSolicitud'));
@@ -80,7 +80,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
   Future<void> ProductosAsolicitud_ListaPorCliente() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      var fiIDSolicitud = prefs.getString("piIDSolicitud");
+      var fiIDSolicitud = prefs.getString("fiIDCliente");
 
       final response = await http.get(Uri.parse(
           '${apiUrl}Servicio/ProductosAsolicitud_ListaPorCliente?piIDSolicitud=$fiIDSolicitud'));
@@ -111,7 +111,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
   Future<List<dynamic>> Solicitudes_AdicionProducto_Listado() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      var piIDSolicitud = prefs.getString("piIDSolicitud");
+      var piIDSolicitud = prefs.getString("fiIDCliente");
 
       final response = await http.get(
         Uri.parse(
@@ -155,7 +155,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
   SendSolicitudNueva() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      var piIDSolicitud = prefs.getString("piIDSolicitud");
+      var piIDSolicitud = prefs.getString("fiIDCliente");
       if (piIDSolicitud == null) {
         throw Exception('piIDSolicitud is null or invalid');
       }
@@ -410,7 +410,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
                         children: [
                           Center(
                             child: Text(
-                              'Productos sin Adquirir',
+                              'Productos que Quiza de Interesen',
                               style: TextStyle(
                                 color: notifire.getdarkscolor,
                                 fontSize: 20,
@@ -667,7 +667,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
                   SizedBox(height: screenHeight * 0.025),
                   Center(
                     child: Text(
-                      '¿Desea agregar a la solicitud el producto $articulo?',
+                      '¿Desea agregar a la solicitud de aplicación el producto $articulo?',
                       style: TextStyle(
                         color: notifire.getdarkscolor,
                         fontFamily: 'Gilroy Bold',
@@ -865,7 +865,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
                   SizedBox(height: screenHeight * 0.025),
                   Center(
                     child: Text(
-                      '¿Desea cancelar solicitud del producto $articulo?',
+                      '¿Desea quitar de la solicitud de aplicación el producto $articulo?',
                       style: TextStyle(
                         color: notifire.getdarkscolor,
                         fontFamily: 'Gilroy Bold',

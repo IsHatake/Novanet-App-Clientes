@@ -49,7 +49,7 @@ class _SeealltransactionState extends State<Seealltransaction> {
       final prefs = await SharedPreferences.getInstance();
 
       var piIDCliente = prefs.getString("fiIDCliente");
-      var fiIDSolicitud = prefs.getString("piIDSolicitud");
+      var fiIDSolicitud = prefs.getString("fiIDCliente");
 
       final response = await http.get(Uri.parse(
           '${apiUrl}Servicio/PagosByCliente?piIDCliente=$piIDCliente&piIDSolicitud=$fiIDSolicitud'));
@@ -115,7 +115,7 @@ class _SeealltransactionState extends State<Seealltransaction> {
                   value: value,
                   child: Text(
                     'Mostrar ' + value.toString(),
-                    style:  TextStyle(color: notifire.getdarkscolor),
+                    style: TextStyle(color: notifire.getdarkscolor),
                   ),
                 );
               }).toList(),
@@ -187,6 +187,21 @@ class _SeealltransactionState extends State<Seealltransaction> {
                                           ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
+                                          softWrap: true,
+                                        ),
+                                        SizedBox(height: height * 0.005),
+                                        Text(
+                                          listadodepagos[i]
+                                              ['fcLugarResidencia'],
+                                          style: TextStyle(
+                                            fontFamily: "Gilroy Medium",
+                                            color: notifire.getdarkscolor
+                                                .withOpacity(0.6),
+                                            fontSize: height * 0.013,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: true,
                                         ),
                                         SizedBox(height: height * 0.005),
                                         Text(
@@ -202,6 +217,9 @@ class _SeealltransactionState extends State<Seealltransaction> {
                                                 .withOpacity(0.6),
                                             fontSize: height * 0.013,
                                           ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: true,
                                         ),
                                         SizedBox(height: height * 0.005),
                                         Text(
@@ -220,6 +238,9 @@ class _SeealltransactionState extends State<Seealltransaction> {
                                             color: notifire.getdarkscolor,
                                             fontSize: height * 0.02,
                                           ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: true,
                                         ),
                                       ],
                                     ),

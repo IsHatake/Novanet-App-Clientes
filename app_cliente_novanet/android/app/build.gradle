@@ -54,8 +54,8 @@ android {
         applicationId "com.prestaditonovanet.novanet"
         minSdkVersion 21
         targetSdkVersion flutter.targetSdkVersion
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 4
+        versionName "1.0.3"
     }
 
     signingConfigs {
