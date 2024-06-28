@@ -2,7 +2,6 @@ import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/localauthapi/local_auth_api.dart';
 import 'package:local_auth/local_auth.dart';  
-import 'package:app_cliente_novanet/login/register.dart';
 import 'package:app_cliente_novanet/profile/forgotpassword.dart';
 import 'package:app_cliente_novanet/service/pruebaService.dart';
 import 'package:app_cliente_novanet/utils/button.dart';
@@ -167,29 +166,29 @@ class _LoginState extends State<Login> {
                                 ),
                                 Row(
                                   children: [
-                                    const Spacer(),
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const Register(),
-                                          ),
-                                        );
-                                      },
-                                      child: Container(
-                                        height: height / 40,
-                                        color: Colors.transparent,
-                                        child: Text(
-                                          'Registrar Usuario',
-                                          style: TextStyle(
-                                              color: notifire.getdarkscolor,
-                                              fontSize: height / 60,
-                                              fontFamily: 'Gilroy Medium'),
-                                        ),
-                                      ),
-                                    ),
+                                    // const Spacer (),
+                                    // GestureDetector(
+                                    //   onTap: () {
+                                    //     Navigator.push(
+                                    //       context,
+                                    //       MaterialPageRoute(
+                                    //         builder: (context) =>
+                                    //             const Register(),
+                                    //       ),
+                                    //     );
+                                    //   },
+                                    //   child: Container(
+                                    //     height: height / 40,
+                                    //     color: Colors.transparent,
+                                    //     child: Text(
+                                    //       'Registrar Usuario',
+                                    //       style: TextStyle(
+                                    //           color: notifire.getdarkscolor,
+                                    //           fontSize: height / 60,
+                                    //           fontFamily: 'Gilroy Medium'),
+                                    //     ),
+                                    //   ),
+                                    // ),
                                     SizedBox(
                                       width: width / 18,
                                     ),

@@ -163,6 +163,21 @@ class _RegisterState extends State<Register> {
             fontSize: MediaQuery.of(context).size.height / 35,
           ),
         ),
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Container(
+            height: 40,
+            width: 40,
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: notifire.getdarkscolor),
+            ),
+            child: Icon(Icons.arrow_back, color: notifire.getdarkscolor),
+          ),
+        ),
       ),
       backgroundColor: notifire.getprimerycolor,
       body: SingleChildScrollView(

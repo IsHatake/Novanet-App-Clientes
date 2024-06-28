@@ -43,6 +43,11 @@ class ColorNotifire with ChangeNotifier {
 
   get getprimerycolorlogin => isDark ? darkPrimeryColorLogin : primeryColor;
 
+
+  get gettableclaro => isDark ? gettableoscuro1 : gettableclaro1;
+  get gettableoscuro => isDark ? gettableoscuro2 : gettableclaro2;
+
+
   get gettabwhitecolorlogin => isDark ? darktabwhiteColorLogin : lighttabwhiteColor;
 
 }

@@ -1,9 +1,8 @@
+import 'package:app_cliente_novanet/screens/referidos_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:app_cliente_novanet/home/notifications.dart';
 import 'package:app_cliente_novanet/home/seealltransaction.dart';
 import 'package:app_cliente_novanet/login/login.dart';
-import 'package:app_cliente_novanet/screens/adduserFamily.dart';
 import 'package:app_cliente_novanet/utils/imgProfile.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -213,6 +212,29 @@ class _ProfileState extends State<Profile> with RouteAware {
                       },
                       child: settingtype("images/history.png",
                           CustomStrings.historytransaction),
+                    ),
+                    SizedBox(
+                      height: height / 80,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: width / 20),
+                      child: Divider(
+                        thickness: 0.6,
+                        color: Colors.grey.withOpacity(0.4),
+                      ),
+                    ),
+                    SizedBox(height: height / 80),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const referidos_Screen(),
+                          ),
+                        );
+                      },
+                      child: settingtype("images/referir.png",
+                          'Referidos'),
                     ),
                     SizedBox(
                       height: height / 80,

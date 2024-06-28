@@ -38,13 +38,11 @@ class _HomeState extends State<Home> {
   List listadodepagos = [];
 
   bool _isExpanded = false;
-  double CuotaMensual = 0.00;
   int _currentPage = 0;
 
   late final listadodepagosoriginal = List.from(listadodepagos);
 
   Future<void> _loadData() async {
-    double sumaCuotas = 0.00;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     //obtención de datos personales
     String fcNombreUsuarioFull = prefs.getString('fcNombreUsuario') ?? '';
@@ -62,7 +60,6 @@ class _HomeState extends State<Home> {
     var data2 = jsonDecode(dataAsString2);
 
     for (var cuota in data2) {
-      sumaCuotas += cuota["fnCuotaMensual"] ?? 0.00;
       cuotas.add(cuota["fnCuotaMensual"] ?? 0.00);
     }
     setState(() {
@@ -70,7 +67,6 @@ class _HomeState extends State<Home> {
       json2 = jsonDecode(dataAsString2);
       listadodepagos = jsonDecode(pagos);
       fcNombreUsuario = fcNombreUsuarioFirstWord;
-      CuotaMensual = sumaCuotas;
     });
   }
 
@@ -338,6 +334,31 @@ class _HomeState extends State<Home> {
                                               ],
                                             ),
                                           ),
+                                          if (json2[index]
+                                                  ['fdFechaProximoPago'] !=
+                                              null)
+                                            Center(
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    'Proximo Pago ${DateFormat('dd/MM/yyyy').format(
+                                                      DateTime.parse(
+                                                        json2[index][
+                                                            'fdFechaProximoPago'],
+                                                      ),
+                                                    )}',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: height / 60,
+                                                      fontFamily:
+                                                          'Gilroy Medium',
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                         ],
                                       );
                                     },

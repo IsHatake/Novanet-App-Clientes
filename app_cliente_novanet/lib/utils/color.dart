@@ -44,3 +44,9 @@ ExactAssetImage bgDark = const ExactAssetImage('images/bg-dark.png');
 Color darkPrimeryColorLogin = const Color(0xff595766);
 
 Color darktabwhiteColorLogin = const Color(0xff4b4b5a);
+
+
+Color gettableclaro1 = Colors.white;
+Color gettableclaro2 = const Color.fromARGB(255, 216, 215, 215);
+Color gettableoscuro1 = const Color(0xff4b4b5a);
+Color gettableoscuro2 = const Color(0xff383846);

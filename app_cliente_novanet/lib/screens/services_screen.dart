@@ -27,7 +27,6 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
   late ColorNotifire notifire;
 
   List productosPropios = [];
-  late final _productosPropiosoriginalDetalles = List.from(productosPropios);
 
   List detallessinadquirir = [];
 
@@ -234,7 +233,6 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
 
   TabController? controller;
 
-  final TextEditingController _misproductosController = TextEditingController();
   final TextEditingController _noadquiridosController = TextEditingController();
 
   void addSolicitudes(int id, String fiIDProducto) {
@@ -317,87 +315,135 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 10),
-              Center(
-                child: Text(
-                  'Productos Adquiridos',
-                  style: TextStyle(
-                    color: notifire.getdarkscolor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
               const SizedBox(height: 15),
-              TextField(
-                controller: _misproductosController,
-                onChanged: _filterProductsAdquiridos,
-                autofocus: false,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: notifire.getdarkscolor,
-                ),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: notifire.getbackcolor,
-                  hintText: 'Buscar en tus productos',
-                  hintStyle:
-                      TextStyle(color: notifire.getdarkgreycolor, fontSize: 12),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: notifire.getorangeprimerycolor),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Color(0xffd3d3d3)),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              Center(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: <DataColumn>[
-                      DataColumn(
-                        label: Text(
-                          '#',
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: productosPropios.length,
+                itemBuilder: (context, index) {
+                  List<dynamic> detalle =
+                      json.decode(productosPropios[index]["fcDetalles"]);
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 16.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Productos del Servicio #${index + 1}',
                           style: TextStyle(
-                              fontSize: 15, color: notifire.getdarkscolor),
+                            color: notifire.getdarkscolor,
+                            fontSize: height / 50,
+                            fontFamily: 'Gilroy Medium',
+                          ),
                         ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          ' ',
-                          style: TextStyle(
-                              fontSize: 15, color: notifire.getdarkscolor),
+                        Center(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: DataTable(
+                              border: TableBorder.all(borderRadius: BorderRadius.circular(5), color: Colors.transparent),
+                              columns: <DataColumn>[
+                                DataColumn(
+                                  label: Text(
+                                    '#',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        color: notifire.getdarkscolor),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Text(
+                                    ' ',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        color: notifire.getdarkscolor),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Text(
+                                    'Articulo',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        color: notifire.getdarkscolor),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Text(
+                                    'Marca',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        color: notifire.getdarkscolor),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Text(
+                                    'Tipo Producto',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        color: notifire.getdarkscolor),
+                                  ),
+                                ),
+                              ],
+                              rows: detalle
+                                  .map((item) => DataRow(
+                                        color: MaterialStateColor.resolveWith(
+                                            (states) =>
+                                                detalle.indexOf(item) % 2 == 0
+                                                    ? notifire.gettableclaro
+                                                    : notifire.gettableoscuro),
+                                        cells: [
+                                          DataCell(
+                                            Text(
+                                              item['RowNum']!.toString(),
+                                              style: TextStyle(
+                                                  fontFamily: "Gilroy Medium",
+                                                  color:
+                                                      notifire.getdarkscolor),
+                                            ),
+                                          ),
+                                          DataCell(IconButton(
+                                            icon: Icon(
+                                              Icons.photo,
+                                              color: notifire.getdarkscolor,
+                                            ),
+                                            onPressed: () {
+                                              imagen(
+                                                  context,
+                                                  item['NombreArchivo']!
+                                                      .toString(),
+                                                  item['fcProducto']!
+                                                      .toString());
+                                            },
+                                          )),
+                                          DataCell(Text(
+                                            item['fcProducto']!.toString(),
+                                            style: TextStyle(
+                                                fontFamily: "Gilroy Medium",
+                                                color: notifire.getdarkscolor),
+                                          )),
+                                          DataCell(Text(
+                                            item['fcMarca']!.toString(),
+                                            style: TextStyle(
+                                                fontFamily: "Gilroy Medium",
+                                                color: notifire.getdarkscolor),
+                                          )),
+                                          DataCell(Text(
+                                            item['TipoProducto']!.toString(),
+                                            style: TextStyle(
+                                                fontFamily: "Gilroy Medium",
+                                                color: notifire.getdarkscolor),
+                                          )),
+                                        ],
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
                         ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Articulo',
-                          style: TextStyle(
-                              fontSize: 15, color: notifire.getdarkscolor),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Marca',
-                          style: TextStyle(
-                              fontSize: 15, color: notifire.getdarkscolor),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Tipo Producto',
-                          style: TextStyle(
-                              fontSize: 15, color: notifire.getdarkscolor),
-                        ),
-                      ),
-                    ],
-                    rows: _buildDataRows(),
-                  ),
-                ),
+                        const SizedBox(height: 16.0),
+                      ],
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 30),
               AnimatedSwitcher(
@@ -500,19 +546,6 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
-  }
-
-  void _filterProductsAdquiridos(String query) {
-    setState(() {
-      if (query.isNotEmpty) {
-        productosPropios = _productosPropiosoriginalDetalles.where((detalle) {
-          final articulo = detalle['fcProducto'].toString().toLowerCase();
-          return articulo.contains(query.toLowerCase());
-        }).toList();
-      } else {
-        productosPropios = List.from(_productosPropiosoriginalDetalles);
-      }
-    });
   }
 
   void _filterProducts(String query) {
@@ -736,32 +769,6 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
         );
       },
     );
-  }
-
-  List<DataRow> _buildDataRows() {
-    return productosPropios.map((detalle) {
-      return DataRow(
-        color: MaterialStateColor.resolveWith((states) =>
-            _productosPropiosoriginalDetalles.indexOf(detalle) % 2 == 0
-                ? Colors.white
-                : const Color.fromARGB(255, 216, 215, 215)),
-        cells: [
-          DataCell(
-            Text(detalle['RowNum']!.toString()),
-          ),
-          DataCell(IconButton(
-            icon: const Icon(Icons.photo),
-            onPressed: () {
-              imagen(context, detalle['NombreArchivo']!.toString(),
-                  detalle['fcProducto']!.toString());
-            },
-          )),
-          DataCell(Text(detalle['fcProducto']!.toString())),
-          DataCell(Text(detalle['fcMarca']!.toString())),
-          DataCell(Text(detalle['fcTipoProducto']!.toString())),
-        ],
-      );
-    }).toList();
   }
 
   void imagen(BuildContext context, String img, String nombre) {

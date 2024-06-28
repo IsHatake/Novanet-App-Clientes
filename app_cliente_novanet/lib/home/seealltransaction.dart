@@ -131,15 +131,21 @@ class _SeealltransactionState extends State<Seealltransaction> {
               height: height / 50,
             ),
             if (listadodepagos.isEmpty)
-              const CircularProgressIndicator()
+             Center(
+                child: CircularProgressIndicator(
+                  color: notifire.getorangeprimerycolor,
+                ),
+              ) 
             else
               Container(
                 height: height / 1.15,
                 color: Colors.transparent,
                 child: Card(
+                  
                   color: notifire.getbackcolor,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
+                    side: const BorderSide(color: Colors.black12, width: 4),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Padding(

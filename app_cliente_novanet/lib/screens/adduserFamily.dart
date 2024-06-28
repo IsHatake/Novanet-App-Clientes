@@ -102,69 +102,69 @@ class _AdduserFamilyState extends State<AdduserFamily> {
       return;
     }
 
-    if (!RegExp(r'[A-Z]').hasMatch(contrasenia)) {
-      setState(() {
-        errorMessage = 'La contraseña debe tener al menos una letra mayúscula';
-      });
-      CherryToast.warning(
-        backgroundColor: notifire.getbackcolor,
-        title: Text(
-          errorMessage,
-          style: TextStyle(color: notifire.getdarkscolor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
+    // if (!RegExp(r'[A-Z]').hasMatch(contrasenia)) {
+    //   setState(() {
+    //     errorMessage = 'La contraseña debe tener al menos una letra mayúscula';
+    //   });
+    //   CherryToast.warning(
+    //     backgroundColor: notifire.getbackcolor,
+    //     title: Text(
+    //       errorMessage,
+    //       style: TextStyle(color: notifire.getdarkscolor),
+    //       textAlign: TextAlign.start,
+    //     ),
+    //     borderRadius: 5,
+    //   ).show(context);
+    //   return;
+    // }
 
-    if (!RegExp(r'[a-z]').hasMatch(contrasenia)) {
-      setState(() {
-        errorMessage = 'La contraseña debe tener al menos una letra minúscula';
-      });
-      CherryToast.warning(
-        backgroundColor: notifire.getbackcolor,
-        title: Text(
-          errorMessage,
-          style: TextStyle(color: notifire.getdarkscolor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
+    // if (!RegExp(r'[a-z]').hasMatch(contrasenia)) {
+    //   setState(() {
+    //     errorMessage = 'La contraseña debe tener al menos una letra minúscula';
+    //   });
+    //   CherryToast.warning(
+    //     backgroundColor: notifire.getbackcolor,
+    //     title: Text(
+    //       errorMessage,
+    //       style: TextStyle(color: notifire.getdarkscolor),
+    //       textAlign: TextAlign.start,
+    //     ),
+    //     borderRadius: 5,
+    //   ).show(context);
+    //   return;
+    // }
 
-    if (!RegExp(r'[0-9]').hasMatch(contrasenia)) {
-      setState(() {
-        errorMessage = 'La contraseña debe tener al menos un número';
-      });
-      CherryToast.warning(
-        backgroundColor: notifire.getbackcolor,
-        title: Text(
-          errorMessage,
-          style: TextStyle(color: notifire.getdarkscolor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
+    // if (!RegExp(r'[0-9]').hasMatch(contrasenia)) {
+    //   setState(() {
+    //     errorMessage = 'La contraseña debe tener al menos un número';
+    //   });
+    //   CherryToast.warning(
+    //     backgroundColor: notifire.getbackcolor,
+    //     title: Text(
+    //       errorMessage,
+    //       style: TextStyle(color: notifire.getdarkscolor),
+    //       textAlign: TextAlign.start,
+    //     ),
+    //     borderRadius: 5,
+    //   ).show(context);
+    //   return;
+    // }
 
-    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(contrasenia)) {
-      setState(() {
-        errorMessage = 'La contraseña debe tener al menos un carácter especial';
-      });
-      CherryToast.warning(
-        backgroundColor: notifire.getbackcolor,
-        title: Text(
-          errorMessage,
-          style: TextStyle(color: notifire.getdarkscolor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
+    // if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(contrasenia)) {
+    //   setState(() {
+    //     errorMessage = 'La contraseña debe tener al menos un carácter especial';
+    //   });
+    //   CherryToast.warning(
+    //     backgroundColor: notifire.getbackcolor,
+    //     title: Text(
+    //       errorMessage,
+    //       style: TextStyle(color: notifire.getdarkscolor),
+    //       textAlign: TextAlign.start,
+    //     ),
+    //     borderRadius: 5,
+    //   ).show(context);
+    //   return;
+    // }
 
 
     String token = await fetchTokenAPI(

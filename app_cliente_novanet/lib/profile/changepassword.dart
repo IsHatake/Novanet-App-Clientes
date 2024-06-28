@@ -109,69 +109,69 @@ class _ChangePasswordState extends State<ChangePassword> {
       return;
     }
 
-    if (!RegExp(r'[A-Z]').hasMatch(pcPassword)) {
-      setState(() {
-        errorMessage = 'La contraseña debe tener al menos una letra mayúscula';
-      });
-      CherryToast.warning(
-        backgroundColor: backColor,
-        title: Text(
-          errorMessage,
-          style: TextStyle(color: darksColor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
+    // if (!RegExp(r'[A-Z]').hasMatch(pcPassword)) {
+    //   setState(() {
+    //     errorMessage = 'La contraseña debe tener al menos una letra mayúscula';
+    //   });
+    //   CherryToast.warning(
+    //     backgroundColor: backColor,
+    //     title: Text(
+    //       errorMessage,
+    //       style: TextStyle(color: darksColor),
+    //       textAlign: TextAlign.start,
+    //     ),
+    //     borderRadius: 5,
+    //   ).show(context);
+    //   return;
+    // }
 
-    if (!RegExp(r'[a-z]').hasMatch(pcPassword)) {
-      setState(() {
-        errorMessage = 'La contraseña debe tener al menos una letra minúscula';
-      });
-      CherryToast.warning(
-        backgroundColor: backColor,
-        title: Text(
-          errorMessage,
-          style: TextStyle(color: darksColor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
+    // if (!RegExp(r'[a-z]').hasMatch(pcPassword)) {
+    //   setState(() {
+    //     errorMessage = 'La contraseña debe tener al menos una letra minúscula';
+    //   });
+    //   CherryToast.warning(
+    //     backgroundColor: backColor,
+    //     title: Text(
+    //       errorMessage,
+    //       style: TextStyle(color: darksColor),
+    //       textAlign: TextAlign.start,
+    //     ),
+    //     borderRadius: 5,
+    //   ).show(context);
+    //   return;
+    // }
 
-    if (!RegExp(r'[0-9]').hasMatch(pcPassword)) {
-      setState(() {
-        errorMessage = 'La contraseña debe tener al menos un número';
-      });
-      CherryToast.warning(
-        backgroundColor: backColor,
-        title: Text(
-          errorMessage,
-          style: TextStyle(color: darksColor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
+    // if (!RegExp(r'[0-9]').hasMatch(pcPassword)) {
+    //   setState(() {
+    //     errorMessage = 'La contraseña debe tener al menos un número';
+    //   });
+    //   CherryToast.warning(
+    //     backgroundColor: backColor,
+    //     title: Text(
+    //       errorMessage,
+    //       style: TextStyle(color: darksColor),
+    //       textAlign: TextAlign.start,
+    //     ),
+    //     borderRadius: 5,
+    //   ).show(context);
+    //   return;
+    // }
 
-    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(pcPassword)) {
-      setState(() {
-        errorMessage = 'La contraseña debe tener al menos un carácter especial';
-      });
-      CherryToast.warning(
-        backgroundColor: backColor,
-        title: Text(
-          errorMessage,
-          style: TextStyle(color: darksColor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
+    // if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(pcPassword)) {
+    //   setState(() {
+    //     errorMessage = 'La contraseña debe tener al menos un carácter especial';
+    //   });
+    //   CherryToast.warning(
+    //     backgroundColor: backColor,
+    //     title: Text(
+    //       errorMessage,
+    //       style: TextStyle(color: darksColor),
+    //       textAlign: TextAlign.start,
+    //     ),
+    //     borderRadius: 5,
+    //   ).show(context);
+    //   return;
+    // }
 
    
     sendPass(context, pcPassword, pcPasswordConfirm, backColor, darksColor);
