@@ -13,6 +13,7 @@ Future<void> fetchLogin(
   BuildContext context,
   String fcUsuarioAcceso,
   String fcPassword,
+  bool fbprincipal,
   backgroundColor,
   color,
 ) async {
@@ -22,7 +23,7 @@ Future<void> fetchLogin(
     prefs.setString("ContraseniaCache", fcPassword);
 
     final response = await http.get(Uri.parse(
-        '${apiUrl}Login/LoginApp?fcUsuarioAcceso=$fcUsuarioAcceso&fcPassword=$fcPassword'));
+        '${apiUrl}Login/LoginApp?fcUsuarioAcceso=$fcUsuarioAcceso&fcPassword=$fcPassword&fbprincipal=$fbprincipal'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -40,6 +41,9 @@ Future<void> fetchLogin(
             "fcNombreUsuario", data[0][0]["fcNombreUsuario"].toString());
         prefs.setString("fcTelefono", data[0][0]["fcTelefono"].toString());
         prefs.setString("fiIDCliente", data[0][0]["fiIDCliente"].toString());
+        prefs.setString(
+            "fiIDCuentaFamiliar", data[0][0]["fiIDCuentaFamiliar"].toString());
+
         prefs.setString("fcIdentidad", data[1][0]["fcIdentidad"].toString());
         prefs.setString(
             "fcURLFotoPersonalizda", data[0][0]["NombreArchivo"].toString());
@@ -53,7 +57,7 @@ Future<void> fetchLogin(
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const Home(),
+            builder: (context) => Home(fbprincipal: fbprincipal),
           ),
         );
       } else {

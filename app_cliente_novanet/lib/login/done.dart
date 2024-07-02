@@ -59,7 +59,7 @@ class _VerificationDoneState extends State<VerificationDone> {
                 SizedBox(height: height / 4),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const Login(),

@@ -113,7 +113,7 @@ class _EditProfileState extends State<EditProfile> {
                             children: [
                               Column(
                                 children: [
-                                  SizedBox(height: height / 13),
+                                  SizedBox(height: 150),
                                   Row(
                                     children: [
                                       SizedBox(width: width / 1.8),

@@ -1,7 +1,9 @@
+
+import 'package:app_cliente_novanet/screens/qr_scanner_screen.dart';
 import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/localauthapi/local_auth_api.dart';
-import 'package:local_auth/local_auth.dart';  
+import 'package:local_auth/local_auth.dart';
 import 'package:app_cliente_novanet/profile/forgotpassword.dart';
 import 'package:app_cliente_novanet/service/pruebaService.dart';
 import 'package:app_cliente_novanet/utils/button.dart';
@@ -30,6 +32,7 @@ class _LoginState extends State<Login> {
 
   bool _isPasswordVisible = false;
   bool _isBiometricSupported = false;
+  bool _isPrincipal = true;
 
   @override
   void initState() {
@@ -95,7 +98,8 @@ class _LoginState extends State<Login> {
                             width: width / 1.1,
                             decoration: BoxDecoration(
                               color: notifire.getprimerycolor,
-                              border: Border.all(color: Colors.black12,width: 3),
+                              border:
+                                  Border.all(color: Colors.black12, width: 3),
                               borderRadius: const BorderRadius.only(
                                 topRight: Radius.circular(40),
                                 topLeft: Radius.circular(40),
@@ -105,6 +109,44 @@ class _LoginState extends State<Login> {
                               children: [
                                 SizedBox(
                                   height: height / 10,
+                                ),
+                                // User Type Toggle Switch
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Usuario Principal",
+                                      style: TextStyle(
+                                        color: _isPrincipal
+                                            ? notifire.getorangeprimerycolor
+                                            : Colors.grey,
+                                      ),
+                                    ),
+                                    Switch(
+                                      value: _isPrincipal,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _isPrincipal = value;
+                                        });
+                                      },
+                                      activeColor:
+                                          notifire.getorangeprimerycolor,
+                                      inactiveThumbColor: Colors.grey,
+                                      inactiveTrackColor: Colors.grey.shade400,
+                                    ),
+                                    Text(
+                                      "Usuario Secundario",
+                                      style: TextStyle(
+                                        color: !_isPrincipal
+                                            ? notifire.getorangeprimerycolor
+                                            : Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                // Rest of your form
+                                SizedBox(
+                                  height: height / 50,
                                 ),
                                 Row(
                                   children: [
@@ -166,31 +208,28 @@ class _LoginState extends State<Login> {
                                 ),
                                 Row(
                                   children: [
-                                    // const Spacer (),
-                                    // GestureDetector(
-                                    //   onTap: () {
-                                    //     Navigator.push(
-                                    //       context,
-                                    //       MaterialPageRoute(
-                                    //         builder: (context) =>
-                                    //             const Register(),
-                                    //       ),
-                                    //     );
-                                    //   },
-                                    //   child: Container(
-                                    //     height: height / 40,
-                                    //     color: Colors.transparent,
-                                    //     child: Text(
-                                    //       'Registrar Usuario',
-                                    //       style: TextStyle(
-                                    //           color: notifire.getdarkscolor,
-                                    //           fontSize: height / 60,
-                                    //           fontFamily: 'Gilroy Medium'),
-                                    //     ),
-                                    //   ),
-                                    // ),
-                                    SizedBox(
-                                      width: width / 18,
+                                    const Spacer(),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const QrCodeScanner(),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        height: height / 40,
+                                        color: Colors.transparent,
+                                        child: Text(
+                                          'Registrar Usuario Secundario QR',
+                                          style: TextStyle(
+                                              color: notifire.getdarkscolor,
+                                              fontSize: height / 60,
+                                              fontFamily: 'Gilroy Medium'),
+                                        ),
+                                      ),
                                     ),
                                     const Spacer(),
                                     const Spacer(),
@@ -241,6 +280,7 @@ class _LoginState extends State<Login> {
                                           context,
                                           fcUsuarioAcceso.text,
                                           fcPassword.text,
+                                          _isPrincipal,
                                           notifire.getbackcolor,
                                           notifire.getdarkscolor);
                                     }
@@ -253,27 +293,28 @@ class _LoginState extends State<Login> {
                                 SizedBox(
                                   height: height / 50,
                                 ),
-                                if (_isBiometricSupported )
-                                if (fcUsuarioAccesoCache.isNotEmpty && fcPasswordCache.isNotEmpty)
-                                  GestureDetector(
-                                    onTap: _authenticate,
-                                    child: Container(
-                                      margin: const EdgeInsets.only(top: 20),
-                                      padding: const EdgeInsets.all(15),
-                                      decoration: BoxDecoration(
-                                        color: Colors.transparent,
-                                        border: Border.all(
-                                            color:
-                                                notifire.getorangeprimerycolor),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.fingerprint,
-                                        color: notifire.getorangeprimerycolor,
-                                        size: 70,
+                                if (_isBiometricSupported)
+                                  if (fcUsuarioAccesoCache.isNotEmpty &&
+                                      fcPasswordCache.isNotEmpty)
+                                    GestureDetector(
+                                      onTap: _authenticate,
+                                      child: Container(
+                                        margin: const EdgeInsets.only(top: 20),
+                                        padding: const EdgeInsets.all(15),
+                                        decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          border: Border.all(
+                                              color: notifire
+                                                  .getorangeprimerycolor),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.fingerprint,
+                                          color: notifire.getorangeprimerycolor,
+                                          size: 70,
+                                        ),
                                       ),
                                     ),
-                                  ),
                                 const SizedBox(height: 50),
                               ],
                             ),
@@ -389,7 +430,7 @@ class _LoginState extends State<Login> {
     final authenticate = await LocalAuth.authenticate();
 
     if (authenticate) {
-      fetchLogin(context, fcUsuarioAccesoCache, fcPasswordCache,
+      fetchLogin(context, fcUsuarioAccesoCache, fcPasswordCache, _isPrincipal,
           notifire.getbackcolor, notifire.getdarkscolor);
     } else {
       CherryToast.error(

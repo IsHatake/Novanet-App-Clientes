@@ -22,7 +22,8 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  final bool fbprincipal;
+  const Home({Key? key, required this.fbprincipal}) : super(key: key);
 
   @override
   State<Home> createState() => _HomeState();
@@ -242,7 +243,7 @@ class _HomeState extends State<Home> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const Profile(),
+                  builder: (context) =>  Profile(fbprincipal: widget.fbprincipal),
                 ),
               );
             },
@@ -547,8 +548,8 @@ class _HomeState extends State<Home> {
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) =>
-                                                        const AddServices_Screen(
-                                                            'Servicios'),
+                                                         AddServices_Screen(
+                                                            'Servicios',fbprincipal: widget.fbprincipal),
                                                   ),
                                                 );
                                               },
@@ -596,74 +597,78 @@ class _HomeState extends State<Home> {
                                         const SizedBox(
                                           width: 20.00,
                                         ),
-                                        Column(
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        const ReferirScreen(),
-                                                  ),
-                                                );
-
-                                                // CherryToast.info(
-                                                //   backgroundColor:
-                                                //       notifire.getbackcolor,
-                                                //   title: Text('En Proceso',
-                                                //       style: TextStyle(
-                                                //           color: notifire
-                                                //               .getdarkscolor),
-                                                //       textAlign:
-                                                //           TextAlign.start),
-                                                //   borderRadius: 5,
-                                                // ).show(context);
-                                              },
-                                              child: Container(
-                                                height: height / 15,
-                                                width: width / 7,
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      notifire.getprimerycolor,
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                    Radius.circular(10),
-                                                  ),
-                                                  boxShadow: const <BoxShadow>[
-                                                    BoxShadow(
-                                                      color: Color.fromARGB(
-                                                          34, 82, 79, 79),
-                                                      blurRadius: 15.0,
-                                                      offset: Offset(0.0, 0.75),
+                                        if (widget.fbprincipal)
+                                          Column(
+                                            children: [
+                                              GestureDetector(
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          const ReferirScreen(),
                                                     ),
-                                                  ],
-                                                ),
-                                                child: Center(
-                                                  child: Image.asset(
-                                                    "images/referir.png",
-                                                    color:
-                                                        notifire.getdarkscolor,
-                                                    height: height / 20,
+                                                  );
+
+                                                  // CherryToast.info(
+                                                  //   backgroundColor:
+                                                  //       notifire.getbackcolor,
+                                                  //   title: Text('En Proceso',
+                                                  //       style: TextStyle(
+                                                  //           color: notifire
+                                                  //               .getdarkscolor),
+                                                  //       textAlign:
+                                                  //           TextAlign.start),
+                                                  //   borderRadius: 5,
+                                                  // ).show(context);
+                                                },
+                                                child: Container(
+                                                  height: height / 15,
+                                                  width: width / 7,
+                                                  decoration: BoxDecoration(
+                                                    color: notifire
+                                                        .getprimerycolor,
+                                                    borderRadius:
+                                                        const BorderRadius.all(
+                                                      Radius.circular(10),
+                                                    ),
+                                                    boxShadow: const <
+                                                        BoxShadow>[
+                                                      BoxShadow(
+                                                        color: Color.fromARGB(
+                                                            34, 82, 79, 79),
+                                                        blurRadius: 15.0,
+                                                        offset:
+                                                            Offset(0.0, 0.75),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Center(
+                                                    child: Image.asset(
+                                                      "images/referir.png",
+                                                      color: notifire
+                                                          .getdarkscolor,
+                                                      height: height / 20,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                            SizedBox(
-                                              height: height / 60,
-                                            ),
-                                            Text(
-                                              CustomStrings.referir,
-                                              style: TextStyle(
-                                                  fontFamily: "Gilroy Bold",
-                                                  color: notifire.getdarkscolor,
-                                                  fontSize: height / 55),
-                                            ),
-                                            const SizedBox(
-                                              width: 20.00,
-                                            ),
-                                          ],
-                                        ),
+                                              SizedBox(
+                                                height: height / 60,
+                                              ),
+                                              Text(
+                                                CustomStrings.referir,
+                                                style: TextStyle(
+                                                    fontFamily: "Gilroy Bold",
+                                                    color:
+                                                        notifire.getdarkscolor,
+                                                    fontSize: height / 55),
+                                              ),
+                                              const SizedBox(
+                                                width: 20.00,
+                                              ),
+                                            ],
+                                          ),
                                       ],
                                     ),
                                   ],

@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, camel_case_types, sized_box_for_whitespace, non_constant_identifier_names, file_names, control_flow_in_finally
 
 import 'dart:convert';
+import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/login/done.dart';
 import 'package:app_cliente_novanet/models/UsuariosViewModel.dart';
@@ -10,19 +11,24 @@ import 'package:app_cliente_novanet/api.dart';
 
 Future<void> sendUsuarioCreacion(
   BuildContext context,
+  String fcNombreUsuario,
+  String fcCorreo,
   String fcPassword,
   int fiIdcliente,
   backgroundColor,
   color,
 ) async {
   try {
-    UsuarioCreate UsuarioData = UsuarioCreate(
-        fcUsuarioAcceso: '', fcPassword: fcPassword, fiIdcliente: fiIdcliente);
+      UsuarioFamiliarCreate UsuarioData = UsuarioFamiliarCreate(
+       fcUsuarioAcceso: fcCorreo,
+        fcPassword: fcPassword,
+        fiIdcliente: fiIdcliente,
+        fcNombreUsuario: fcNombreUsuario);
 
     String usuarioJson = jsonEncode(UsuarioData);
 
     final response = await http.post(
-      Uri.parse('${apiUrl}Usuario/Insert'),
+      Uri.parse('${apiUrl}Usuario/InsertUsuarioFamiliar'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Accept': 'application/json',
@@ -161,7 +167,7 @@ Future<void> sendUsuarioFamiliarCreacion(
   } finally {}
 }
 
-Future<String> fetchTokenAPI(
+Future<String>  fetchTokenAPI(
   BuildContext context,
   Color backgroundColor,
   Color color,

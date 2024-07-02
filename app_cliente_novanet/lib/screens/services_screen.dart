@@ -17,7 +17,9 @@ import '../utils/colornotifire.dart';
 
 class AddServices_Screen extends StatefulWidget {
   final String title;
-  const AddServices_Screen(this.title, {Key? key}) : super(key: key);
+  final bool fbprincipal;
+  const AddServices_Screen(this.title, {Key? key, required this.fbprincipal})
+      : super(key: key);
 
   @override
   State<AddServices_Screen> createState() => _AddServices_ScreenState();
@@ -48,7 +50,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
   Future<void> Productos_ListaPorCliente() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      var fiIDSolicitud = prefs.getString("fiIDCliente");
+      var fiIDSolicitud = prefs.getString("fiIDCuentaFamiliar");
 
       final response = await http.get(Uri.parse(
           '${apiUrl}Servicio/Productos_ListaPorCliente?piIDSolicitud=$fiIDSolicitud'));
@@ -79,7 +81,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
   Future<void> ProductosAsolicitud_ListaPorCliente() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      var fiIDSolicitud = prefs.getString("fiIDCliente");
+      var fiIDSolicitud = prefs.getString("fiIDCuentaFamiliar");
 
       final response = await http.get(Uri.parse(
           '${apiUrl}Servicio/ProductosAsolicitud_ListaPorCliente?piIDSolicitud=$fiIDSolicitud'));
@@ -110,7 +112,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
   Future<List<dynamic>> Solicitudes_AdicionProducto_Listado() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      var piIDSolicitud = prefs.getString("fiIDCliente");
+      var piIDSolicitud = prefs.getString("fiIDCuentaFamiliar");
 
       final response = await http.get(
         Uri.parse(
@@ -154,7 +156,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
   SendSolicitudNueva() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      var piIDSolicitud = prefs.getString("fiIDCliente");
+      var piIDSolicitud = prefs.getString("fiIDCuentaFamiliar");
       if (piIDSolicitud == null) {
         throw Exception('piIDSolicitud is null or invalid');
       }
@@ -293,17 +295,18 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
           ),
         ),
         actions: [
-          GestureDetector(
-            onTap: () {
-              _showDialogSolicitudes();
-            },
-            child: Icon(
-              Icons.assignment,
-              color: notifire.getwhite,
-              size: MediaQuery.of(context).size.height * 0.05,
+          if (widget.fbprincipal)
+            GestureDetector(
+              onTap: () {
+                _showDialogSolicitudes();
+              },
+              child: Icon(
+                Icons.assignment,
+                color: notifire.getwhite,
+                size: MediaQuery.of(context).size.height * 0.04,
+              ),
             ),
-          ),
-          const SizedBox(width: 15)
+          if (widget.fbprincipal) const SizedBox(width: 15)
         ],
       ),
       backgroundColor: notifire.getprimerycolor,
@@ -341,7 +344,9 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: DataTable(
-                              border: TableBorder.all(borderRadius: BorderRadius.circular(5), color: Colors.transparent),
+                              border: TableBorder.all(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colors.transparent),
                               columns: <DataColumn>[
                                 DataColumn(
                                   label: Text(
@@ -515,33 +520,34 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            reverseDuration: const Duration(milliseconds: 200),
-            switchInCurve: Curves.decelerate,
-            switchOutCurve: Curves.decelerate,
-            child: visble_form
-                ? FloatingActionButton(
-                    key: UniqueKey(),
-                    onPressed: () {
-                      setState(() {
-                        visble_form = false;
-                      });
-                    },
-                    child: const Icon(Icons.close),
-                    backgroundColor: Colors.red,
-                  )
-                : FloatingActionButton(
-                    key: UniqueKey(),
-                    onPressed: () {
-                      setState(() {
-                        visble_form = true;
-                      });
-                    },
-                    child: const Icon(Icons.add),
-                    backgroundColor: Colors.green,
-                  ),
-          ),
+          if (widget.fbprincipal)
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              reverseDuration: const Duration(milliseconds: 200),
+              switchInCurve: Curves.decelerate,
+              switchOutCurve: Curves.decelerate,
+              child: visble_form
+                  ? FloatingActionButton(
+                      key: UniqueKey(),
+                      onPressed: () {
+                        setState(() {
+                          visble_form = false;
+                        });
+                      },
+                      child: const Icon(Icons.close),
+                      backgroundColor: Colors.red,
+                    )
+                  : FloatingActionButton(
+                      key: UniqueKey(),
+                      onPressed: () {
+                        setState(() {
+                          visble_form = true;
+                        });
+                      },
+                      child: const Icon(Icons.add),
+                      backgroundColor: Colors.green,
+                    ),
+            ),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

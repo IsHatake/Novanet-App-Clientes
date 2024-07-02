@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, unused_local_variable
 
 import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
@@ -115,8 +115,6 @@ class _RegisterState extends State<Register> {
               MaterialPageRoute(
                 builder: (context) => ConfirmPin(
                   tokenAPI: tokenAPI,
-                  fcCorreo: fcCorreo,
-                  fcNombre: fcNombre,
                   fiIDEquifax: fiIDEquifax,
                   backColor: notifire.getbackcolor,
                   darkColor: notifire.getdarkscolor,

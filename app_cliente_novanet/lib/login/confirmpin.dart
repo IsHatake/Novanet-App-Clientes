@@ -14,8 +14,6 @@ import '../utils/button.dart';
 class ConfirmPin extends StatefulWidget {
   final Color backColor;
   final Color darkColor;
-  final String fcCorreo;
-  final String fcNombre;
   final int fiIDEquifax;
   final String tokenAPI;
 
@@ -23,8 +21,6 @@ class ConfirmPin extends StatefulWidget {
     Key? key,
     required this.backColor,
     required this.darkColor,
-    required this.fcCorreo,
-    required this.fcNombre,
     required this.fiIDEquifax,
     required this.tokenAPI,
   }) : super(key: key);
@@ -59,8 +55,6 @@ class _ConfirmPinState extends State<ConfirmPin> {
         context,
         MaterialPageRoute(
           builder: (context) => Registerdatos(
-            fcCorreo: widget.fcCorreo,
-            fcNombre: widget.fcNombre,
             fiIDEquifax: widget.fiIDEquifax,
           ),
         ),

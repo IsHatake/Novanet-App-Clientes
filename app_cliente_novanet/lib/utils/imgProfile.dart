@@ -33,11 +33,18 @@ class ImgProfile extends StatelessWidget {
               _showImageDialog(context, imagePath);
             },
             child: Container(
-              height: height / 8,
-              width: width / 4,
-              decoration: const BoxDecoration(
-                color: Colors.transparent,
+               width: 200,
+              height: 200,
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 7,
+                    offset: Offset(0, 3),
+                  ),
+                ],
               ),
               child: ClipOval(
                 child: Image.network(

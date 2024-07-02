@@ -1,4 +1,6 @@
+import 'package:app_cliente_novanet/screens/qrgenerator.dart';
 import 'package:app_cliente_novanet/screens/referidos_screen.dart';
+import 'package:app_cliente_novanet/screens/users_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/home/seealltransaction.dart';
@@ -13,7 +15,8 @@ import 'forgotpassword.dart';
 import 'infoprofile.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({Key? key}) : super(key: key);
+  final bool fbprincipal;
+  const Profile({Key? key, required this.fbprincipal}) : super(key: key);
 
   @override
   State<Profile> createState() => _ProfileState();
@@ -173,7 +176,7 @@ class _ProfileState extends State<Profile> with RouteAware {
                     //     color: Colors.grey.withOpacity(0.4),
                     //   ),
                     // ),
-                    
+
                     //  SizedBox(
                     //   height: height / 50,
                     // ),
@@ -199,7 +202,7 @@ class _ProfileState extends State<Profile> with RouteAware {
                         color: Colors.grey.withOpacity(0.4),
                       ),
                     ),
-                    
+
                     SizedBox(height: height / 80),
                     GestureDetector(
                       onTap: () {
@@ -224,28 +227,83 @@ class _ProfileState extends State<Profile> with RouteAware {
                       ),
                     ),
                     SizedBox(height: height / 80),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const referidos_Screen(),
-                          ),
-                        );
-                      },
-                      child: settingtype("images/referir.png",
-                          'Referidos'),
-                    ),
-                    SizedBox(
-                      height: height / 80,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: width / 20),
-                      child: Divider(
-                        thickness: 0.6,
-                        color: Colors.grey.withOpacity(0.4),
+                    if (widget.fbprincipal)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const referidos_Screen(),
+                            ),
+                          );
+                        },
+                        child: settingtype("images/referir.png", 'Referidos'),
                       ),
-                    ),
+                    if (widget.fbprincipal)
+                      SizedBox(
+                        height: height / 80,
+                      ),
+                    if (widget.fbprincipal)
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: width / 20),
+                        child: Divider(
+                          thickness: 0.6,
+                          color: Colors.grey.withOpacity(0.4),
+                        ),
+                      ),
+                    SizedBox(height: height / 50),
+
+                    if (widget.fbprincipal)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const usuarios_Screen(),
+                            ),
+                          );
+                        },
+                        child: settingtype("images/familia.png", 'Usuarios'),
+                      ),
+                    if (widget.fbprincipal)
+                      SizedBox(
+                        height: height / 80,
+                      ),
+                    if (widget.fbprincipal)
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: width / 20),
+                        child: Divider(
+                          thickness: 0.6,
+                          color: Colors.grey.withOpacity(0.4),
+                        ),
+                      ),
+                    SizedBox(height: height / 50),
+
+                    if (widget.fbprincipal)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const QrCodeGenerator(),
+                            ),
+                          );
+                        },
+                        child: settingtype("images/codigo-qr.png",
+                            'QR Creación Usuario Secundario'),
+                      ),
+                    if (widget.fbprincipal)
+                      SizedBox(
+                        height: height / 80,
+                      ),
+                    if (widget.fbprincipal)
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: width / 20),
+                        child: Divider(
+                          thickness: 0.6,
+                          color: Colors.grey.withOpacity(0.4),
+                        ),
+                      ),
                     SizedBox(height: height / 50),
                     Row(
                       children: [
@@ -253,7 +311,7 @@ class _ProfileState extends State<Profile> with RouteAware {
                           width: width / 20,
                         ),
                         const Text(
-                          CustomStrings.security,
+                          'Otros',
                           style: TextStyle(
                             color: Colors.grey,
                           ),
@@ -284,7 +342,7 @@ class _ProfileState extends State<Profile> with RouteAware {
                       child: settingtype("images/profilepassword.png",
                           CustomStrings.changepassword),
                     ),
-                  
+
                     SizedBox(
                       height: height / 80,
                     ),
@@ -462,8 +520,7 @@ class _ProfileState extends State<Profile> with RouteAware {
                       MaterialPageRoute(
                         builder: (context) => const Login(),
                       ),
-                      (route) =>
-                          false,
+                      (route) => false,
                     );
                   },
                   child: Container(

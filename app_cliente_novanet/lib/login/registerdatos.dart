@@ -11,13 +11,9 @@ import '../utils/string.dart';
 import '../utils/textfeilds.dart';
 
 class Registerdatos extends StatefulWidget {
-  final String fcCorreo;
-  final String fcNombre;
   final int fiIDEquifax;
   const Registerdatos({
     Key? key,
-    required this.fcCorreo,
-    required this.fcNombre,
     required this.fiIDEquifax,
   }) : super(key: key);
 
@@ -45,133 +41,85 @@ class _RegisterdatosState extends State<Registerdatos> {
       notifire.setIsDark = previusstate;
     }
   }
+Future<void> validacionCampos() async {
+  String nombreCompleto = _nombreCompletoController.text;
+  String contrasenia = _contraseniaController.text;
+  String contraseniaConfirmar = _contraseniaconfirmarController.text;
+  String email = _emailController.text;
+  String errorMessage = '';
 
-  Future<void> validacionCampos() async {
-    String nombreCompleto = _nombreCompletoController.text;
-    String contrasenia = _contraseniaController.text;
-    String contraseniaConfirmar = _contraseniaconfirmarController.text;
-    String email = _emailController.text;
-    String errorMessage = '';
-
-    if (contrasenia.isEmpty ||
-        contraseniaConfirmar.isEmpty ||
-        nombreCompleto.isEmpty ||
-        email.isEmpty) {
-      CherryToast.warning(
-        backgroundColor: notifire.getbackcolor,
-        title: Text('Complete los campos vacios por favor',
-            style: TextStyle(color: notifire.getdarkscolor),
-            textAlign: TextAlign.start),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
-
-    if (contrasenia != contraseniaConfirmar) {
-      setState(() {
-        errorMessage = 'Las contraseñas no coinciden';
-      });
-      CherryToast.warning(
-        backgroundColor: notifire.getbackcolor,
-        title: Text(
-          errorMessage,
+  if (contrasenia.isEmpty ||
+      contraseniaConfirmar.isEmpty ||
+      nombreCompleto.isEmpty ||
+      email.isEmpty) {
+    CherryToast.warning(
+      backgroundColor: notifire.getbackcolor,
+      title: Text('Complete los campos vacíos por favor',
           style: TextStyle(color: notifire.getdarkscolor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
-
-    if (contrasenia.length < 8) {
-      setState(() {
-        errorMessage = 'La contraseña debe tener al menos 8 caracteres';
-      });
-      CherryToast.warning(
-        backgroundColor: notifire.getbackcolor,
-        title: Text(
-          errorMessage,
-          style: TextStyle(color: notifire.getdarkscolor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
-      return;
-    }
-
-    // if (!RegExp(r'[A-Z]').hasMatch(contrasenia)) {
-    //   setState(() {
-    //     errorMessage = 'La contraseña debe tener al menos una letra mayúscula';
-    //   });
-    //   CherryToast.warning(
-    //     backgroundColor: notifire.getbackcolor,
-    //     title: Text(
-    //       errorMessage,
-    //       style: TextStyle(color: notifire.getdarkscolor),
-    //       textAlign: TextAlign.start,
-    //     ),
-    //     borderRadius: 5,
-    //   ).show(context);
-    //   return;
-    // }
-
-    // if (!RegExp(r'[a-z]').hasMatch(contrasenia)) {
-    //   setState(() {
-    //     errorMessage = 'La contraseña debe tener al menos una letra minúscula';
-    //   });
-    //   CherryToast.warning(
-    //     backgroundColor: notifire.getbackcolor,
-    //     title: Text(
-    //       errorMessage,
-    //       style: TextStyle(color: notifire.getdarkscolor),
-    //       textAlign: TextAlign.start,
-    //     ),
-    //     borderRadius: 5,
-    //   ).show(context);
-    //   return;
-    // }
-
-    // if (!RegExp(r'[0-9]').hasMatch(contrasenia)) {
-    //   setState(() {
-    //     errorMessage = 'La contraseña debe tener al menos un número';
-    //   });
-    //   CherryToast.warning(
-    //     backgroundColor: notifire.getbackcolor,
-    //     title: Text(
-    //       errorMessage,
-    //       style: TextStyle(color: notifire.getdarkscolor),
-    //       textAlign: TextAlign.start,
-    //     ),
-    //     borderRadius: 5,
-    //   ).show(context);
-    //   return;
-    // }
-
-    // if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(contrasenia)) {
-    //   setState(() {
-    //     errorMessage = 'La contraseña debe tener al menos un carácter especial';
-    //   });
-    //   CherryToast.warning(
-    //     backgroundColor: notifire.getbackcolor,
-    //     title: Text(
-    //       errorMessage,
-    //       style: TextStyle(color: notifire.getdarkscolor),
-    //       textAlign: TextAlign.start,
-    //     ),
-    //     borderRadius: 5,
-    //   ).show(context);
-    //   return;
-    // }
-
-    sendUsuarioCreacion(context, contrasenia, widget.fiIDEquifax,
-        notifire.getbackcolor, notifire.getdarkscolor);
+          textAlign: TextAlign.start),
+      borderRadius: 5,
+    ).show(context);
+    return;
   }
+
+  if (contrasenia != contraseniaConfirmar) {
+    setState(() {
+      errorMessage = 'Las contraseñas no coinciden';
+    });
+    CherryToast.warning(
+      backgroundColor: notifire.getbackcolor,
+      title: Text(
+        errorMessage,
+        style: TextStyle(color: notifire.getdarkscolor),
+        textAlign: TextAlign.start,
+      ),
+      borderRadius: 5,
+    ).show(context);
+    return;
+  }
+
+  if (contrasenia.length < 8) {
+    setState(() {
+      errorMessage = 'La contraseña debe tener al menos 8 caracteres';
+    });
+    CherryToast.warning(
+      backgroundColor: notifire.getbackcolor,
+      title: Text(
+        errorMessage,
+        style: TextStyle(color: notifire.getdarkscolor),
+        textAlign: TextAlign.start,
+      ),
+      borderRadius: 5,
+    ).show(context);
+    return;
+  }
+
+  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+    setState(() {
+      errorMessage = 'Ingrese un correo electrónico válido';
+    });
+    CherryToast.warning(
+      backgroundColor: notifire.getbackcolor,
+      title: Text(
+        errorMessage,
+        style: TextStyle(color: notifire.getdarkscolor),
+        textAlign: TextAlign.start,
+      ),
+      borderRadius: 5,
+    ).show(context);
+    return;
+  }
+
+  // Validaciones adicionales de contraseña pueden ir aquí
+
+     sendUsuarioCreacion(context, nombreCompleto,email,contrasenia, widget.fiIDEquifax,
+        notifire.getbackcolor, notifire.getdarkscolor);
+}
+
 
   @override
   void initState() {
     super.initState();
-    _nombreCompletoController.text = widget.fcNombre;
-    _emailController.text = widget.fcCorreo;
   }
 
   @override
@@ -187,7 +135,7 @@ class _RegisterdatosState extends State<Registerdatos> {
         elevation: 0,
         backgroundColor: notifire.getprimerycolor,
         title: Text(
-          'Registrarme como Usuario',
+          'Registrar Usuario Secundario',
           style: TextStyle(
             color: notifire.getdarkscolor,
             fontFamily: 'Gilroy Bold',
@@ -283,7 +231,7 @@ class _RegisterdatosState extends State<Registerdatos> {
           CustomStrings.fullnamehere,
           notifire.getdarkwhitecolor,
           _nombreCompletoController,
-          true,
+          false,
         ),
         SizedBox(
           height: height / 70,
@@ -300,7 +248,7 @@ class _RegisterdatosState extends State<Registerdatos> {
           CustomStrings.emailhint,
           notifire.getdarkwhitecolor,
           _emailController,
-          true,
+          false,
         ),
         SizedBox(
           height: height / 35,
