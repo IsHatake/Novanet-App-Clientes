@@ -2,6 +2,7 @@
 
 import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:app_cliente_novanet/screens/confirmPINFamily.dart';
 import 'package:app_cliente_novanet/service/usuarioService.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,27 +11,20 @@ import '../utils/colornotifire.dart';
 import '../utils/string.dart';
 import '../utils/textfeilds.dart';
 
-class Registerdatos extends StatefulWidget {
+class AdduserFamily extends StatefulWidget {
   final int fiIDEquifax;
-  const Registerdatos({
-    Key? key,
-    required this.fiIDEquifax,
-  }) : super(key: key);
+  final bool  redireccion;
+  final bool fbprincipal;
+  const AdduserFamily({Key? key, required this.fiIDEquifax, required this.redireccion, required this.fbprincipal}) : super(key: key);
 
   @override
-  State<Registerdatos> createState() => _RegisterdatosState();
+  State<AdduserFamily> createState() => _AdduserFamilyState();
 }
 
-class _RegisterdatosState extends State<Registerdatos> {
+class _AdduserFamilyState extends State<AdduserFamily> {
   late ColorNotifire notifire;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-  final TextEditingController _nombreCompletoController =
-      TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _contraseniaController = TextEditingController();
-  final TextEditingController _contraseniaconfirmarController =
-      TextEditingController();
 
   getdarkmodepreviousstate() async {
     final prefs = await SharedPreferences.getInstance();
@@ -41,86 +35,132 @@ class _RegisterdatosState extends State<Registerdatos> {
       notifire.setIsDark = previusstate;
     }
   }
-Future<void> validacionCampos() async {
-  String nombreCompleto = _nombreCompletoController.text;
-  String contrasenia = _contraseniaController.text;
-  String contraseniaConfirmar = _contraseniaconfirmarController.text;
-  String email = _emailController.text;
-  String errorMessage = '';
-
-  if (contrasenia.isEmpty ||
-      contraseniaConfirmar.isEmpty ||
-      nombreCompleto.isEmpty ||
-      email.isEmpty) {
-    CherryToast.warning(
-      backgroundColor: notifire.getbackcolor,
-      title: Text('Complete los campos vacíos por favor',
-          style: TextStyle(color: notifire.getdarkscolor),
-          textAlign: TextAlign.start),
-      borderRadius: 5,
-    ).show(context);
-    return;
-  }
-
-  if (contrasenia != contraseniaConfirmar) {
-    setState(() {
-      errorMessage = 'Las contraseñas no coinciden';
-    });
-    CherryToast.warning(
-      backgroundColor: notifire.getbackcolor,
-      title: Text(
-        errorMessage,
-        style: TextStyle(color: notifire.getdarkscolor),
-        textAlign: TextAlign.start,
-      ),
-      borderRadius: 5,
-    ).show(context);
-    return;
-  }
-
-  if (contrasenia.length < 8) {
-    setState(() {
-      errorMessage = 'La contraseña debe tener al menos 8 caracteres';
-    });
-    CherryToast.warning(
-      backgroundColor: notifire.getbackcolor,
-      title: Text(
-        errorMessage,
-        style: TextStyle(color: notifire.getdarkscolor),
-        textAlign: TextAlign.start,
-      ),
-      borderRadius: 5,
-    ).show(context);
-    return;
-  }
-
-  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-    setState(() {
-      errorMessage = 'Ingrese un correo electrónico válido';
-    });
-    CherryToast.warning(
-      backgroundColor: notifire.getbackcolor,
-      title: Text(
-        errorMessage,
-        style: TextStyle(color: notifire.getdarkscolor),
-        textAlign: TextAlign.start,
-      ),
-      borderRadius: 5,
-    ).show(context);
-    return;
-  }
-
-  // Validaciones adicionales de contraseña pueden ir aquí
-
-     sendUsuarioCreacion(context, nombreCompleto,email,contrasenia, widget.fiIDEquifax,
-        notifire.getbackcolor, notifire.getdarkscolor, false, false);
-}
-
 
   @override
   void initState() {
     super.initState();
   }
+
+  final TextEditingController _nombreCompletoController =
+      TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _contraseniaController = TextEditingController();
+  final TextEditingController _contraseniaconfirmarController =
+      TextEditingController();
+
+  Future<void> validacionCampos() async {
+    String nombreCompleto = _nombreCompletoController.text;
+    String contrasenia = _contraseniaController.text;
+    String contraseniaConfirmar = _contraseniaconfirmarController.text;
+    String email = _emailController.text;
+    String errorMessage = '';
+
+    if (contrasenia.isEmpty ||
+        contraseniaConfirmar.isEmpty ||
+        nombreCompleto.isEmpty ||
+        email.isEmpty) {
+      CherryToast.warning(
+        backgroundColor: notifire.getbackcolor,
+        title: Text('Complete los campos vacíos por favor',
+            style: TextStyle(color: notifire.getdarkscolor),
+            textAlign: TextAlign.start),
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
+
+    if (contrasenia != contraseniaConfirmar) {
+      setState(() {
+        errorMessage = 'Las contraseñas no coinciden';
+      });
+      CherryToast.warning(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          errorMessage,
+          style: TextStyle(color: notifire.getdarkscolor),
+          textAlign: TextAlign.start,
+        ),
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
+
+    if (contrasenia.length < 8) {
+      setState(() {
+        errorMessage = 'La contraseña debe tener al menos 8 caracteres';
+      });
+      CherryToast.warning(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          errorMessage,
+          style: TextStyle(color: notifire.getdarkscolor),
+          textAlign: TextAlign.start,
+        ),
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
+
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      setState(() {
+        errorMessage = 'Ingrese un correo electrónico válido';
+      });
+      CherryToast.warning(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          errorMessage,
+          style: TextStyle(color: notifire.getdarkscolor),
+          textAlign: TextAlign.start,
+        ),
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
+
+    String token = await fetchTokenAPI(
+      context,
+      notifire.getbackcolor,
+      notifire.getdarkscolor,
+      email,
+    );
+
+    if (token.isEmpty) {
+      setState(() {
+        errorMessage = 'No se ha podido Conectar al Servidor';
+      });
+      CherryToast.warning(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          errorMessage,
+          style: TextStyle(color: notifire.getdarkscolor),
+          textAlign: TextAlign.start,
+        ),
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => confirmPINFamily(
+          contrasenia: contrasenia,
+          fcNombreUsuario: nombreCompleto,
+          fcCorreo: email,
+          fiIdcliente: widget.fiIDEquifax,
+          backColor: notifire.getbackcolor,
+          darkColor: notifire.getdarkscolor,
+
+          tokenApi: token,
+          redireccion: widget.redireccion,
+          fbprincipal: widget.fbprincipal,
+
+        ),
+      ),
+    );
+  }
+
+  bool inputsVisibles = false;
 
   @override
   Widget build(BuildContext context) {
@@ -130,16 +170,30 @@ Future<void> validacionCampos() async {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: true,
-        centerTitle: true,
         elevation: 0,
-        backgroundColor: notifire.getprimerycolor,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: notifire.getwhite),
+        backgroundColor: notifire.getorangeprimerycolor,
         title: Text(
           'Registrar Usuario Secundario',
           style: TextStyle(
-            color: notifire.getdarkscolor,
-            fontFamily: 'Gilroy Bold',
-            fontSize: height / 35,
+              fontFamily: "Gilroy Bold",
+              color: notifire.getwhite,
+              fontSize: 20),
+        ),
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Container(
+            height: 40,
+            width: 40,
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: notifire.getwhite),
+            ),
+            child: Icon(Icons.arrow_back, color: notifire.getwhite),
           ),
         ),
       ),

@@ -249,7 +249,7 @@ class CustomStrings {
   static const String addservice = 'Servicios';
 
   static const String topup = 'Top Up';
-  static const String referir = 'Referir';
+  static const String referir = 'Referidos';
 
   static const String seeall = 'Mostrar más';
   static const String discoverservices = 'Discover Services';
@@ -268,7 +268,7 @@ class CustomStrings {
   static const String retypepassword = 'Confirma tu contraseña';
   static const String confirmpassword = 'Confirma tu contraseña';
   static const String createpassword = 'Crea una contraseña';
-  static const String registeraccount = 'Registrarse';
+  static const String registeraccount = 'Registrar';
   static const String password = 'Contraseña';
   static const String totaltransfer = 'Total transfer';
   static const String forgotpassword = 'Olvidaste tu contraseña?';

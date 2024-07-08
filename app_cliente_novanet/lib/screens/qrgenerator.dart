@@ -55,7 +55,8 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
       final file = await File('${tempDir.path}/qr_code.png').create();
       await file.writeAsBytes(pngBytes);
 
-      await Share.shareFiles([file.path], text: '¡Mira este código QR!');
+      await Share.shareFiles([file.path], text: 'Descarga la Aplicación de Novanet\n'
+                                                'https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet'         );
     } catch (e) {
       print(e.toString());
     }
@@ -71,7 +72,7 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Generar Usuario Secundario',
+          'Creación de Usuario Secundario',
           style: TextStyle(
             fontSize: 15,
             fontFamily: 'Gilroy Bold',
@@ -145,10 +146,12 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  '1. Abre la aplicación de escaneo de QR.\n'
-                  '2. Escanea el código QR mostrado arriba.\n'
-                  '3. Sigue las instrucciones en pantalla.',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                  '1. Abre la aplicación de Novanet.\n'
+                  '2. Selecciona la opcion de QR Usuario Secundario en el Inicio de Sesión.\n'
+                  '3. Escanea el código QR mostrado arriba.\n'
+                  '4. Llena el Formulario.\n'
+                  '5. Ingresa el Token enviado al correo ingresado.\n',
+                  style: TextStyle(fontSize: 15  , color: Colors.black87),
                 ),
               ],
             ),

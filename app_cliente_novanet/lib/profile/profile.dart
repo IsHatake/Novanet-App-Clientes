@@ -1,3 +1,4 @@
+import 'package:app_cliente_novanet/profile/editprofile.dart';
 import 'package:app_cliente_novanet/screens/qrgenerator.dart';
 import 'package:app_cliente_novanet/screens/referidos_screen.dart';
 import 'package:app_cliente_novanet/screens/users_screen.dart';
@@ -159,7 +160,7 @@ class _ProfileState extends State<Profile> with RouteAware {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const MyProfile(),
+                            builder: (context) => const EditProfile(),
                           ),
                         );
                       },
@@ -259,7 +260,7 @@ class _ProfileState extends State<Profile> with RouteAware {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const usuarios_Screen(),
+                              builder: (context) => usuarios_Screen(fbprincipal:widget.fbprincipal),
                             ),
                           );
                         },
@@ -290,7 +291,7 @@ class _ProfileState extends State<Profile> with RouteAware {
                           );
                         },
                         child: settingtype("images/codigo-qr.png",
-                            'QR Creación Usuario Secundario'),
+                            'Creación de Usuario Secundario'),
                       ),
                     if (widget.fbprincipal)
                       SizedBox(

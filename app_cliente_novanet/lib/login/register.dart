@@ -154,11 +154,11 @@ class _RegisterState extends State<Register> {
         elevation: 0,
         backgroundColor: notifire.getprimerycolor,
         title: Text(
-          'Registrarme como Usuario',
+          'Registrarme como Usuario Secundario',
           style: TextStyle(
             color: notifire.getdarkscolor,
             fontFamily: 'Gilroy Bold',
-            fontSize: MediaQuery.of(context).size.height / 35,
+            fontSize: 15,
           ),
         ),
         leading: GestureDetector(
