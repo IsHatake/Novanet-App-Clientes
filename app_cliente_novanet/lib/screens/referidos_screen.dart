@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:app_cliente_novanet/screens/referir_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -79,14 +80,30 @@ class _referidos_ScreenState extends State<referidos_Screen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        iconTheme: IconThemeData(color: notifire.getdarkscolor),
-        backgroundColor: notifire.getprimerycolor,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: notifire.getwhite),
+        backgroundColor: notifire.getorangeprimerycolor,
         title: Text(
           'Referidos',
           style: TextStyle(
               fontFamily: "Gilroy Bold",
-              color: notifire.getdarkscolor,
-              fontSize: height / 40),
+              color: notifire.getwhite,
+              fontSize: 20),
+        ),
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Container(
+            height: 40,
+            width: 40,
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: notifire.getwhite),
+            ),
+            child: Icon(Icons.arrow_back, color: notifire.getwhite),
+          ),
         ),
         actions: [
           Padding(
@@ -96,10 +113,10 @@ class _referidos_ScreenState extends State<referidos_Screen> {
               icon: const Icon(Icons.arrow_drop_down),
               iconSize: 24,
               elevation: 16,
-              style: TextStyle(color: notifire.getdarkscolor),
+              style: TextStyle(color: notifire.getwhite),
               underline: Container(
                 height: 2,
-                color: notifire.getdarkscolor,
+                color: notifire.getwhite,
               ),
               dropdownColor: notifire.getbackcolor,
               onChanged: (int? newValue) {
@@ -118,6 +135,23 @@ class _referidos_ScreenState extends State<referidos_Screen> {
                 );
               }).toList(),
             ),
+          ),
+          const SizedBox(
+            width: 5,
+          ),
+          IconButton(
+            icon: Icon(Icons.person_add_alt, color: notifire.getwhite),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ReferirScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(
+            width: 5,
           ),
         ],
       ),
@@ -199,8 +233,8 @@ class _referidos_ScreenState extends State<referidos_Screen> {
                                     children: [
                                       Text(
                                         listadodereferidos[i]
-                                                    ['fcNombreReferido']
-                                                .toString(),
+                                                ['fcNombreReferido']
+                                            .toString(),
                                         style: TextStyle(
                                           fontFamily: "Gilroy Bold",
                                           color: notifire.getdarkscolor,

@@ -10,17 +10,18 @@ import 'package:http/http.dart' as http;
 import 'package:app_cliente_novanet/api.dart';
 
 Future<void> sendUsuarioCreacion(
-  BuildContext context,
-  String fcNombreUsuario,
-  String fcCorreo,
-  String fcPassword,
-  int fiIdcliente,
-  backgroundColor,
-  color,
-) async {
+    BuildContext context,
+    String fcNombreUsuario,
+    String fcCorreo,
+    String fcPassword,
+    int fiIdcliente,
+    backgroundColor,
+    color,
+    bool redireccion,
+    bool fbprincipal) async {
   try {
-      UsuarioFamiliarCreate UsuarioData = UsuarioFamiliarCreate(
-       fcUsuarioAcceso: fcCorreo,
+    UsuarioFamiliarCreate UsuarioData = UsuarioFamiliarCreate(
+        fcUsuarioAcceso: fcCorreo,
         fcPassword: fcPassword,
         fiIdcliente: fiIdcliente,
         fcNombreUsuario: fcNombreUsuario);
@@ -55,7 +56,8 @@ Future<void> sendUsuarioCreacion(
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const VerificationDone(),
+            builder: (context) => VerificationDone(
+                redireccion: redireccion, fbprincipal: fbprincipal),
           ),
         );
       } else if (codeStatus.toString() == '409') {
@@ -94,6 +96,7 @@ Future<void> sendUsuarioFamiliarCreacion(
   String fcPassword,
   String? fiIdcliente,
   backgroundColor,
+  fbprincipal,
   color,
 ) async {
   try {
@@ -133,7 +136,8 @@ Future<void> sendUsuarioFamiliarCreacion(
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const VerificationDone(),
+            builder: (context) =>
+                VerificationDone(redireccion: false, fbprincipal: fbprincipal),
           ),
         );
       } else if (codeStatus.toString() == '409') {
@@ -167,7 +171,7 @@ Future<void> sendUsuarioFamiliarCreacion(
   } finally {}
 }
 
-Future<String>  fetchTokenAPI(
+Future<String> fetchTokenAPI(
   BuildContext context,
   Color backgroundColor,
   Color color,

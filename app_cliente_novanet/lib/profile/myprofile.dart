@@ -98,18 +98,7 @@ class _MyProfileState extends State<MyProfile> {
             ),
             Column(
               children: [
-                SizedBox(
-                  height: height / 40,
-                ),
-                Container(
-                  height: height / 8,
-                  width: width / 4,
-                  decoration: const BoxDecoration(
-                    color: Colors.transparent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Image.asset("images/man4.png"),
-                ),
+            
                 SizedBox(
                   height: height / 30,
                 ),

@@ -1,3 +1,4 @@
+import 'package:app_cliente_novanet/profile/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/login/login.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
@@ -7,7 +8,10 @@ import 'package:provider/provider.dart';
 import '../utils/button.dart';
 
 class VerificationDone extends StatefulWidget {
-  const VerificationDone({Key? key}) : super(key: key);
+  final bool  redireccion;
+  final bool  fbprincipal;
+
+  const VerificationDone({Key? key, required this.redireccion, required this.fbprincipal}) : super(key: key);
 
   @override
   State<VerificationDone> createState() => _VerificationDoneState();
@@ -59,12 +63,23 @@ class _VerificationDoneState extends State<VerificationDone> {
                 SizedBox(height: height / 4),
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushReplacement(
+                    if (widget.redireccion == true) {
+                      Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const Login(),
                       ),
                     );
+                    }
+                    else{
+                       Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>  Profile(fbprincipal: widget.fbprincipal),
+                      ),
+                    );
+                    }
+                    
                   },
                   child: Custombutton.button(
                       notifire.getorangeprimerycolor, CustomStrings.done, width / 1.1),

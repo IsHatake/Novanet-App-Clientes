@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:app_cliente_novanet/screens/referidos_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/api.dart';
@@ -606,7 +607,7 @@ class _HomeState extends State<Home> {
                                                     context,
                                                     MaterialPageRoute(
                                                       builder: (context) =>
-                                                          const ReferirScreen(),
+                                                          const referidos_Screen(),
                                                     ),
                                                   );
 

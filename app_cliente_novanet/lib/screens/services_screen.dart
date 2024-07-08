@@ -1,4 +1,4 @@
-// ignore_for_file: camel_case_types, non_constant_identifier_names, unnecessary_null_comparison, empty_catches
+// ignore_for_file: camel_case_types, non_constant_identifier_names, unnecessary_null_comparison, empty_catches, avoid_print
 
 import 'dart:convert';
 import 'dart:ui';
@@ -153,13 +153,14 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
     } catch (e) {}
   }
 
-  SendSolicitudNueva() async {
+  Future<void> SendSolicitudNueva() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       var piIDSolicitud = prefs.getString("fiIDCuentaFamiliar");
       if (piIDSolicitud == null) {
         throw Exception('piIDSolicitud is null or invalid');
       }
+
       List<Map<String, dynamic>> jsonDetalles = [];
       for (var detalle in productosSolicitar) {
         var detalleMap = {
@@ -185,6 +186,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
         },
         body: jsonCreate,
       );
+
       if (response.statusCode == 200) {
         final decodedJson = jsonDecode(response.body);
         final codeStatus = decodedJson["code"];
@@ -200,12 +202,17 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
             ),
             borderRadius: 5,
           ).show(context);
+
+          setState(() {
+            productosSolicitar = [];
+            solicitudes = [];
+          });
+
           Future.delayed(const Duration(seconds: 3), () {
             Navigator.pop(context);
-            setState(() {});
-            solicitudes = [];
-            productosSolicitar = [];
           });
+
+          await Solicitudes_AdicionProducto_Listado(); // Esto depende de cómo obtienes y actualizas los datos
         } else if (codeStatus.toString() == '409') {
           CherryToast.warning(
             backgroundColor: notifire.getbackcolor,
@@ -229,7 +236,8 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
         throw Exception('Failed to load data');
       }
     } catch (e) {
-      return [];
+      // Manejo de errores
+      print('Error: $e');
     }
   }
 
@@ -237,7 +245,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
 
   final TextEditingController _noadquiridosController = TextEditingController();
 
-  void addSolicitudes(int id, String fiIDProducto) {
+  Future<void> addSolicitudes(int id, String fiIDProducto) async {
     var detalle =
         _originaldetallesnoadd.firstWhere((detalle) => detalle['RowNum'] == id);
 
@@ -247,18 +255,23 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
       'fiCantidad': 1
     };
 
-    productosSolicitar.add(nuevoProducto);
-    solicitudes.add(detalle);
-    _originaldetallesnoadd.remove(detalle);
+    setState(() {
+      productosSolicitar.add(nuevoProducto);
+      solicitudes.add(detalle);
+      _originaldetallesnoadd.remove(detalle);
+    });
+    _buildCard();
   }
 
-  void lessSolicitudes(int id) {
+  Future<void> lessSolicitudes(int id) async {
     var detalle = productosSolicitar
         .firstWhere((detalle) => detalle['fiIDAdicionProduto'] == id);
     var detalle2 = solicitudes.firstWhere((detalle) => detalle['RowNum'] == id);
 
-    productosSolicitar.remove(detalle);
-    solicitudes.remove((detalle2));
+    setState(() {
+      productosSolicitar.remove(detalle);
+      solicitudes.remove((detalle2));
+    });
   }
 
   bool visble_form = false;

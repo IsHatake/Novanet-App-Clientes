@@ -113,7 +113,7 @@ class _EditProfileState extends State<EditProfile> {
                             children: [
                               Column(
                                 children: [
-                                  SizedBox(height: 150),
+                                  const SizedBox(height: 150),
                                   Row(
                                     children: [
                                       SizedBox(width: width / 1.8),
@@ -138,37 +138,35 @@ class _EditProfileState extends State<EditProfile> {
                       _buildLabel(CustomStrings.fullnamee),
                       SizedBox(height: height / 50),
                       Profiletextfilds.textField(
-                        notifire.getdarkscolor,
-                        notifire.getdarkgreycolor,
-                        notifire.getorangeprimerycolor,
-                        fcNombreUsuario,
-                        notifire.getdarkwhitecolor,
-                        false,
-                      ),
+                          notifire.getprimerycolor,
+                          notifire.getdarkscolor,
+                          notifire.getorangeprimerycolor,
+                          fcNombreUsuario,
+                          notifire.getdarkwhitecolor,
+                          true),
                       SizedBox(height: height / 50),
                       _buildLabel(CustomStrings.email),
                       SizedBox(height: height / 50),
                       Profiletextfilds.textField(
-                        notifire.getdarkscolor,
-                        notifire.getdarkgreycolor,
-                        notifire.getorangeprimerycolor,
-                        fcUsuarioAcceso,
-                        notifire.getdarkwhitecolor,
-                        false,
-                      ),
+                          notifire.getdarkscolor,
+                          notifire.getdarkscolor,
+                          notifire.getorangeprimerycolor,
+                          fcUsuarioAcceso,
+                          notifire.getdarkwhitecolor,
+                          true),
                       SizedBox(height: height / 50),
                       _buildLabel(CustomStrings.phonenumbers),
                       SizedBox(height: height / 50),
                       Profiletextfilds.textField(
                         notifire.getdarkscolor,
-                        notifire.getdarkgreycolor,
+                        notifire.getdarkscolor,
                         notifire.getorangeprimerycolor,
                         fcTelefono,
                         notifire.getdarkwhitecolor,
-                        false,
+                        true,
                       ),
                       SizedBox(height: height / 20),
-                      _buildSaveButton(context),
+                      // _buildSaveButton(context),
                     ],
                   ),
                 ],
@@ -415,10 +413,8 @@ class _EditProfileState extends State<EditProfile> {
   Future<void> reloadImage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String newImagePath = prefs.getString("fcURLFotoPersonalizda") ?? '';
-    setState(() {
-    });
+    setState(() {});
     await Future.delayed(const Duration(seconds: 2));
-    setState(() {
-    });
+    setState(() {});
   }
 }

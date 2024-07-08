@@ -16,22 +16,25 @@ class confirmPINFamily extends StatefulWidget {
   final String contrasenia;
   final String fcNombreUsuario;
   final String fcCorreo;
-  final String? fiIdcliente;
+  final int fiIdcliente;
   final Color backColor;
   final Color darkColor;
   final String tokenApi;
-  final String correo;
+
+  final bool redireccion;
+  final bool fbprincipal;
 
   const confirmPINFamily({
     Key? key,
     required this.contrasenia,
-    required this.fcCorreo,
     required this.fcNombreUsuario,
+    required this.fcCorreo,
     required this.fiIdcliente,
     required this.backColor,
     required this.darkColor,
-    required this.correo,
     required this.tokenApi,
+    required this.redireccion,
+    required this.fbprincipal,
   }) : super(key: key);
 
   @override
@@ -60,15 +63,16 @@ class _confirmPINFamilyState extends State<confirmPINFamily> {
     }
 
     if (tokendeApi == tokenApp) {
-      sendUsuarioFamiliarCreacion(
-        context,
-        widget.fcCorreo,
-        widget.fcNombreUsuario,
-        widget.contrasenia,
-        widget.fiIdcliente,
-        widget.backColor,
-        widget.darkColor,
-      );
+      sendUsuarioCreacion(
+          context,
+          widget.fcNombreUsuario,
+          widget.fcCorreo,
+          widget.contrasenia,
+          widget.fiIdcliente,
+          widget.backColor,
+          widget.darkColor,
+          widget.redireccion,
+          widget.fbprincipal);
     } else {
       CherryToast.warning(
         backgroundColor: widget.backColor,

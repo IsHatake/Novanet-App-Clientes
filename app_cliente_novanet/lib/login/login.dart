@@ -223,7 +223,7 @@ class _LoginState extends State<Login> {
                                         height: height / 40,
                                         color: Colors.transparent,
                                         child: Text(
-                                          'Registrar Usuario Secundario QR',
+                                          'Usuario Secundario',
                                           style: TextStyle(
                                               color: notifire.getdarkscolor,
                                               fontSize: height / 60,
@@ -294,8 +294,9 @@ class _LoginState extends State<Login> {
                                   height: height / 50,
                                 ),
                                 if (_isBiometricSupported)
-                                  if (fcUsuarioAccesoCache.isNotEmpty &&
-                                      fcPasswordCache.isNotEmpty)
+                                  if ((fcUsuarioAccesoCache.isNotEmpty &&
+                                      fcPasswordCache.isNotEmpty) || (fcUsuarioAccesoCache != '' &&
+                                      fcPasswordCache != ''))
                                     GestureDetector(
                                       onTap: _authenticate,
                                       child: Container(

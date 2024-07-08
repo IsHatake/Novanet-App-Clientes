@@ -2,10 +2,10 @@
 
 import 'dart:convert';
 
+import 'package:app_cliente_novanet/screens/adduserFamily.dart';
 import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -15,7 +15,8 @@ import '../utils/colornotifire.dart';
 import '../utils/media.dart';
 
 class usuarios_Screen extends StatefulWidget {
-  const usuarios_Screen({Key? key}) : super(key: key);
+  final bool fbprincipal;
+  const usuarios_Screen({Key? key, required this.fbprincipal}) : super(key: key);
 
   @override
   State<usuarios_Screen> createState() => _usuarios_ScreenState();
@@ -51,7 +52,7 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
       var piIDCliente = prefs.getString("fiIDCliente");
 
       final response = await http.get(Uri.parse(
-          '${apiUrl}Servicio/Usuarios_Listado_ByCliente?piIDCuentaFamiliar=$piIDCliente'));
+          '${apiUrl}Usuario/Usuarios_Listado_ByCliente?piIDCuentaFamiliar=$piIDCliente'));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -77,7 +78,7 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
   Future<void> Usuarios_Delete(id) async {
     try {
       final response = await http
-          .post(Uri.parse('${apiUrl}Servicio/Usuarios_Delete?piIDUnico=$id'));
+          .post(Uri.parse('${apiUrl}Usuario/Usuarios_Delete?piIDUnico=$id'));
 
       if (response.statusCode == 200) {
         final decodedJson = jsonDecode(response.body);
@@ -127,14 +128,30 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        iconTheme: IconThemeData(color: notifire.getdarkscolor),
-        backgroundColor: notifire.getprimerycolor,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: notifire.getwhite),
+        backgroundColor: notifire.getorangeprimerycolor,
         title: Text(
           'Usuarios',
           style: TextStyle(
               fontFamily: "Gilroy Bold",
-              color: notifire.getdarkscolor,
-              fontSize: height / 40),
+              color: notifire.getwhite,
+              fontSize: 20),
+        ),
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Container(
+            height: 40,
+            width: 40,
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: notifire.getwhite),
+            ),
+            child: Icon(Icons.arrow_back, color: notifire.getwhite),
+          ),
         ),
         actions: [
           Padding(
@@ -166,6 +183,25 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
                 );
               }).toList(),
             ),
+          ),
+          const SizedBox(
+            width: 5,
+          ),
+          IconButton(
+            icon: Icon(Icons.person_add_alt, color: notifire.getwhite),
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              int fiIDEquifax = int.parse(prefs.getString("fiIDCuentaFamiliar") ?? '0');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AdduserFamily(fiIDEquifax: fiIDEquifax, redireccion: false, fbprincipal:widget.fbprincipal),
+                ),
+              );
+            },
+          ),
+          const SizedBox(
+            width: 5,
           ),
         ],
       ),
