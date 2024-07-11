@@ -33,10 +33,12 @@ class _ScanState extends State<Scan> {
   Future<void> performSaleTransaction() async {
     try {
       final settings = pixelpay.Settings();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String customerName = prefs.getString('fcNombreUsuario') ?? '';
+      String customerEmail = prefs.getString('fcUsuarioAcceso') ?? '';
 
-      settings.setupEndpoint("https://{endpoint}");
-      settings.setupCredentials(
-          "2222222222", "elhashmd5delsecretkeydelcomercio");
+      settings.setupEndpoint("https://hn.ficoposonline.com");
+      settings.setupCredentials("FH1059496235", "bd1142-27ac-4e06-1a51-6e032");
 
       List<String> dateParts = expiryDate.split('/');
       int month = int.parse(dateParts[0]);
@@ -66,8 +68,8 @@ class _ScanState extends State<Scan> {
       final order = pixelpay.Order();
       order.id = "ORDER-12948";
       order.currency = "HNL";
-      order.customer_name = "SERGIO PEREZ";
-      order.customer_email = "sergio.perez@gmail.com";
+      order.customer_name = customerName;
+      order.customer_email = customerEmail;
       order.addItem(item);
 
       final sale = pixelpay.SaleTransaction();
