@@ -205,7 +205,9 @@ class _QrCodeScannerState extends State<QrCodeScanner>
                       child: qrText != null
                           ? GestureDetector(
                               onTap: () {
-                                IdentidadRegistro(qrText, 'AdduserFamily');
+                                var identidad = qrText?.split('=');
+
+                                IdentidadRegistro(identidad![1], 'AdduserFamily');
                               },
                               child: Custombutton.button(
                                   notifire.getorangeprimerycolor,

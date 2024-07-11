@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:app_cliente_novanet/profile/editprofile.dart';
 import 'package:app_cliente_novanet/screens/qrgenerator.dart';
 import 'package:app_cliente_novanet/screens/referidos_screen.dart';

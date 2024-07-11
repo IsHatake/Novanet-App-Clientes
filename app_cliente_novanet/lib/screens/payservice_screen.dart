@@ -9,6 +9,15 @@ import 'package:credit_card_scanner/credit_card_scanner.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 
+import 'package:pixelpay_sdk/requests/sale_transaction.dart' as pixelpay;
+import 'package:pixelpay_sdk/models/order.dart' as pixelpay;
+import 'package:pixelpay_sdk/models/settings.dart' as pixelpay;
+import 'package:pixelpay_sdk/models/card.dart' as pixelpay;
+import 'package:pixelpay_sdk/models/billing.dart' as pixelpay;
+import 'package:pixelpay_sdk/entities/transaction_result.dart' as pixelpay;
+import 'package:pixelpay_sdk/services/transaction.dart' as pixelpay;
+import 'package:pixelpay_sdk/models/item.dart' as pixelpay;
+
 class Scan extends StatefulWidget {
   const Scan({Key? key}) : super(key: key);
 
@@ -20,6 +29,108 @@ class _ScanState extends State<Scan> {
   late ColorNotifire notifire;
   var anio = DateTime.now().year.toString().substring(2, 4);
   var month = DateTime.now().month.toString();
+
+  Future<void> performSaleTransaction() async {
+    try {
+      final settings = pixelpay.Settings();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String customerName = prefs.getString('fcNombreUsuario') ?? '';
+      String customerEmail = prefs.getString('fcUsuarioAcceso') ?? '';
+
+      settings.setupEndpoint("https://hn.ficoposonline.com");
+      settings.setupCredentials("FH1059496235", "bd1142-27ac-4e06-1a51-6e032");
+
+      List<String> dateParts = expiryDate.split('/');
+      int month = int.parse(dateParts[0]);
+      int year = int.parse(dateParts[1]);
+
+
+      final card = pixelpay.Card();
+      card.number = cardNumber;
+      card.cvv2 = cvvCode;
+      card.expire_month = month;
+      card.expire_year = year;
+      card.cardholder = cardHolderName;
+
+      final billing = pixelpay.Billing();
+      billing.address = "Ave Circunvalacion";
+      billing.country = "HN";
+      billing.state = "HN-CR";
+      billing.city = "San Pedro Sula";
+      billing.phone = "99999999";
+
+      final item = pixelpay.Item();
+      item.code = "00001";
+      item.title = "Videojuego";
+      item.price = 800;
+      item.qty = 1;
+
+      final order = pixelpay.Order();
+      order.id = "ORDER-12948";
+      order.currency = "HNL";
+      order.customer_name = customerName;
+      order.customer_email = customerEmail;
+      order.addItem(item);
+
+      final sale = pixelpay.SaleTransaction();
+      sale.setOrder(order);
+      sale.setCard(card);
+      sale.setBilling(billing);
+
+      final service = pixelpay.Transaction(settings);
+      final response = await service.doSale(sale);
+
+      if (pixelpay.TransactionResult.validateResponse(response!)) {
+        final result = pixelpay.TransactionResult.fromResponse(response);
+
+        final isValidPayment = service.verifyPaymentHash(
+            result.payment_hash.toString(), sale.order_id.toString(), "abc...");
+
+        if (isValidPayment) {
+          CherryToast.success(
+            backgroundColor: notifire.getbackcolor,
+            title: Text(
+              'Pago completado exitosamente',
+              style: TextStyle(color: notifire.getdarkscolor),
+              textAlign: TextAlign.start,
+            ),
+            borderRadius: 5,
+          ).show(context);
+        } else {
+          CherryToast.error(
+            backgroundColor: notifire.getbackcolor,
+            title: Text(
+              'Error en la validación del pago',
+              style: TextStyle(color: notifire.getdarkscolor),
+              textAlign: TextAlign.start,
+            ),
+            borderRadius: 5,
+          ).show(context);
+        }
+      } else {
+        CherryToast.error(
+          backgroundColor: notifire.getbackcolor,
+          title: Text(
+            'Error en la validación del pago',
+            style: TextStyle(color: notifire.getdarkscolor),
+            textAlign: TextAlign.start,
+          ),
+          borderRadius: 5,
+        ).show(context);
+      }
+    } catch (e) {
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'Error al realizar el pago',
+          style: TextStyle(color: notifire.getdarkscolor),
+          textAlign: TextAlign.start,
+        ),
+        borderRadius: 5,
+      ).show(context);
+    }
+  }
+
   getdarkmodepreviousstate() async {
     final prefs = await SharedPreferences.getInstance();
     bool? previusstate = prefs.getBool("setIsDark");
@@ -47,6 +158,7 @@ class _ScanState extends State<Scan> {
     filter: {"#": RegExp(r'[0-9]')},
     type: MaskAutoCompletionType.lazy,
   );
+
   CardScanOptions scanOptions = const CardScanOptions(
     scanCardHolderName: true,
     validCardsToScanBeforeFinishingScan: 5,
@@ -159,16 +271,32 @@ class _ScanState extends State<Scan> {
                         isExpiryDateVisible: true,
                         cardHolderName: cardHolderName,
                         expiryDate: expiryDate,
-                        themeColor: Colors.blue,
+                        themeColor: Colors.orange,
                         textColor: notifire.getdarkscolor,
+                        cardHolderDecoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: notifire.getorangeprimerycolor)),
+                          hintStyle: const TextStyle(color: Colors.black),
+                          labelStyle: const TextStyle(color: Colors.black),
+                          focusedBorder: border,
+                          enabledBorder: border,
+                          labelText: 'Nombre de Titular',
+                        ),
                         cardNumberDecoration: InputDecoration(
                           labelText: 'Número de Tarjeta',
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: notifire.getorangeprimerycolor)),
                           hintStyle: const TextStyle(color: Colors.black),
                           labelStyle: const TextStyle(color: Colors.black),
                           focusedBorder: border,
                           enabledBorder: border,
                         ),
                         expiryDateDecoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: notifire.getorangeprimerycolor)),
                           hintStyle: const TextStyle(color: Colors.black),
                           labelStyle: const TextStyle(color: Colors.black),
                           focusedBorder: border,
@@ -177,19 +305,15 @@ class _ScanState extends State<Scan> {
                           hintText: 'XX/XX',
                         ),
                         cvvCodeDecoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: notifire.getorangeprimerycolor)),
                           hintStyle: const TextStyle(color: Colors.black),
                           labelStyle: const TextStyle(color: Colors.black),
                           focusedBorder: border,
                           enabledBorder: border,
                           labelText: 'CVV',
                           hintText: 'XXX',
-                        ),
-                        cardHolderDecoration: InputDecoration(
-                          hintStyle: const TextStyle(color: Colors.black),
-                          labelStyle: const TextStyle(color: Colors.black),
-                          focusedBorder: border,
-                          enabledBorder: border,
-                          labelText: 'Nombre de Titular',
                         ),
                         onCreditCardModelChange: onCreditCardModelChange,
                       ),
@@ -206,39 +330,26 @@ class _ScanState extends State<Scan> {
                           ),
                           backgroundColor: notifire.getorangeprimerycolor,
                         ),
-                        child: Container(
-                          margin: const EdgeInsets.all(12),
+                        onPressed: () {
+                          if (formKey.currentState!.validate()) {
+                            performSaleTransaction();
+                          } else {
+                            if (kDebugMode) {
+                              print('Formulario inválido!');
+                            }
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
                           child: Text(
                             'Procesar pago',
                             style: TextStyle(
                               color: notifire.getwhite,
                               fontFamily: 'Gilroy Bold',
                               fontSize: 14,
-                              package: 'flutter_credit_card',
                             ),
                           ),
                         ),
-                        onPressed: () {
-                          if (formKey.currentState!.validate()) {
-                            if (kDebugMode) {
-                              print('valid!');
-                              CherryToast.info(
-                                backgroundColor: notifire.getbackcolor,
-                                title: Text(
-                                  'En Proceso',
-                                  style:
-                                      TextStyle(color: notifire.getdarkscolor),
-                                  textAlign: TextAlign.start,
-                                ),
-                                borderRadius: 5,
-                              ).show(context);
-                            }
-                          } else {
-                            if (kDebugMode) {
-                              print('invalid!');
-                            }
-                          }
-                        },
                       ),
                     ],
                   ),
