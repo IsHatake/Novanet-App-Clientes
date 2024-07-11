@@ -427,24 +427,24 @@ class _HomeState extends State<Home> {
                                           children: [
                                             GestureDetector(
                                               onTap: () {
-                                                // Navigator.push(
-                                                //   context,
-                                                //   MaterialPageRoute(
-                                                //     builder: (context) =>
-                                                //         const Scan(),
-                                                //   ),
-                                                // );
-                                                CherryToast.info(
-                                                  backgroundColor:
-                                                      notifire.getbackcolor,
-                                                  title: Text('Proximamente',
-                                                      style: TextStyle(
-                                                          color: notifire
-                                                              .getdarkscolor),
-                                                      textAlign:
-                                                          TextAlign.start),
-                                                  borderRadius: 5,
-                                                ).show(context);
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const Scan(),
+                                                  ),
+                                                );
+                                                // CherryToast.info(
+                                                //   backgroundColor:
+                                                //       notifire.getbackcolor,
+                                                //   title: Text('Proximamente',
+                                                //       style: TextStyle(
+                                                //           color: notifire
+                                                //               .getdarkscolor),
+                                                //       textAlign:
+                                                //           TextAlign.start),
+                                                //   borderRadius: 5,
+                                                // ).show(context);
                                               },
                                               child: Container(
                                                 height: height / 15,

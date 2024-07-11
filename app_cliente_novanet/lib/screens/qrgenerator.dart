@@ -170,7 +170,7 @@ class QrCode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return QrImageView(
-      data: fcIdentidad,
+      data: 'https://novanetgroup.com/NovanetApp/formulario_usuario_secundario.html?id=$fcIdentidad',
       version: QrVersions.auto,
       size: 200.0,
     );

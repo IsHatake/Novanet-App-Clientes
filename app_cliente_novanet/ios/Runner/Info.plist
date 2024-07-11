@@ -49,5 +49,16 @@
 	<string>Necesitamos acceso a la cámara para escanear el código QR</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Necesitamos acceso a la biblioteca de fotos para escanear el código QR</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.prestaditonovanet.novanet</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>novanet</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

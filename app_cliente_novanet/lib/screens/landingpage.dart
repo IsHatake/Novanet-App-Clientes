@@ -1,9 +1,162 @@
+// ignore_for_file: unused_field
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/login/login.dart';
 import 'package:app_cliente_novanet/screens/registerclient.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class LandingPage extends StatelessWidget {
+class LandingPage extends StatefulWidget {
   const LandingPage({Key? key}) : super(key: key);
+
+  @override
+  _LandingPageState createState() => _LandingPageState();
+}
+
+class _LandingPageState extends State<LandingPage> {
+  @override
+  void initState() {
+    super.initState();
+    _checkFirstVisit();
+  }
+
+  bool _showRegisterButton = false;
+  bool _showLoginButton = false;
+  Future<void> _checkFirstVisit() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bool isFirstVisit = prefs.getBool('isFirstVisitLanding') ?? true;
+
+    if (isFirstVisit) {
+      await _showExplanationDialog();
+      await prefs.setBool('isFirstVisitLanding', false);
+    }
+  }
+
+  Future<void> _showExplanationDialog() async {
+    Widget dialogContent;
+    if (Theme.of(context).platform == TargetPlatform.iOS) {
+      dialogContent = CupertinoAlertDialog(
+        title: const Text('Bienvenido'),
+        content: Column(
+          children: [
+            ClipOval(
+              child: Image.asset(
+                'images/informacionnecesaria.gif',
+                height: 200,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: const [
+                Icon(
+                  CupertinoIcons.person_add,
+                  color: Colors.orange,
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Usa el registrar si necesitas llenar el formulario de precalificado.',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: const [
+                Icon(
+                  CupertinoIcons.person_alt,
+                  color: Colors.orange,
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Usa el Inicio de Sesión si necesitas iniciar sesión como usuario principal, secundario o crear un perfil de usuario secundario.',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          CupertinoDialogAction(
+            child: const Text('Entendido'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _showRegisterButton = true;
+                _showLoginButton = true;
+              });
+            },
+          ),
+        ],
+      );
+    } else {
+      dialogContent = AlertDialog(
+        title: const Text('Bienvenido'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipOval(
+              child: Image.asset(
+                'images/informacionnecesaria.gif',
+                height: 200,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: const [
+                Icon(
+                  Icons.person_add,
+                  color: Colors.orange,
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Usa el registrar si necesitas llenar el formulario de precalificado.',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: const [
+                Icon(
+                  Icons.person,
+                  color: Colors.orange,
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Usa el Inicio de Sesión si necesitas iniciar sesión como usuario principal, secundario o crear un perfil de usuario secundario.',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Entendido'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _showRegisterButton = true;
+                _showLoginButton = true;
+              });
+            },
+          ),
+        ],
+      );
+    }
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return dialogContent;
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +222,12 @@ class LandingPage extends StatelessWidget {
                   width: width * 0.8,
                   child: ElevatedButton(
                     onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const Registerclient(),
-                          ),
-                        );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Registerclient(),
+                        ),
+                      );
                     },
                     child: const Text(
                       'Registrarse',
@@ -101,11 +254,11 @@ class LandingPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const Login(),
-                          ),
-                        );
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Login(),
+                        ),
+                      );
                     },
                     child: const Text(
                       'Iniciar Sesión',
