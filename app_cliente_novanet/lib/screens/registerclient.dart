@@ -29,7 +29,7 @@ class _RegisterclientState extends State<Registerclient> {
   void initState() {
     super.initState();
     getDarkModePreviousState();
-    _checkFirstVisit();
+    //_checkFirstVisit();
   }
 
   Future<void> getDarkModePreviousState() async {
@@ -46,8 +46,8 @@ class _RegisterclientState extends State<Registerclient> {
     final prefs = await SharedPreferences.getInstance();
     final bool isFirstVisit = prefs.getBool('isFirstVisitRegister') ?? true;
 
-    if (isFirstVisit) {
       await _showExplanationDialog();
+    if (isFirstVisit) {
       await prefs.setBool('isFirstVisitRegister', false);
     }
   }

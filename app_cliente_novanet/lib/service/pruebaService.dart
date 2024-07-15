@@ -47,6 +47,7 @@ Future<void> fetchLogin(
         prefs.setString("fcIdentidad", data[1][0]["fcIdentidad"].toString());
         prefs.setString(
             "fcURLFotoPersonalizda", data[0][0]["NombreArchivo"].toString());
+        prefs.setString("fcLlaveUnica", data[5][0]["fcLlaveUnica"].toString());
 
         prefs.setString("datalogin[0]", jsonEncode(data[0]));
         prefs.setString("datalogin[1]", jsonEncode(data[1]));
@@ -86,7 +87,7 @@ Future<void> fetchLogin(
       borderRadius: 5,
     ).show(context);
   } finally {}
-} 
+}
 
 Future<void> fetchDatosRegistro(
     BuildContext context, int pilDUsuario, int pilDSolicitud) async {

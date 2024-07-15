@@ -39,7 +39,7 @@ class _LoginState extends State<Login> {
     super.initState();
     loadCache();
     checkBiometrics();
-    _checkFirstVisit();
+   // _checkFirstVisit();
   }
 
   Future<void> loadCache() async {

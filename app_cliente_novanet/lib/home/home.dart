@@ -15,7 +15,7 @@ import 'package:app_cliente_novanet/screens/webviewtest_screen.dart';
 import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:app_cliente_novanet/utils/media.dart';
-import 'package:app_cliente_novanet/utils/string.dart';
+import 'package:app_cliente_novanet/utils/string.dart'; 
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +34,8 @@ class _HomeState extends State<Home> {
   late ColorNotifire notifire;
   late String selectedMonth;
   String fcNombreUsuario = '';
+  String fcLlaveUnica = '';
+
   List produtosdelservicioactual = [];
   List json2 = [];
   List cuotas = [];
@@ -48,6 +50,8 @@ class _HomeState extends State<Home> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     //obtención de datos personales
     String fcNombreUsuarioFull = prefs.getString('fcNombreUsuario') ?? '';
+    String key = prefs.getString('fcLlaveUnica') ?? '';
+
     List<String> parts = fcNombreUsuarioFull.split(' ');
     String fcNombreUsuarioFirstWord = parts.isNotEmpty ? parts.first : '';
 
@@ -69,6 +73,7 @@ class _HomeState extends State<Home> {
       json2 = jsonDecode(dataAsString2);
       listadodepagos = jsonDecode(pagos);
       fcNombreUsuario = fcNombreUsuarioFirstWord;
+      fcLlaveUnica = key;
     });
   }
 
@@ -431,7 +436,7 @@ class _HomeState extends State<Home> {
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) =>
-                                                        const Scan(),
+                                                         PayWebview_screen(keyId: fcLlaveUnica ),
                                                   ),
                                                 );
                                                 // CherryToast.info(
