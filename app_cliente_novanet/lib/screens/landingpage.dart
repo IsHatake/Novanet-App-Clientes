@@ -17,7 +17,7 @@ class _LandingPageState extends State<LandingPage> {
   @override
   void initState() {
     super.initState();
-    _checkFirstVisit();
+    //_checkFirstVisit();
   }
 
   bool _showRegisterButton = false;

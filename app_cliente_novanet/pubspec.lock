@@ -408,14 +408,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.5"
-  json_annotation:
-    dependency: transitive
-    description:
-      name: json_annotation
-      sha256: b10a7b2ff83d83c777edba3c6a0f97045ddadd56c944e1a23a3fdf43a1bf4467
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.8.1"
   lints:
     dependency: transitive
     description:
@@ -576,14 +568,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.1"
-  pixelpay_sdk:
-    dependency: "direct main"
-    description:
-      name: pixelpay_sdk
-      sha256: "3bd76ba1e6c7c77dfb03d69989942cde5805181a452f7f2e75418b08a141a31e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.7"
   platform:
     dependency: transitive
     description:
@@ -917,14 +901,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.3"
-  yaml:
-    dependency: transitive
-    description:
-      name: yaml
-      sha256: "75769501ea3489fca56601ff33454fe45507ea3bfb014161abc3b43ae25989d5"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.2"
 sdks:
   dart: ">=2.19.6 <3.0.0"
   flutter: ">=3.7.0"
