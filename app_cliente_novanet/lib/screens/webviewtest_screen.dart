@@ -1,4 +1,4 @@
-// ignore_for_file: camel_case_types, file_names
+// ignore_for_file: camel_case_types, file_names, unused_field
 
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
@@ -18,12 +18,44 @@ String url = 'https://www.fast.com/es/';
 
 class _WebviewTest_screenState extends State<WebviewTest_screen> {
   late ColorNotifire notifire;
+  late WebViewController _controller;
+  final GlobalKey webViewKey = GlobalKey();
 
   Future<void> getDarkModePreviousState() async {
     final prefs = await SharedPreferences.getInstance();
     final previousState = prefs.getBool("setIsDark") ?? false;
     notifire.setIsDark = previousState;
   }
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   FlutterForegroundTask.init(
+  //     androidNotificationOptions: AndroidNotificationOptions(
+  //       channelId: 'notification_channel_id',
+  //       channelName: 'Foreground Notification',
+  //       channelDescription: 'This notification appears when the foreground service is running.',
+  //       channelImportance: NotificationChannelImportance.DEFAULT,
+  //       priority: NotificationPriority.DEFAULT,
+  //     ),
+  //     iosNotificationOptions: const IOSNotificationOptions(),
+  //     foregroundTaskOptions: const ForegroundTaskOptions(),
+  //   );
+  //   startForegroundTask();
+  // }
+
+  // void startForegroundTask() {
+  //   FlutterForegroundTask.startService(
+  //     notificationTitle: 'WebView en ejecución',
+  //     notificationText: 'El WebView sigue ejecutándose en segundo plano.',
+  //   );
+  // }
+
+  // @override
+  // void dispose() {
+  //   FlutterForegroundTask.stopService();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -58,28 +90,27 @@ class _WebviewTest_screenState extends State<WebviewTest_screen> {
           ),
         ),
       ),
-      body: WebViewWidget(controller: controller),
+      body: WebViewWidget(
+        key: webViewKey,
+        controller: WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setBackgroundColor(const Color(0x00000000))
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onProgress: (int progress) {},
+              onPageStarted: (String url) {},
+              onPageFinished: (String url) {},
+              onWebResourceError: (WebResourceError error) {},
+              onNavigationRequest: (NavigationRequest request) {
+                if (request.url.contains(url)) {
+                  return NavigationDecision.prevent;
+                }
+                return NavigationDecision.navigate;
+              },
+            ),
+          )
+          ..loadRequest(Uri.parse(url)),
+      ),
     );
   }
-
-  WebViewController controller = WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setBackgroundColor(const Color(0x00000000))
-    ..setNavigationDelegate(
-      NavigationDelegate(
-        onProgress: (int progress) {
-          // Update loading bar.
-        },
-        onPageStarted: (String url) {},
-        onPageFinished: (String url) {},
-        onWebResourceError: (WebResourceError error) {},
-        onNavigationRequest: (NavigationRequest request) {
-          if (request.url.contains(url)) {
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        },
-      ),
-    )
-    ..loadRequest(Uri.parse(url));
 }

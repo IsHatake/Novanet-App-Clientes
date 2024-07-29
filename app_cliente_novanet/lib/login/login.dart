@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'package:app_cliente_novanet/screens/qr_scanner_screen.dart';
 import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/cupertino.dart';
@@ -216,14 +218,14 @@ class _LoginState extends State<Login> {
                 Column(
                   children: [
                     SizedBox(
-                      height: height / 4,
+                      height: height / 5,
                     ),
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
                         Center(
                           child: Container(
-                            height: height / 1.2,
+                            height: height,
                             width: width / 1.1,
                             decoration: BoxDecoration(
                               color: notifire.getprimerycolor,

@@ -47,7 +47,13 @@ Future<void> fetchLogin(
         prefs.setString("fcIdentidad", data[1][0]["fcIdentidad"].toString());
         prefs.setString(
             "fcURLFotoPersonalizda", data[0][0]["NombreArchivo"].toString());
-        prefs.setString("fcLlaveUnica", data[5][0]["fcLlaveUnica"].toString());
+        if (data[5].length != 0) {
+          prefs.setString("fcLlaveUnica", data[5][0]["fcLlaveUnica"] ?? '');
+        }
+        else{
+          prefs.setString("fcLlaveUnica", '');
+
+        }
 
         prefs.setString("datalogin[0]", jsonEncode(data[0]));
         prefs.setString("datalogin[1]", jsonEncode(data[1]));

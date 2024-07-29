@@ -11,7 +11,7 @@ class PayWebview_screen extends StatefulWidget {
 
   const PayWebview_screen({Key? key, required this.keyId})
       : super(key: key);
-
+  
   @override
   _PayWebview_screenState createState() => _PayWebview_screenState();
 }
@@ -19,7 +19,7 @@ class PayWebview_screen extends StatefulWidget {
 class _PayWebview_screenState extends State<PayWebview_screen> {
   late ColorNotifire notifire;
   String url =
-      'https://ppos.novanetgroup.com/index.html?id=';
+      'https://ppos.novanetgroup.com/PagoCuota?id=';
 
   Future<void> getDarkModePreviousState() async {
     final prefs = await SharedPreferences.getInstance();

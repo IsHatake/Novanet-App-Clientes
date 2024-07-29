@@ -1,7 +1,8 @@
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: non_constant_identifier_names, unused_import, prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'dart:convert';
 
+import 'package:app_cliente_novanet/screens/pagoshome.dart';
 import 'package:app_cliente_novanet/screens/referidos_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,8 @@ import 'package:app_cliente_novanet/screens/webviewtest_screen.dart';
 import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:app_cliente_novanet/utils/media.dart';
-import 'package:app_cliente_novanet/utils/string.dart'; 
+import 'package:app_cliente_novanet/utils/string.dart';
+import 'package:flutter_credit_card/extension.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,12 +41,9 @@ class _HomeState extends State<Home> {
   List produtosdelservicioactual = [];
   List json2 = [];
   List cuotas = [];
-  List listadodepagos = [];
 
   bool _isExpanded = false;
   int _currentPage = 0;
-
-  late final listadodepagosoriginal = List.from(listadodepagos);
 
   Future<void> _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -61,8 +60,6 @@ class _HomeState extends State<Home> {
     //json 2 de información
     String dataAsString2 = prefs.getString('datalogin[1]') ?? '';
 
-    String pagos = prefs.getString('datalogin[4]') ?? '';
-
     var data2 = jsonDecode(dataAsString2);
 
     for (var cuota in data2) {
@@ -71,7 +68,6 @@ class _HomeState extends State<Home> {
     setState(() {
       produtosdelservicioactual = jsonDecode(dataAsString);
       json2 = jsonDecode(dataAsString2);
-      listadodepagos = jsonDecode(pagos);
       fcNombreUsuario = fcNombreUsuarioFirstWord;
       fcLlaveUnica = key;
     });
@@ -84,53 +80,6 @@ class _HomeState extends State<Home> {
       notifire.setIsDark = false;
     } else {
       notifire.setIsDark = previusstate;
-    }
-  }
-
-  void filtrarPagos(String? mes) {
-    DateTime now = DateTime.now();
-    DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
-
-    List<dynamic> filteredList = [];
-
-    if (mes == '1') {
-      // filteredList = listadodepagosoriginal.where((pago) {
-      //   DateTime fechaTransaccion = DateTime.parse(pago['fdFechaTransaccion']);
-      //   return fechaTransaccion.year == now.year &&
-      //       fechaTransaccion.month == now.month;
-      // }).toList();
-      // setState(() {
-      //   listadodepagos = filteredList;
-      // });1301198000105
-      setState(() {
-        listadodepagos = List.from(listadodepagosoriginal);
-      });
-    } else if (mes == '2') {
-      DateTime threeMonthsAgo =
-          firstDayOfMonth.subtract(const Duration(days: 90));
-      filteredList = listadodepagosoriginal.where((pago) {
-        DateTime fechaTransaccion = DateTime.parse(pago['fdFechaTransaccion']);
-        return fechaTransaccion.isAfter(threeMonthsAgo) ||
-            fechaTransaccion.isAtSameMomentAs(firstDayOfMonth);
-      }).toList();
-      setState(() {
-        listadodepagos = filteredList;
-      });
-    } else if (mes == '3') {
-      DateTime sixMonthsAgo =
-          firstDayOfMonth.subtract(const Duration(days: 180));
-      filteredList = listadodepagosoriginal.where((pago) {
-        DateTime fechaTransaccion = DateTime.parse(pago['fdFechaTransaccion']);
-        return fechaTransaccion.isAfter(sixMonthsAgo) ||
-            fechaTransaccion.isAtSameMomentAs(firstDayOfMonth);
-      }).toList();
-      setState(() {
-        listadodepagos = filteredList;
-      });
-    } else {
-      setState(() {
-        listadodepagos = List.from(listadodepagosoriginal);
-      });
     }
   }
 
@@ -169,19 +118,6 @@ class _HomeState extends State<Home> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-    }
-  }
-
-  String _getMonthName(int op) {
-    switch (op) {
-      case 1:
-        return CustomStrings.op1;
-      case 2:
-        return CustomStrings.op2;
-      case 3:
-        return CustomStrings.op3;
-      default:
-        return '';
     }
   }
 
@@ -249,7 +185,8 @@ class _HomeState extends State<Home> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>  Profile(fbprincipal: widget.fbprincipal),
+                  builder: (context) =>
+                      Profile(fbprincipal: widget.fbprincipal),
                 ),
               );
             },
@@ -432,24 +369,32 @@ class _HomeState extends State<Home> {
                                           children: [
                                             GestureDetector(
                                               onTap: () {
+                                                if (fcLlaveUnica
+                                                        .isNullOrEmpty ||
+                                                    fcLlaveUnica == '') {
+                                                  CherryToast.info(
+                                                    backgroundColor:
+                                                        notifire.getbackcolor,
+                                                    title: Text(
+                                                        'Aún no cuentas con esta opción',
+                                                        style: TextStyle(
+                                                            color: notifire
+                                                                .getdarkscolor),
+                                                        textAlign:
+                                                            TextAlign.start),
+                                                    borderRadius: 5,
+                                                  ).show(context);
+                                                  return;
+                                                }
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) =>
-                                                         PayWebview_screen(keyId: fcLlaveUnica ),
+                                                        PayWebview_screen(
+                                                            keyId:
+                                                                fcLlaveUnica),
                                                   ),
                                                 );
-                                                // CherryToast.info(
-                                                //   backgroundColor:
-                                                //       notifire.getbackcolor,
-                                                //   title: Text('Proximamente',
-                                                //       style: TextStyle(
-                                                //           color: notifire
-                                                //               .getdarkscolor),
-                                                //       textAlign:
-                                                //           TextAlign.start),
-                                                //   borderRadius: 5,
-                                                // ).show(context);
                                               },
                                               child: Container(
                                                 height: height / 15,
@@ -554,8 +499,10 @@ class _HomeState extends State<Home> {
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) =>
-                                                         AddServices_Screen(
-                                                            'Servicios',fbprincipal: widget.fbprincipal),
+                                                        AddServices_Screen(
+                                                            'Servicios',
+                                                            fbprincipal: widget
+                                                                .fbprincipal),
                                                   ),
                                                 );
                                               },
@@ -1014,279 +961,9 @@ class _HomeState extends State<Home> {
                   SizedBox(
                     height: height / 80,
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: width / 18),
-                    child: Row(
-                      children: [
-                        selectedMonth == '1'
-                            ? Flexible(
-                                child: Text(
-                                  _getMonthName(int.parse(selectedMonth)),
-                                  style: TextStyle(
-                                    fontFamily: "Gilroy Bold",
-                                    color: notifire.getdarkscolor,
-                                    fontSize: height / 40,
-                                  ),
-                                  overflow: TextOverflow.fade,
-                                ),
-                              )
-                            : Flexible(
-                                child: Text(
-                                  'Pagos de ${_getMonthName(int.parse(selectedMonth))}',
-                                  style: TextStyle(
-                                    fontFamily: "Gilroy Bold",
-                                    color: notifire.getdarkscolor,
-                                    fontSize: height / 40,
-                                  ),
-                                  overflow: TextOverflow.fade,
-                                ),
-                              ),
-                        const Spacer(),
-                        DropdownButton<String>(
-                          value: selectedMonth,
-                          dropdownColor: notifire.getprimerycolor,
-                          onChanged: (String? newValue) {
-                            filtrarPagos(newValue);
-                            setState(() {
-                              selectedMonth = newValue!;
-                            });
-                          },
-                          items: <String>[
-                            for (int i = 1; i <= 3; i++) i.toString()
-                          ].map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                _getMonthName(int.parse(value)),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: notifire.getdarkscolor,
-                                ),
-                                overflow: TextOverflow.fade,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: height / 50,
-                  ),
                   Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                            height: MediaQuery.of(context).size.height,
-                            color: Colors.transparent,
-                            child: listadodepagos.isEmpty
-                                ? SingleChildScrollView(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Image.asset(
-                                          "images/sin-dinero.png",
-                                          color: notifire.getorangeprimerycolor,
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.10,
-                                        ),
-                                        const SizedBox(height: 20),
-                                        Text(
-                                          "Sin pagos realizados",
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: notifire.getdarkscolor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    itemCount: listadodepagos.length,
-                                    itemBuilder: (context, index) => Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: width * 0.05,
-                                        vertical: height * 0.01,
-                                      ),
-                                      child: Card(
-                                        color: notifire.getbackcolor,
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          side: BorderSide(
-                                            width: 2,
-                                            color: Colors.grey.withOpacity(0.2),
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: ListTile(
-                                          title: Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: width * 0.02,
-                                              vertical: height * 0.005,
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Container(
-                                                      height: height * 0.07,
-                                                      width: width / 7,
-                                                      decoration: BoxDecoration(
-                                                        color: notifire
-                                                            .getprimerycolor,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(10),
-                                                      ),
-                                                      child: Center(
-                                                        child: Image.asset(
-                                                          "images/logos.png",
-                                                          height: height / 30,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                        width: width * 0.02),
-                                                    Expanded(
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            listadodepagos[index]
-                                                                        [
-                                                                        'fiIDTransaccion']
-                                                                    .toString() +
-                                                                ' - ' +
-                                                                listadodepagos[
-                                                                        index][
-                                                                    'fcOperacion'],
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  "Gilroy Bold",
-                                                              color: notifire
-                                                                  .getdarkscolor,
-                                                              fontSize: height *
-                                                                  0.015,
-                                                            ),
-                                                            maxLines: 2,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            softWrap: true,
-                                                          ),
-                                                          SizedBox(
-                                                              height: height *
-                                                                  0.005),
-                                                          Text(
-                                                            listadodepagos[
-                                                                    index][
-                                                                'fcLugarResidencia'],
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  "Gilroy Medium",
-                                                              color: notifire
-                                                                  .getdarkscolor
-                                                                  .withOpacity(
-                                                                      0.6),
-                                                              fontSize: height *
-                                                                  0.013,
-                                                            ),
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            softWrap: true,
-                                                          ),
-                                                          SizedBox(
-                                                              height: height *
-                                                                  0.005),
-                                                          Text(
-                                                            DateFormat(
-                                                                    'dd/MM/yyyy')
-                                                                .format(
-                                                              DateTime.parse(
-                                                                listadodepagos[
-                                                                        index][
-                                                                    'fdFechaTransaccion'],
-                                                              ),
-                                                            ),
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  "Gilroy Medium",
-                                                              color: notifire
-                                                                  .getdarkscolor
-                                                                  .withOpacity(
-                                                                      0.6),
-                                                              fontSize: height *
-                                                                  0.013,
-                                                            ),
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            softWrap: true,
-                                                          ),
-                                                          SizedBox(
-                                                              height: height *
-                                                                  0.005),
-                                                          Text(
-                                                            NumberFormat
-                                                                .currency(
-                                                              locale: 'es',
-                                                              symbol: '\$',
-                                                            ).format(
-                                                              double.parse(
-                                                                listadodepagos[
-                                                                            index]
-                                                                        [
-                                                                        'fnValorAbonado']
-                                                                    .toString(),
-                                                              ),
-                                                            ),
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  "Gilroy Bold",
-                                                              color: notifire
-                                                                  .getdarkscolor,
-                                                              fontSize:
-                                                                  height * 0.02,
-                                                            ),
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            softWrap: true,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                SizedBox(
-                                                    height: height * 0.005),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  )),
-                      ]),
-                  SizedBox(
-                    height: height / 20,
-                  ),
+                    children: [PagosPage()],
+                  )
                 ],
               ),
             ),
@@ -1530,7 +1207,7 @@ class _HomeState extends State<Home> {
       }
 
       String Url =
-          "https://api.whatsapp.com/send/?phone=50489081273&text=Hola&type=phone_number&app_absent=0";
+          "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
       if (!await launchUrl(Uri.parse(Url))) {
         throw Exception('Could not launch $Url');
       }

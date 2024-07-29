@@ -27,6 +27,7 @@ class _SeealltransactionState extends State<Seealltransaction> {
   int _endIndex = 0;
   int _itemsPerPage = 10;
   List listadodepagos = [];
+  bool _isLoading = true;
 
   getdarkmodepreviousstate() async {
     final prefs = await SharedPreferences.getInstance();
@@ -62,16 +63,23 @@ class _SeealltransactionState extends State<Seealltransaction> {
           _endIndex = (_itemsPerPage < listadodepagos.length)
               ? _itemsPerPage - 1
               : listadodepagos.length - 1;
+          _isLoading = false;
         });
       } else {
         if (kDebugMode) {
           print('Error en la solicitud: ${response.statusCode}');
         }
+        setState(() {
+          _isLoading = false;
+        });
       }
     } catch (e) {
       if (kDebugMode) {
         print('Excepción en la solicitud: $e');
       }
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -130,18 +138,43 @@ class _SeealltransactionState extends State<Seealltransaction> {
             SizedBox(
               height: height / 50,
             ),
-            if (listadodepagos.isEmpty)
-             Center(
+            if (_isLoading)
+              Center(
                 child: CircularProgressIndicator(
                   color: notifire.getorangeprimerycolor,
                 ),
-              ) 
+              )
+            else if (listadodepagos.isEmpty)
+              Center(
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'images/sin-dinero.png',  
+                      color: notifire.getorangeprimerycolor,
+                       height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.15,
+                     
+                      width: 200,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'No cuentas con Pagos hechos aquí',
+                      style: TextStyle(
+                        fontFamily: "Gilroy Bold",
+                        color: notifire.getdarkscolor,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              )
             else
               Container(
                 height: height / 1.15,
                 color: Colors.transparent,
                 child: Card(
-                  
                   color: notifire.getbackcolor,
                   elevation: 0,
                   shape: RoundedRectangleBorder(

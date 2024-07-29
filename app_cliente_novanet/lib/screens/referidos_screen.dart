@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names, camel_case_types
+// ignore_for_file: camel_case_types, non_constant_identifier_names
 
 import 'dart:convert';
 
@@ -27,6 +27,7 @@ class _referidos_ScreenState extends State<referidos_Screen> {
   int _endIndex = 0;
   int _itemsPerPage = 10;
   List listadodereferidos = [];
+  bool _isLoading = true;
 
   getdarkmodepreviousstate() async {
     final prefs = await SharedPreferences.getInstance();
@@ -47,7 +48,6 @@ class _referidos_ScreenState extends State<referidos_Screen> {
   Future<void> PagosByCliente() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-
       var piIDCliente = prefs.getString("fiIDCliente");
 
       final response = await http.post(Uri.parse(
@@ -61,16 +61,23 @@ class _referidos_ScreenState extends State<referidos_Screen> {
           _endIndex = (_itemsPerPage < listadodereferidos.length)
               ? _itemsPerPage - 1
               : listadodereferidos.length - 1;
+          _isLoading = false;
         });
       } else {
         if (kDebugMode) {
           print('Error en la solicitud: ${response.statusCode}');
         }
+        setState(() {
+          _isLoading = false;
+        });
       }
     } catch (e) {
       if (kDebugMode) {
         print('Excepción en la solicitud: $e');
       }
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -162,10 +169,31 @@ class _referidos_ScreenState extends State<referidos_Screen> {
             SizedBox(
               height: height / 50,
             ),
-            if (listadodereferidos.isEmpty)
+            if (_isLoading)
               Center(
                 child: CircularProgressIndicator(
                   color: notifire.getorangeprimerycolor,
+                ),
+              )
+            else if (listadodereferidos.isEmpty)
+              Center(
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'images/referidos.png',
+                      height: 200,
+                      width: 200,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'No cuentas con Referidos',
+                      style: TextStyle(
+                        fontFamily: "Gilroy Bold",
+                        color: notifire.getdarkscolor,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ],
                 ),
               )
             else
