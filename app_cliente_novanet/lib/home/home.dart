@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:app_cliente_novanet/screens/pagoshome.dart';
 import 'package:app_cliente_novanet/screens/referidos_screen.dart';
+import 'package:app_cliente_novanet/utils/button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/api.dart';
@@ -547,10 +548,10 @@ class _HomeState extends State<Home> {
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(
-                                          width: 20.00,
-                                        ),
-                                        if (widget.fbprincipal)
+                                        if (widget.fbprincipal) ...[
+                                          const SizedBox(
+                                            width: 20.00,
+                                          ),
                                           Column(
                                             children: [
                                               GestureDetector(
@@ -562,18 +563,6 @@ class _HomeState extends State<Home> {
                                                           const referidos_Screen(),
                                                     ),
                                                   );
-
-                                                  // CherryToast.info(
-                                                  //   backgroundColor:
-                                                  //       notifire.getbackcolor,
-                                                  //   title: Text('En Proceso',
-                                                  //       style: TextStyle(
-                                                  //           color: notifire
-                                                  //               .getdarkscolor),
-                                                  //       textAlign:
-                                                  //           TextAlign.start),
-                                                  //   borderRadius: 5,
-                                                  // ).show(context);
                                                 },
                                                 child: Container(
                                                   height: height / 15,
@@ -622,6 +611,7 @@ class _HomeState extends State<Home> {
                                               ),
                                             ],
                                           ),
+                                        ]
                                       ],
                                     ),
                                   ],
@@ -998,7 +988,13 @@ class _HomeState extends State<Home> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
-                      onTap: () => _launchUrl('SOPORTE'),
+                      onTap: () {
+                        if (widget.fbprincipal) {
+                          _launchUrl('SOPORTE');
+                        } else {
+                          _showWPDialogNumero(context, 'SOPORTE');
+                        }
+                      },
                       child: Container(
                         height: 40,
                         width: 180,
@@ -1031,7 +1027,13 @@ class _HomeState extends State<Home> {
                       height: 15,
                     ),
                     GestureDetector(
-                      onTap: () => _launchUrl('PAGOS'),
+                      onTap: () {
+                        if (widget.fbprincipal) {
+                          _launchUrl('PAGOS');
+                        } else {
+                          _showWPDialogNumero(context, 'PAGOS');
+                        }
+                      },
                       child: Container(
                         height: 40,
                         width: 180,
@@ -1064,7 +1066,13 @@ class _HomeState extends State<Home> {
                       height: 15,
                     ),
                     GestureDetector(
-                      onTap: () => _launchUrl('CONTRATAR'),
+                      onTap: () {
+                        if (widget.fbprincipal) {
+                          _launchUrl('CONTRATAR');
+                        } else {
+                          _showWPDialogNumero(context, 'CONTRATAR');
+                        }
+                      },
                       child: Container(
                         height: 40,
                         width: 180,
@@ -1169,6 +1177,95 @@ class _HomeState extends State<Home> {
     );
   }
 
+  Future<void> _showWPDialogNumero(BuildContext context, opcion) async {
+    TextEditingController NumeroIngresado = TextEditingController();
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  image: const DecorationImage(
+                    image: AssetImage('images/fondo.png'),
+                    fit: BoxFit.cover,
+                  ),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                margin: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.all(25),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Ingrese el número de teléfono al cual desea se le contacte',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontFamily: 'Gilroy Bold',
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    TextField(
+                      controller: NumeroIngresado,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        hintText: 'Número de teléfono',
+                      ),
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        final numero = NumeroIngresado.text;
+                        if (numero.isEmpty) {
+                          CherryToast.warning(
+                            backgroundColor: notifire.getbackcolor,
+                            title: Text('Ingrese un numero de teléfono',
+                                style: TextStyle(color: notifire.getdarkscolor),
+                                textAlign: TextAlign.start),
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
+                        }
+                        if (numero.length == 8) {
+                          CherryToast.warning(
+                            backgroundColor: notifire.getbackcolor,
+                            title: Text('Son necesarios 8 digitos',
+                                style: TextStyle(color: notifire.getdarkscolor),
+                                textAlign: TextAlign.start),
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
+                        }
+                        _launchUrlSecundario(opcion, numero);
+                        Navigator.of(context).pop();
+                      },
+                      child: Custombutton.button(notifire.getorangeprimerycolor,
+                          'Confirmar', width / 2),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _launchUrl(String opcion) async {
     final prefs = await SharedPreferences.getInstance();
     var fcNumeroTelefono = prefs.getString("fcTelefono");
@@ -1188,7 +1285,61 @@ class _HomeState extends State<Home> {
       'grupo': opcion,
       'telefono': '504$fcNumeroTelefono',
       'pushId': '15',
-      'token': 'RC15'
+      'token': 'RC15',
+    };
+
+    String jsonRequestBody = jsonEncode(requestBody);
+
+    final response = await http.post(
+      apiUrl,
+      body: jsonRequestBody,
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+
+      if (kDebugMode) {
+        print(json);
+      }
+
+      String Url =
+          "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
+      if (!await launchUrl(Uri.parse(Url))) {
+        throw Exception('Could not launch $Url');
+      }
+    } else {
+      throw Exception('Failed to send message: ${response.statusCode}');
+    }
+  }
+
+  Future<void> _launchUrlSecundario(
+      String opcion, numerodetelefonoingresado) async {
+    final prefs = await SharedPreferences.getInstance();
+    var fcNumeroTelefono = prefs.getString("fcTelefono");
+    var fcIdentidad = prefs.getString("fcIdentidad");
+
+    final Uri apiUrl =
+        Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
+
+    final headers = {
+      'key': '8cbea7517da189fdcd89ff68dac8e67c',
+      'pushId': '',
+      'token': '',
+      'Content-Type': 'application/json',
+    };
+
+    var requestBody = {
+      'key': '8cbea7517da189fdcd89ff68dac8e67c',
+      'grupo': opcion,
+      'telefono': '504$numerodetelefonoingresado',
+      'pushId': '15',
+      'token': 'RC15',
+      'variables': {
+        'Identidad': '$fcIdentidad',
+        'fctelefono': 'Telefono del Cliente Principal : 504$fcNumeroTelefono',
+        'nombrecompleto': fcNombreUsuario
+      }
     };
 
     String jsonRequestBody = jsonEncode(requestBody);
