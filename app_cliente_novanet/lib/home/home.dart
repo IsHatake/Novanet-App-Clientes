@@ -1214,6 +1214,7 @@ class _HomeState extends State<Home> {
                     ),
                     TextField(
                       controller: NumeroIngresado,
+                      maxLength: 8,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
@@ -1240,7 +1241,7 @@ class _HomeState extends State<Home> {
                           ).show(context);
                           return;
                         }
-                        if (numero.length == 8) {
+                        if (numero.length != 8) {
                           CherryToast.warning(
                             backgroundColor: notifire.getbackcolor,
                             title: Text('Son necesarios 8 digitos',
@@ -1337,7 +1338,7 @@ class _HomeState extends State<Home> {
       'token': 'RC15',
       'variables': {
         'Identidad': '$fcIdentidad',
-        'fctelefono': 'Telefono del Cliente Principal : 504$fcNumeroTelefono',
+        'fctelefono': '504$numerodetelefonoingresado',
         'nombrecompleto': fcNombreUsuario
       }
     };
