@@ -1285,6 +1285,7 @@ class _HomeState extends State<Home> {
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
       'grupo': opcion,
       'telefono': '504$fcNumeroTelefono',
+      'texto': 'Hola tu refrencia es %Ticket%, dentro de un momento un agente te contactara.',
       'pushId': '15',
       'token': 'RC15',
     };
@@ -1336,12 +1337,13 @@ class _HomeState extends State<Home> {
       'telefono': '504$numerodetelefonoingresado',
       'pushId': '15',
       'token': 'RC15',
+      'texto': 'Hola tu refrencia es %Ticket%, dentro de un momento un agente te contactara.',
       'variables': {
-        'Identidad': '$fcIdentidad',
-        'fctelefono': '504$numerodetelefonoingresado',
-        'nombrecompleto': fcNombreUsuario
-      }
+        'identidad': '$fcIdentidad',
+        'nombre_completo': fcNombreUsuario,
+      },
     };
+    print(requestBody);
 
     String jsonRequestBody = jsonEncode(requestBody);
 
