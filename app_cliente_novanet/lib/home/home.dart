@@ -1,5 +1,9 @@
+<<<<<<< Updated upstream
 
 // ignore_for_file: non_constant_identifier_names, unused_import, prefer_const_constructors, prefer_const_literals_to_create_immutables
+=======
+// ignore_for_file: non_constant_identifier_names, unused_import, prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable
+>>>>>>> Stashed changes
 
 import 'dart:convert';
 
@@ -1272,8 +1276,7 @@ class _HomeState extends State<Home> {
     final prefs = await SharedPreferences.getInstance();
     var fcNumeroTelefono = prefs.getString("fcTelefono");
 
-    final Uri apiUrl =
-        Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
+    final Uri apiUrl = Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
 
     final headers = {
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
@@ -1286,44 +1289,61 @@ class _HomeState extends State<Home> {
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
       'grupo': opcion,
       'telefono': '504$fcNumeroTelefono',
-      'texto': 'Hola tu refrencia es %Ticket%, dentro de un momento un agente te contactara.',
+      'texto': 'Hola tu referencia es %Ticket%, dentro de un momento un agente te contactará.',
       'pushId': '15',
       'token': 'RC15',
     };
 
     String jsonRequestBody = jsonEncode(requestBody);
 
-    final response = await http.post(
-      apiUrl,
-      body: jsonRequestBody,
-      headers: headers,
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(child: CircularProgressIndicator(color: notifire.getorangeprimerycolor));
+      },
     );
 
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
+    try {
+      final response = await http.post(
+        apiUrl,
+        body: jsonRequestBody,
+        headers: headers,
+      );
 
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+
+        if (kDebugMode) {
+          print(json);
+        }
+
+        String Url =
+            "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
+        
+        Navigator.of(context).pop();
+
+        if (!await launchUrl(Uri.parse(Url))) {
+          throw Exception('Could not launch $Url');
+        }
+      } else {
+        Navigator.of(context).pop();
+        throw Exception('Failed to send message: ${response.statusCode}');
+      }
+    } catch (e) {
+      Navigator.of(context).pop();
       if (kDebugMode) {
-        print(json);
+        print(e);
       }
-
-      String Url =
-          "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
-      if (!await launchUrl(Uri.parse(Url))) {
-        throw Exception('Could not launch $Url');
-      }
-    } else {
-      throw Exception('Failed to send message: ${response.statusCode}');
     }
   }
 
-  Future<void> _launchUrlSecundario(
-      String opcion, numerodetelefonoingresado) async {
+  Future<void> _launchUrlSecundario(String opcion, String numerodetelefonoingresado) async {
     final prefs = await SharedPreferences.getInstance();
     var fcNumeroTelefono = prefs.getString("fcTelefono");
     var fcIdentidad = prefs.getString("fcIdentidad");
 
-    final Uri apiUrl =
-        Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
+    final Uri apiUrl = Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
 
     final headers = {
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
@@ -1338,36 +1358,58 @@ class _HomeState extends State<Home> {
       'telefono': '504$numerodetelefonoingresado',
       'pushId': '15',
       'token': 'RC15',
-      'texto': 'Hola tu refrencia es %Ticket%, dentro de un momento un agente te contactara.',
+      'texto': 'Hola tu referencia es %Ticket%, dentro de un momento un agente te contactará.',
       'variables': {
         'identidad': '$fcIdentidad',
         'nombre_completo': fcNombreUsuario,
       },
     };
-    print(requestBody);
+    if (kDebugMode) {
+      print(requestBody);
+    }
 
     String jsonRequestBody = jsonEncode(requestBody);
 
-    final response = await http.post(
-      apiUrl,
-      body: jsonRequestBody,
-      headers: headers,
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(child: CircularProgressIndicator(color: notifire.getorangeprimerycolor,));
+      },
     );
 
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
+    try {
+      final response = await http.post(
+        apiUrl,
+        body: jsonRequestBody,
+        headers: headers,
+      );
 
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+
+        if (kDebugMode) {
+          print(json);
+        }
+
+        String Url =
+            "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
+
+        Navigator.of(context).pop();
+
+        if (!await launchUrl(Uri.parse(Url))) {
+          throw Exception('Could not launch $Url');
+        }
+      } else {
+        Navigator.of(context).pop();
+        throw Exception('Failed to send message: ${response.statusCode}');
+      }
+    } catch (e) {
+      Navigator.of(context).pop();
       if (kDebugMode) {
-        print(json);
+        print(e);
       }
-
-      String Url =
-          "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
-      if (!await launchUrl(Uri.parse(Url))) {
-        throw Exception('Could not launch $Url');
-      }
-    } else {
-      throw Exception('Failed to send message: ${response.statusCode}');
     }
   }
+
 }
