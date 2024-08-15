@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/login/login.dart';
 import 'package:app_cliente_novanet/screens/registerclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:in_app_update/in_app_update.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({Key? key}) : super(key: key);
@@ -17,9 +18,24 @@ class _LandingPageState extends State<LandingPage> {
   @override
   void initState() {
     super.initState();
+      _checkForUpdate();
     //_checkFirstVisit();
   }
 
+  Future<void> _checkForUpdate() async {
+    try {
+      final AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
+      if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
+        InAppUpdate.performImmediateUpdate().catchError((e) {
+          // Manejar el error de la actualización, por ejemplo, mostrar un mensaje
+          print("Error durante la actualización: $e");
+        });
+      }
+    } catch (e) {
+      // Manejar cualquier error al verificar la actualización
+      print("Error al verificar actualizaciones: $e");
+    }
+  }
   bool _showRegisterButton = false;
   bool _showLoginButton = false;
   Future<void> _checkFirstVisit() async {
