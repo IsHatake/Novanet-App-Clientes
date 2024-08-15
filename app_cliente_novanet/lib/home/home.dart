@@ -1,9 +1,4 @@
-<<<<<<< Updated upstream
-
-// ignore_for_file: non_constant_identifier_names, unused_import, prefer_const_constructors, prefer_const_literals_to_create_immutables
-=======
 // ignore_for_file: non_constant_identifier_names, unused_import, prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable
->>>>>>> Stashed changes
 
 import 'dart:convert';
 
@@ -149,22 +144,16 @@ class _HomeState extends State<Home> {
           ],
         ),
         actions: [
-          // GestureDetector(
-          //   onTap: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) =>
-          //             const Notificationindex(CustomStrings.notification),
-          //       ),
-          //     );
-          //   },
-          //   child: Image.asset(
-          //     "images/notification.png",
-          //     color: notifire.getwhite,
-          //     scale: 4,
-          //   ),
-          // ),
+          GestureDetector(
+            onTap: () {
+             _launchUrlManual();
+            },
+            child: Icon(
+              Icons.help_outline, // Icono de interrogación
+              color: notifire.getwhite, // Usa el color definido en notifire
+              size: 24.0, // Ajusta el tamaño según sea necesario
+            ),
+          ),
           const SizedBox(
             width: 10,
           ),
@@ -1276,7 +1265,8 @@ class _HomeState extends State<Home> {
     final prefs = await SharedPreferences.getInstance();
     var fcNumeroTelefono = prefs.getString("fcTelefono");
 
-    final Uri apiUrl = Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
+    final Uri apiUrl =
+        Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
 
     final headers = {
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
@@ -1289,7 +1279,8 @@ class _HomeState extends State<Home> {
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
       'grupo': opcion,
       'telefono': '504$fcNumeroTelefono',
-      'texto': 'Hola tu referencia es %Ticket%, dentro de un momento un agente te contactará.',
+      'texto':
+          'Hola tu referencia es %Ticket%, dentro de un momento un agente te contactará.',
       'pushId': '15',
       'token': 'RC15',
     };
@@ -1300,7 +1291,9 @@ class _HomeState extends State<Home> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return Center(child: CircularProgressIndicator(color: notifire.getorangeprimerycolor));
+        return Center(
+            child: CircularProgressIndicator(
+                color: notifire.getorangeprimerycolor));
       },
     );
 
@@ -1320,7 +1313,7 @@ class _HomeState extends State<Home> {
 
         String Url =
             "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
-        
+
         Navigator.of(context).pop();
 
         if (!await launchUrl(Uri.parse(Url))) {
@@ -1338,12 +1331,14 @@ class _HomeState extends State<Home> {
     }
   }
 
-  Future<void> _launchUrlSecundario(String opcion, String numerodetelefonoingresado) async {
+  Future<void> _launchUrlSecundario(
+      String opcion, String numerodetelefonoingresado) async {
     final prefs = await SharedPreferences.getInstance();
     var fcNumeroTelefono = prefs.getString("fcTelefono");
     var fcIdentidad = prefs.getString("fcIdentidad");
 
-    final Uri apiUrl = Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
+    final Uri apiUrl =
+        Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
 
     final headers = {
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
@@ -1358,7 +1353,8 @@ class _HomeState extends State<Home> {
       'telefono': '504$numerodetelefonoingresado',
       'pushId': '15',
       'token': 'RC15',
-      'texto': 'Hola tu referencia es %Ticket%, dentro de un momento un agente te contactará.',
+      'texto':
+          'Hola tu referencia es %Ticket%, dentro de un momento un agente te contactará.',
       'variables': {
         'identidad': '$fcIdentidad',
         'nombre_completo': fcNombreUsuario,
@@ -1374,7 +1370,10 @@ class _HomeState extends State<Home> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return Center(child: CircularProgressIndicator(color: notifire.getorangeprimerycolor,));
+        return Center(
+            child: CircularProgressIndicator(
+          color: notifire.getorangeprimerycolor,
+        ));
       },
     );
 
@@ -1412,4 +1411,11 @@ class _HomeState extends State<Home> {
     }
   }
 
+  Future<void> _launchUrlManual() async {
+    if (!await launchUrl(
+        Uri.parse('https://novanetgroup.com/NovanetApp/Manuales/Index.html'))) {
+      throw Exception(
+          'Could not launch https://novanetgroup.com/NovanetApp/Manuales/Index.html');
+    }
+  }
 }
