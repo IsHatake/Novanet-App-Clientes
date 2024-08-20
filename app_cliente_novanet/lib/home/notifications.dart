@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/utils/media.dart';
 import 'package:app_cliente_novanet/utils/string.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-
 import '../utils/colornotifire.dart';
 
 class Notificationindex extends StatefulWidget {
@@ -16,27 +19,44 @@ class Notificationindex extends StatefulWidget {
 class _NotificationindexState extends State<Notificationindex> {
   late ColorNotifire notifire;
 
-  List<String> notificationtxt = [
-    CustomStrings.successfully,
-    CustomStrings.lockdown,
-    CustomStrings.wayorder,
-    CustomStrings.prepared,
-    CustomStrings.discount,
-  ];
-  List<String> notificationtxt2 = [
-    CustomStrings.yesterday,
-    CustomStrings.mar,
-    CustomStrings.mar1,
-    CustomStrings.mar2,
-    CustomStrings.mar3,
-  ];
-  List<String> notificationimg = [
-    "images/successfull.png",
-    "images/lockdown.png",
-    "images/order.png",
-    "images/banktransfer.png",
-    "images/bankinsurance.png",
-  ];
+  List<Map<String, String>> notifications = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? fiIDCuentaFamiliar = prefs.getString("fiIDCuentaFamiliar");
+
+    if (fiIDCuentaFamiliar != null) {
+      final response = await http.get(Uri.parse(
+          'https://api.novanetgroup.com/api/Novanet/Usuario/Notificaciones?fiIDEquifax=$fiIDCuentaFamiliar'));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> notificacionesJson =
+            jsonDecode(response.body)['data'];
+
+        setState(() {
+          notifications = notificacionesJson.map((noti) {
+            String formattedDate =
+                DateTime.parse(noti['fdFechaEnvio']).toString().split('T')[0];
+
+            return {
+              'title': noti['fcNotificacion'].toString(),
+              'date': formattedDate,
+            };
+          }).toList();
+        });
+
+        print(notifications); // Check if the notifications are populated
+      } else {
+        throw Exception('Failed to load notifications');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,15 +97,19 @@ class _NotificationindexState extends State<Notificationindex> {
                       color: Colors.transparent,
                       child: ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: notificationtxt.length,
+                        itemCount: notifications.length,
                         padding: EdgeInsets.zero,
                         itemBuilder: (context, index) => Column(
                           children: [
                             _notificationItem(
                               notifire.getprimerycolor,
                               'images/logos.png',
-                              notificationtxt[index],
-                              notificationtxt2[index],
+                              notifications[index]['title']!,
+                              DateFormat('dd/MM/yyyy hh:mm:ss a').format(
+                                DateTime.parse(
+                                  notifications[index]['date']!,
+                                ),
+                              ),
                             ),
                             SizedBox(
                               height: height / 60,
@@ -101,20 +125,7 @@ class _NotificationindexState extends State<Notificationindex> {
           ),
         ],
       ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          FloatingActionButton(
-            onPressed: () {
-              _showConfirmationDialog(context);
-            },
-            child: const Icon(Icons.delete),
-            backgroundColor: Colors.red,
-          ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      
     );
   }
 
@@ -183,128 +194,5 @@ class _NotificationindexState extends State<Notificationindex> {
         ],
       ),
     );
-  }
-
-  Future<void> _showConfirmationDialog(BuildContext context) async {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(32.0),
-            ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: notifire.getprimerycolor,
-              borderRadius: const BorderRadius.all(
-                Radius.circular(20),
-              ),
-            ),
-            height: height / 2.5,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: height / 40,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Spacer(),
-                      Icon(
-                        Icons.clear,
-                        color: notifire.getdarkscolor,
-                      ),
-                      SizedBox(
-                        width: width / 20,
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: height / 40,
-                ),
-                Text(
-                  '¿Estás seguro de que quieres eliminar todas las notificaciones?',
-                  style: TextStyle(
-                    color: notifire.getdarkscolor,
-                    fontFamily: 'Gilroy Bold',
-                    fontSize: height / 40,
-                  ),
-                ),
-                SizedBox(
-                  height: height / 20,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    height: height / 18,
-                    width: width / 2.5,
-                    decoration: BoxDecoration(
-                      color: notifire.getorangeprimerycolor,
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(20),
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        CustomStrings.cancel,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'Gilroy Bold',
-                            fontSize: height / 55),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: height / 100,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    _clearNotifications();
-                    Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    height: height / 18,
-                    width: width / 2.5,
-                    decoration: const BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(20),
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Eliminar Notificaciones',
-                        style: TextStyle(
-                            color: const Color(0xffEB5757),
-                            fontFamily: 'Gilroy Bold',
-                            fontSize: height / 55),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _clearNotifications() {
-    setState(() {
-      notificationtxt.clear();
-      notificationtxt2.clear();
-      notificationimg.clear();
-    });
   }
 }

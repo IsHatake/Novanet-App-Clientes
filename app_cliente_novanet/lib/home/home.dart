@@ -149,9 +149,9 @@ class _HomeState extends State<Home> {
              _launchUrlManual();
             },
             child: Icon(
-              Icons.help_outline, // Icono de interrogación
-              color: notifire.getwhite, // Usa el color definido en notifire
-              size: 24.0, // Ajusta el tamaño según sea necesario
+              Icons.help_outline, 
+              color: notifire.getwhite,
+              size: 24.0,
             ),
           ),
           const SizedBox(
@@ -173,7 +173,25 @@ class _HomeState extends State<Home> {
             ),
           ),
           const SizedBox(
-            width: 10,
+            width: 2,
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const Notificationindex("Notificaciones"),
+                ),
+              );
+            },
+            child: Image.asset(
+              "images/notification.png",
+              color: notifire.getwhite,
+              scale: 4,
+            ),
+          ),
+          const SizedBox(
+            width: 2,
           ),
           GestureDetector(
             onTap: () {

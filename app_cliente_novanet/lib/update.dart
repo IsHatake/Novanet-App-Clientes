@@ -1,3 +1,5 @@
+// ignore_for_file: body_might_complete_normally_catch_error, avoid_print, prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:in_app_update/in_app_update.dart';
 
