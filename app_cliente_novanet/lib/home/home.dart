@@ -157,24 +157,7 @@ class _HomeState extends State<Home> {
           const SizedBox(
             width: 10,
           ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const WebviewTest_screen(),
-                ),
-              );
-            },
-            child: Image.asset(
-              "images/high-speed.png",
-              color: notifire.getwhite,
-              scale: 20,
-            ),
-          ),
-          const SizedBox(
-            width: 2,
-          ),
+   
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -349,288 +332,127 @@ class _HomeState extends State<Home> {
                             ),
                           ),
                           Center(
-                            child: Padding(
-                              padding:
-                                  EdgeInsets.symmetric(horizontal: width / 38),
-                              child: Container(
-                                height: height / 7,
-                                width: width,
-                                decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.circular(10),
-                                  ),
-                                  color: notifire.getwhite,
-                                  boxShadow: <BoxShadow>[
-                                    BoxShadow(
-                                      color: notifire.getdarkscolor
-                                          .withOpacity(0.3),
-                                      blurRadius: 5.0,
-                                      offset: const Offset(0.0, 0.75),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                      height: height / 50,
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Column(
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                if (fcLlaveUnica
-                                                        .isNullOrEmpty ||
-                                                    fcLlaveUnica == '') {
-                                                  CherryToast.info(
-                                                    backgroundColor:
-                                                        notifire.getbackcolor,
-                                                    title: Text(
-                                                        'Aún no cuentas con esta opción',
-                                                        style: TextStyle(
-                                                            color: notifire
-                                                                .getdarkscolor),
-                                                        textAlign:
-                                                            TextAlign.start),
-                                                    borderRadius: 5,
-                                                  ).show(context);
-                                                  return;
-                                                }
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        PayWebview_screen(
-                                                            keyId:
-                                                                fcLlaveUnica),
-                                                  ),
-                                                );
-                                              },
-                                              child: Container(
-                                                height: height / 15,
-                                                width: width / 7,
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      notifire.getprimerycolor,
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                    Radius.circular(10),
-                                                  ),
-                                                  boxShadow: const <BoxShadow>[
-                                                    BoxShadow(
-                                                      color: Color.fromARGB(
-                                                          34, 82, 79, 79),
-                                                      blurRadius: 15.0,
-                                                      offset: Offset(0.0, 0.75),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: Center(
-                                                  child: Image.asset(
-                                                    "images/metodo-de-pago.png",
-                                                    color:
-                                                        notifire.getdarkscolor,
-                                                    height: height / 20,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: height / 60,
-                                            ),
-                                            Text(
-                                              CustomStrings.pay,
-                                              style: TextStyle(
-                                                  fontFamily: "Gilroy Bold",
-                                                  color: notifire.getdarkscolor,
-                                                  fontSize: height / 55),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(
-                                          width: 20.00,
-                                        ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            _showWPDialog(context);
-                                          },
-                                          child: Column(
-                                            children: [
-                                              Container(
-                                                height: height / 15,
-                                                width: width / 7,
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      notifire.getprimerycolor,
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                    Radius.circular(10),
-                                                  ),
-                                                  boxShadow: const <BoxShadow>[
-                                                    BoxShadow(
-                                                      color: Color.fromARGB(
-                                                          34, 82, 79, 79),
-                                                      blurRadius: 15.0,
-                                                      offset: Offset(0.0, 0.75),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: Center(
-                                                  child: Image.asset(
-                                                    "images/apoyo.png",
-                                                    color:
-                                                        notifire.getdarkscolor,
-                                                    height: height / 20,
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                height: height / 60,
-                                              ),
-                                              Text(
-                                                CustomStrings.soporte,
-                                                style: TextStyle(
-                                                  fontFamily: "Gilroy Bold",
-                                                  color: notifire.getdarkscolor,
-                                                  fontSize: height / 55,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          width: 20.00,
-                                        ),
-                                        Column(
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        AddServices_Screen(
-                                                            'Servicios',
-                                                            fbprincipal: widget
-                                                                .fbprincipal),
-                                                  ),
-                                                );
-                                              },
-                                              child: Container(
-                                                height: height / 15,
-                                                width: width / 7,
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      notifire.getprimerycolor,
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                    Radius.circular(10),
-                                                  ),
-                                                  boxShadow: const <BoxShadow>[
-                                                    BoxShadow(
-                                                      color: Color.fromARGB(
-                                                          34, 82, 79, 79),
-                                                      blurRadius: 15.0,
-                                                      offset: Offset(0.0, 0.75),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: Center(
-                                                  child: Image.asset(
-                                                    "images/caja.png",
-                                                    color:
-                                                        notifire.getdarkscolor,
-                                                    height: height / 20,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: height / 60,
-                                            ),
-                                            Text(
-                                              CustomStrings.addservice,
-                                              style: TextStyle(
-                                                  fontFamily: "Gilroy Bold",
-                                                  color: notifire.getdarkscolor,
-                                                  fontSize: height / 55),
-                                            ),
-                                          ],
-                                        ),
-                                        if (widget.fbprincipal) ...[
-                                          const SizedBox(
-                                            width: 20.00,
-                                          ),
-                                          Column(
-                                            children: [
-                                              GestureDetector(
-                                                onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          const referidos_Screen(),
-                                                    ),
-                                                  );
-                                                },
-                                                child: Container(
-                                                  height: height / 15,
-                                                  width: width / 7,
-                                                  decoration: BoxDecoration(
-                                                    color: notifire
-                                                        .getprimerycolor,
-                                                    borderRadius:
-                                                        const BorderRadius.all(
-                                                      Radius.circular(10),
-                                                    ),
-                                                    boxShadow: const <
-                                                        BoxShadow>[
-                                                      BoxShadow(
-                                                        color: Color.fromARGB(
-                                                            34, 82, 79, 79),
-                                                        blurRadius: 15.0,
-                                                        offset:
-                                                            Offset(0.0, 0.75),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Center(
-                                                    child: Image.asset(
-                                                      "images/referir.png",
-                                                      color: notifire
-                                                          .getdarkscolor,
-                                                      height: height / 20,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                height: height / 60,
-                                              ),
-                                              Text(
-                                                CustomStrings.referir,
-                                                style: TextStyle(
-                                                    fontFamily: "Gilroy Bold",
-                                                    color:
-                                                        notifire.getdarkscolor,
-                                                    fontSize: height / 55),
-                                              ),
-                                              const SizedBox(
-                                                width: 20.00,
-                                              ),
-                                            ],
-                                          ),
-                                        ]
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
+  child: Padding(
+    padding: EdgeInsets.symmetric(horizontal: width / 38),
+    child: Container(
+      height: height / 7,
+      width: width,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(
+          Radius.circular(10),
+        ),
+        color: notifire.getwhite,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: notifire.getdarkscolor.withOpacity(0.3),
+            blurRadius: 5.0,
+            offset: const Offset(0.0, 0.75),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            height: height / 50,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (widget.fbprincipal) ...[
+                _buildIconButton(
+                  context,
+                  "images/referir.png",
+                  CustomStrings.referir,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const referidos_Screen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+              _buildIconButton(
+                context,
+                "images/high-speed.png",
+                'Test',
+                () {
+                  if (fcLlaveUnica.isNullOrEmpty || fcLlaveUnica == '') {
+                    CherryToast.info(
+                      backgroundColor: notifire.getbackcolor,
+                      title: Text(
+                          'Aún no cuentas con esta opción',
+                          style: TextStyle(color: notifire.getdarkscolor),
+                          textAlign: TextAlign.start),
+                      borderRadius: 5,
+                    ).show(context);
+                    return;
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const WebviewTest_screen(),
+                    ),
+                  );
+                },
+              ),
+              _buildIconButton(
+                context,
+                "images/apoyo.png",
+                'Comunícate',
+                () {
+                  _showWPDialog(context);
+                },
+              ),
+              _buildIconButton(
+                context,
+                "images/caja.png",
+                CustomStrings.addservice,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddServices_Screen(
+                        'Servicios',
+                        fbprincipal: widget.fbprincipal,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildIconButton(
+                context,
+                "images/pagar.png",
+                CustomStrings.pay,
+                () {
+                  if (fcLlaveUnica.isNullOrEmpty || fcLlaveUnica == '') {
+                    CherryToast.info(
+                      backgroundColor: notifire.getbackcolor,
+                      title: Text(
+                          'Aún no cuentas con esta opción',
+                          style: TextStyle(color: notifire.getdarkscolor),
+                          textAlign: TextAlign.start),
+                      borderRadius: 5,
+                    ).show(context);
+                    return;
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PayWebview_screen(keyId: fcLlaveUnica),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  ),
+),
+
                         ],
                       ),
                     ],
@@ -1022,9 +844,9 @@ class _HomeState extends State<Home> {
                               height: 20,
                               width: 20,
                             ),
-                            SizedBox(width: 10),
+                            SizedBox(width: 1),
                             Text(
-                              'SOPORTE',
+                              'SOPORTE TÉCNICO ',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontFamily: 'Gilroy Bold',
@@ -1063,7 +885,7 @@ class _HomeState extends State<Home> {
                             ),
                             SizedBox(width: 10),
                             Text(
-                              'PAGOS',
+                              'SOPORTE PAGOS',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontFamily: 'Gilroy Bold',
@@ -1428,6 +1250,56 @@ class _HomeState extends State<Home> {
       }
     }
   }
+
+  Widget _buildIconButton(BuildContext context, String imagePath, String label, VoidCallback onTap) {
+  return Flexible(
+    child: Column(
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            height: height / 15,
+            width: width / 7,
+            decoration: BoxDecoration(
+              color: notifire.getprimerycolor,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(10),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26, // Sombra con el color #faa61a
+                  blurRadius: 15.0,
+                  offset: const Offset(0.0, 0.5),
+                  spreadRadius: 0.12, // Aumenta el radio de dispersión de la sombra
+                ),
+              ],
+            ),
+            child: Center(
+              child: Image.asset(
+                imagePath,
+                 color: Color(0xFFfaa61a),
+                height: height / 20,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: height / 60,
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: "Gilroy Bold",
+            color: notifire.getdarkscolor,
+            fontSize: height / 70,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
 
   Future<void> _launchUrlManual() async {
     if (!await launchUrl(

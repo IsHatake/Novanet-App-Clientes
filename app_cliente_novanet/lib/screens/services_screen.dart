@@ -530,39 +530,42 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
         ),
       ),
       floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (widget.fbprincipal)
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              reverseDuration: const Duration(milliseconds: 200),
-              switchInCurve: Curves.decelerate,
-              switchOutCurve: Curves.decelerate,
-              child: visble_form
-                  ? FloatingActionButton(
-                      key: UniqueKey(),
-                      onPressed: () {
-                        setState(() {
-                          visble_form = false;
-                        });
-                      },
-                      child: const Icon(Icons.close),
-                      backgroundColor: Colors.red,
-                    )
-                  : FloatingActionButton(
-                      key: UniqueKey(),
-                      onPressed: () {
-                        setState(() {
-                          visble_form = true;
-                        });
-                      },
-                      child: const Icon(Icons.add),
-                      backgroundColor: Colors.green,
-                    ),
-            ),
-        ],
+  mainAxisAlignment: MainAxisAlignment.end,
+  crossAxisAlignment: CrossAxisAlignment.center,
+  children: [
+    if (widget.fbprincipal)
+      AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        reverseDuration: const Duration(milliseconds: 200),
+        switchInCurve: Curves.decelerate,
+        switchOutCurve: Curves.decelerate,
+        child: visble_form
+            ? FloatingActionButton.extended(
+                key: UniqueKey(),
+                onPressed: () {
+                  setState(() {
+                    visble_form = false;
+                  });
+                },
+                 icon: const Icon(Icons.close),
+                label: const Text('Ver Menos'),
+                backgroundColor: Colors.red,
+          
+              )
+            : FloatingActionButton.extended(
+                key: UniqueKey(),
+                onPressed: () {
+                  setState(() {
+                    visble_form = true;
+                  });
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Productos'),
+                backgroundColor: Colors.green,
+              ),
       ),
+  ],
+),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }

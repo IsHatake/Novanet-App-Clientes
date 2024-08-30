@@ -40,22 +40,33 @@ class _NotificationindexState extends State<Notificationindex> {
             jsonDecode(response.body)['data'];
 
         setState(() {
-          notifications = notificacionesJson.map((noti) {
+          notifications = notificacionesJson
+              .where((noti) => noti['fbVisibilidad'] != false)
+              .map((noti) {
             String formattedDate =
                 DateTime.parse(noti['fdFechaEnvio']).toString().split('T')[0];
 
             return {
+              'id': noti['fiIDNotificacion'].toString(),
               'title': noti['fcNotificacion'].toString(),
               'date': formattedDate,
             };
           }).toList();
         });
-
-        print(notifications); // Check if the notifications are populated
       } else {
         throw Exception('Failed to load notifications');
       }
     }
+  }
+
+  void _deleteNotification(String? index) async {
+    final response = await http.get(Uri.parse(
+        'https://api.novanetgroup.com/api/Novanet/Usuario/Notificaciones_By_Cliente_Eliminar?piIDNotificacion=$index'));
+
+    // Lógica para eliminar la notificación de la lista local
+    setState(() {
+      notifications.removeWhere((notification) => notification['id'] == index);
+    });
   }
 
   @override
@@ -89,43 +100,67 @@ class _NotificationindexState extends State<Notificationindex> {
               ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: width / 20),
-                child: Column(
-                  children: [
-                    Container(
-                      height: height / 1.5,
-                      width: width,
-                      color: Colors.transparent,
-                      child: ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: notifications.length,
-                        padding: EdgeInsets.zero,
-                        itemBuilder: (context, index) => Column(
-                          children: [
-                            _notificationItem(
-                              notifire.getprimerycolor,
-                              'images/logos.png',
-                              notifications[index]['title']!,
-                              DateFormat('dd/MM/yyyy hh:mm:ss a').format(
-                                DateTime.parse(
-                                  notifications[index]['date']!,
+                child: notifications.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Sin notificaciones previas',
+                          style: TextStyle(
+                            color: notifire.getdarkscolor,
+                            fontFamily: 'Gilroy Bold',
+                            fontSize: height / 40,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        height: height / 1.5,
+                        width: width,
+                        color: Colors.transparent,
+                        child: ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: notifications.length,
+                          padding: EdgeInsets.zero,
+                          itemBuilder: (context, index) => Column(
+                            children: [
+                              Dismissible(
+                                key: UniqueKey(),
+                                direction: DismissDirection.startToEnd,
+                                onDismissed: (direction) {
+                                  _deleteNotification(
+                                      notifications[index]['id']);
+                                },
+                                background: Container(
+                                  color: Colors.red,
+                                  alignment: Alignment.centerLeft,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20),
+                                  child: const Icon(
+                                    Icons.delete,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                child: _notificationItem(
+                                  notifire.getprimerycolor,
+                                  'images/logos.png',
+                                  notifications[index]['title']!,
+                                  DateFormat('dd/MM/yyyy hh:mm:ss a').format(
+                                    DateTime.parse(
+                                      notifications[index]['date']!,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(
-                              height: height / 60,
-                            ),
-                          ],
+                              SizedBox(
+                                height: height / 60,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),
         ],
       ),
-      
     );
   }
 
