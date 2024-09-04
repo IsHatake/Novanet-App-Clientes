@@ -23,11 +23,11 @@ class Seealltransaction extends StatefulWidget {
 
 class _SeealltransactionState extends State<Seealltransaction> {
   late ColorNotifire notifire;
-  int _startIndex = 0;
-  int _endIndex = 0;
   int _itemsPerPage = 10;
   List listadodepagos = [];
   bool _isLoading = true;
+
+  int _currentPage = 0; // Página actual
 
   getdarkmodepreviousstate() async {
     final prefs = await SharedPreferences.getInstance();
@@ -48,7 +48,6 @@ class _SeealltransactionState extends State<Seealltransaction> {
   Future<void> PagosByCliente() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-
       var piIDCliente = prefs.getString("fiIDCliente");
       var fiIDSolicitud = prefs.getString("fiIDCliente");
 
@@ -60,9 +59,6 @@ class _SeealltransactionState extends State<Seealltransaction> {
 
         setState(() {
           listadodepagos = data;
-          _endIndex = (_itemsPerPage < listadodepagos.length)
-              ? _itemsPerPage - 1
-              : listadodepagos.length - 1;
           _isLoading = false;
         });
       } else {
@@ -86,6 +82,22 @@ class _SeealltransactionState extends State<Seealltransaction> {
   @override
   Widget build(BuildContext context) {
     notifire = Provider.of<ColorNotifire>(context, listen: true);
+
+    // Calcular los índices de inicio y fin para la página actual
+    final int _startIndex = _currentPage * _itemsPerPage;
+    final int _endIndex = (_startIndex + _itemsPerPage) > listadodepagos.length
+        ? listadodepagos.length
+        : _startIndex + _itemsPerPage;
+
+    // Elementos para la página actual
+    List<dynamic> currentPageItems = [];
+    if (_startIndex < listadodepagos.length) {
+      currentPageItems = listadodepagos.sublist(
+        _startIndex,
+        _endIndex,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -97,6 +109,21 @@ class _SeealltransactionState extends State<Seealltransaction> {
               fontFamily: "Gilroy Bold",
               color: notifire.getdarkscolor,
               fontSize: height / 40),
+        ),
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Container(
+            height: 40,
+            width: 40,
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: notifire.getdarkscolor),
+            ),
+            child: Icon(Icons.arrow_back, color: notifire.getdarkscolor),
+          ),
         ),
         actions: [
           Padding(
@@ -115,7 +142,7 @@ class _SeealltransactionState extends State<Seealltransaction> {
               onChanged: (int? newValue) {
                 setState(() {
                   _itemsPerPage = newValue!;
-                  PagosByCliente();
+                  _currentPage = 0; // Reiniciar a la primera página
                 });
               },
               items: <int>[10, 25, 50].map<DropdownMenuItem<int>>((int value) {
@@ -132,93 +159,141 @@ class _SeealltransactionState extends State<Seealltransaction> {
         ],
       ),
       backgroundColor: notifire.getprimerycolor,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: height / 50,
-            ),
-            if (_isLoading)
-              Center(
-                child: CircularProgressIndicator(
-                  color: notifire.getorangeprimerycolor,
-                ),
-              )
-            else if (listadodepagos.isEmpty)
-              Center(
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'images/sin-dinero.png',  
-                      color: notifire.getorangeprimerycolor,
-                       height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.15,
-                     
-                      width: 200,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'No cuentas con Pagos hechos aquí',
-                      style: TextStyle(
-                        fontFamily: "Gilroy Bold",
-                        color: notifire.getdarkscolor,
-                        fontSize: 20,
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: notifire.getorangeprimerycolor,
+              ),
+            )
+          : listadodepagos.isEmpty
+              ? Center(
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'images/sin-dinero.png',
+                        color: notifire.getorangeprimerycolor,
+                        height: MediaQuery.of(context).size.height * 0.15,
+                        width: 200,
                       ),
-                    ),
-                  ],
-                ),
-              )
-            else
-              Container(
-                height: height / 1.15,
-                color: Colors.transparent,
-                child: Card(
-                  color: notifire.getbackcolor,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    side: const BorderSide(color: Colors.black12, width: 4),
-                    borderRadius: BorderRadius.circular(10),
+                      const SizedBox(height: 20),
+                      Text(
+                        'No cuentas con Pagos hechos aquí',
+                        style: TextStyle(
+                          fontFamily: "Gilroy Bold",
+                          color: notifire.getdarkscolor,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: width * 0.05,
-                      vertical: height * 0.01,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                )
+              : Column(
+                  children: [
+                          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child:
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        for (int i = _startIndex; i <= _endIndex; i++)
-                          if (i < listadodepagos.length)
-                            Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      height: height * 0.07,
-                                      width: width / 7,
-                                      decoration: BoxDecoration(
-                                        color: notifire.getprimerycolor,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Center(
-                                        child: Image.asset(
-                                          "images/logos.png",
-                                          height: height / 30,
-                                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            minimumSize: const Size(40, 40),
+                            backgroundColor: (_currentPage > 0)
+                                ? notifire.getorangeprimerycolor
+                                : Colors.grey,
+                          ),
+                          onPressed: () {
+                            if (_currentPage > 0) {
+                              setState(() {
+                                _currentPage--;
+                              });
+                            }
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.arrow_back_ios_new,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          "Mostrando ${_startIndex + 1} - $_endIndex de ${listadodepagos.length} registros",
+                          style: TextStyle(
+                            fontFamily: "Gilroy Medium",
+                            color: notifire.getdarkscolor.withOpacity(0.6),
+                            fontSize: height * 0.013,
+                          ),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            minimumSize: const Size(40, 40),
+                            backgroundColor: (_endIndex < listadodepagos.length)
+                                ? notifire.getorangeprimerycolor
+                                : Colors.grey,
+                          ),
+                          onPressed: (_endIndex < listadodepagos.length)
+                              ? () {
+                                  setState(() {
+                                    _currentPage++; // Avanzar una página
+                                  });
+                                }
+                              : null,
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: currentPageItems.length,
+                        itemBuilder: (context, i) {
+                          return Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    height: height * 0.07,
+                                    width: width / 7,
+                                    decoration: BoxDecoration(
+                                      color: notifire.getprimerycolor,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Center(
+                                      child: Image.asset(
+                                        "images/logos.png",
+                                        height: height / 30,
                                       ),
                                     ),
-                                    SizedBox(width: width * 0.02),
-                                    Column(
+                                  ),
+                                  SizedBox(width: width * 0.02),
+                                  Expanded(
+                                    child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          listadodepagos[i]['fiIDTransaccion']
+                                          currentPageItems[i]['fiIDTransaccion']
                                                   .toString() +
                                               ' - ' +
-                                              listadodepagos[i]['fcOperacion'],
+                                              currentPageItems[i]
+                                                  ['fcOperacion'],
                                           style: TextStyle(
                                             fontFamily: "Gilroy Bold",
                                             color: notifire.getdarkscolor,
@@ -230,7 +305,7 @@ class _SeealltransactionState extends State<Seealltransaction> {
                                         ),
                                         SizedBox(height: height * 0.005),
                                         Text(
-                                          listadodepagos[i]
+                                          currentPageItems[i]
                                               ['fcLugarResidencia'],
                                           style: TextStyle(
                                             fontFamily: "Gilroy Medium",
@@ -246,7 +321,7 @@ class _SeealltransactionState extends State<Seealltransaction> {
                                         Text(
                                           DateFormat('dd/MM/yyyy').format(
                                             DateTime.parse(
-                                              listadodepagos[i]
+                                              currentPageItems[i]
                                                   ['fdFechaTransaccion'],
                                             ),
                                           ),
@@ -267,7 +342,7 @@ class _SeealltransactionState extends State<Seealltransaction> {
                                             symbol: '\$',
                                           ).format(
                                             double.parse(
-                                              listadodepagos[i]
+                                              currentPageItems[i]
                                                       ['fnValorAbonado']
                                                   .toString(),
                                             ),
@@ -283,58 +358,19 @@ class _SeealltransactionState extends State<Seealltransaction> {
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                                SizedBox(height: height * 0.005),
-                                const Divider(),
-                              ],
-                            ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ElevatedButton(
-                              onPressed: (_startIndex > 0)
-                                  ? () {
-                                      setState(() {
-                                        _startIndex -= _itemsPerPage;
-                                        _endIndex -= _itemsPerPage;
-                                      });
-                                    }
-                                  : null,
-                              child: const Text('<'),
-                            ),
-                            Text(
-                              "Mostrando ${_startIndex + 1} - ${(_endIndex < listadodepagos.length) ? _endIndex + 1 : listadodepagos.length} de ${listadodepagos.length} registros",
-                              style: TextStyle(
-                                fontFamily: "Gilroy Medium",
-                                color: notifire.getdarkscolor.withOpacity(0.6),
-                                fontSize: height * 0.013,
+                                  ),
+                                ],
                               ),
-                            ),
-                            ElevatedButton(
-                              onPressed: (_endIndex < listadodepagos.length - 1)
-                                  ? () {
-                                      setState(() {
-                                        _startIndex += _itemsPerPage;
-                                        _endIndex = (_endIndex + _itemsPerPage <
-                                                listadodepagos.length - 1)
-                                            ? _endIndex + _itemsPerPage
-                                            : listadodepagos.length - 1;
-                                      });
-                                    }
-                                  : null,
-                              child: const Text('>'),
-                            ),
-                          ],
-                        ),
-                      ],
+                              SizedBox(height: height * 0.005),
+                              const Divider(),
+                            ],
+                          );
+                        },
+                      ),
                     ),
-                  ),
+                
+                  ],
                 ),
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

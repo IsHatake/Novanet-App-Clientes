@@ -74,8 +74,12 @@ class _ReferirScreenState extends State<ReferirScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: TextField(
                     controller: name,
+                    keyboardType: TextInputType.text,
                     decoration: InputDecoration(
                       filled: true,
+                      labelText: 'Nombre de Referido',
+                      prefixIcon:
+                          Icon(Icons.person, color: notifire.getdarkscolor),
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(color: Color(0xffd3d3d3)),
                         borderRadius: BorderRadius.circular(10),
@@ -100,8 +104,13 @@ class _ReferirScreenState extends State<ReferirScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: TextField(
                     controller: numberphone,
+                    keyboardType: TextInputType.number,
                     maxLength: 8,
                     decoration: InputDecoration(
+                      labelText: 'Número de Teléfono',
+                      iconColor: notifire.getdarkscolor,
+                      prefixIcon:
+                          Icon(Icons.phone, color: notifire.getdarkscolor),
                       filled: true,
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(color: Color(0xffd3d3d3)),
@@ -205,7 +214,6 @@ class _ReferirScreenState extends State<ReferirScreen> {
         setState(() {
           name.value = TextEditingValue.empty;
           numberphone.value = TextEditingValue.empty;
-
         });
         return;
       } else if (codeStatus.toString() == '409') {

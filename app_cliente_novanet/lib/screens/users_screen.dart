@@ -24,9 +24,10 @@ class usuarios_Screen extends StatefulWidget {
 
 class _usuarios_ScreenState extends State<usuarios_Screen> {
   late ColorNotifire notifire;
-  int _startIndex = 0;
-  int _endIndex = 0;
   int _itemsPerPage = 10;
+
+
+  int _currentPage = 0;
   List listadodeusuarios = [];
 
   getdarkmodepreviousstate() async {
@@ -59,9 +60,7 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
 
         setState(() {
           listadodeusuarios = data;
-          _endIndex = (_itemsPerPage < listadodeusuarios.length)
-              ? _itemsPerPage - 1
-              : listadodeusuarios.length - 1;
+         
         });
       } else {
         if (kDebugMode) {
@@ -125,17 +124,30 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
   @override
   Widget build(BuildContext context) {
     notifire = Provider.of<ColorNotifire>(context, listen: true);
+    final int _startIndex = _currentPage * _itemsPerPage;
+    final int _endIndex = (_startIndex + _itemsPerPage) > listadodeusuarios.length
+        ? listadodeusuarios.length
+        : _startIndex + _itemsPerPage;
+
+    // Elementos para la página actual
+    List<dynamic> currentPageItems = [];
+    if (_startIndex < listadodeusuarios.length) {
+      currentPageItems = listadodeusuarios.sublist(
+        _startIndex,
+        _endIndex,
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
         iconTheme: IconThemeData(color: notifire.getwhite),
-        backgroundColor: notifire.getorangeprimerycolor,
+        backgroundColor: notifire.getprimerycolor,
         title: Text(
           'Usuarios',
           style: TextStyle(
               fontFamily: "Gilroy Bold",
-              color: notifire.getwhite,
+              color: notifire.getdarkscolor,
               fontSize: 20),
         ),
         leading: GestureDetector(
@@ -148,9 +160,9 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: notifire.getwhite),
+              border: Border.all(color: notifire.getdarkscolor),
             ),
-            child: Icon(Icons.arrow_back, color: notifire.getwhite),
+            child: Icon(Icons.arrow_back, color: notifire.getdarkscolor),
           ),
         ),
         actions: [
@@ -188,7 +200,7 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
             width: 5,
           ),
           IconButton(
-            icon: Icon(Icons.person_add_alt, color: notifire.getwhite),
+            icon: Icon(Icons.person_add_alt, color: notifire.getdarkscolor),
             onPressed: () async {
               final prefs = await SharedPreferences.getInstance();
               int fiIDEquifax = int.parse(prefs.getString("fiIDCuentaFamiliar") ?? '0');
@@ -231,6 +243,7 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
                           'images/familia.png',
                           height: 200,
                           width: 200,
+                          color: notifire.getdarkscolor,
                         ),
                         const SizedBox(height: 20),
                       ],
@@ -256,6 +269,77 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Padding(
+            padding: const EdgeInsets.all(16.0),
+            child:
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            minimumSize: const Size(40, 40),
+                            backgroundColor: (_currentPage > 0)
+                                ? notifire.getorangeprimerycolor
+                                : Colors.grey,
+                          ),
+                          onPressed: () {
+                            if (_currentPage > 0) {
+                              setState(() {
+                                _currentPage--;
+                              });
+                            }
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.arrow_back_ios_new,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          "Mostrando ${_startIndex + 1} - $_endIndex de ${listadodeusuarios.length} registros",
+                          style: TextStyle(
+                            fontFamily: "Gilroy Medium",
+                            color: notifire.getdarkscolor.withOpacity(0.6),
+                            fontSize: height * 0.013,
+                          ),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            minimumSize: const Size(40, 40),
+                            backgroundColor: (_endIndex < listadodeusuarios.length)
+                                ? notifire.getorangeprimerycolor
+                                : Colors.grey,
+                          ),
+                          onPressed: (_endIndex < listadodeusuarios.length)
+                              ? () {
+                                  setState(() {
+                                    _currentPage++;
+                                  });
+                                }
+                              : null,
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ),
                       for (int i = _startIndex; i <= _endIndex; i++)
                         if (i < listadodeusuarios.length)
                           Column(
@@ -363,45 +447,7 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
                               const Divider(),
                             ],
                           ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ElevatedButton(
-                            onPressed: (_startIndex > 0)
-                                ? () {
-                                    setState(() {
-                                      _startIndex -= _itemsPerPage;
-                                      _endIndex -= _itemsPerPage;
-                                    });
-                                  }
-                                : null,
-                            child: const Text('<'),
-                          ),
-                          Text(
-                            "Mostrando ${_startIndex + 1} - ${(_endIndex < listadodeusuarios.length) ? _endIndex + 1 : listadodeusuarios.length} de ${listadodeusuarios.length} registros",
-                            style: TextStyle(
-                              fontFamily: "Gilroy Medium",
-                              color: notifire.getdarkscolor.withOpacity(0.6),
-                              fontSize: height * 0.013,
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: (_endIndex <
-                                    listadodeusuarios.length - 1)
-                                ? () {
-                                    setState(() {
-                                      _startIndex += _itemsPerPage;
-                                      _endIndex = (_endIndex + _itemsPerPage <
-                                              listadodeusuarios.length - 1)
-                                          ? _endIndex + _itemsPerPage
-                                          : listadodeusuarios.length - 1;
-                                    });
-                                  }
-                                : null,
-                            child: const Text('>'),
-                          ),
-                        ],
-                      ),
+                      
                     ],
                   ),
                 ),

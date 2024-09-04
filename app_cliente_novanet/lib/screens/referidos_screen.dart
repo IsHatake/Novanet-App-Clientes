@@ -23,11 +23,10 @@ class referidos_Screen extends StatefulWidget {
 
 class _referidos_ScreenState extends State<referidos_Screen> {
   late ColorNotifire notifire;
-  int _startIndex = 0;
-  int _endIndex = 0;
   int _itemsPerPage = 10;
   List listadodereferidos = [];
   bool _isLoading = true;
+  int _currentPage = 0; // Página actual
 
   getdarkmodepreviousstate() async {
     final prefs = await SharedPreferences.getInstance();
@@ -58,9 +57,7 @@ class _referidos_ScreenState extends State<referidos_Screen> {
 
         setState(() {
           listadodereferidos = data;
-          _endIndex = (_itemsPerPage < listadodereferidos.length)
-              ? _itemsPerPage - 1
-              : listadodereferidos.length - 1;
+  
           _isLoading = false;
         });
       } else {
@@ -83,7 +80,22 @@ class _referidos_ScreenState extends State<referidos_Screen> {
 
   @override
   Widget build(BuildContext context) {
-    notifire = Provider.of<ColorNotifire>(context, listen: true);
+      notifire = Provider.of<ColorNotifire>(context, listen: true);
+
+    // Calcular los índices de inicio y fin para la página actual
+    final int _startIndex = _currentPage * _itemsPerPage;
+    final int _endIndex = (_startIndex + _itemsPerPage) > listadodereferidos.length
+        ? listadodereferidos.length
+        : _startIndex + _itemsPerPage;
+
+    // Elementos para la página actual
+    List<dynamic> currentPageItems = [];
+    if (_startIndex < listadodereferidos.length) {
+      currentPageItems = listadodereferidos.sublist(
+        _startIndex,
+        _endIndex,
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -120,16 +132,16 @@ class _referidos_ScreenState extends State<referidos_Screen> {
               icon: const Icon(Icons.arrow_drop_down),
               iconSize: 24,
               elevation: 16,
-              style: TextStyle(color: notifire.getwhite),
+              style: TextStyle(color: notifire.getdarkscolor),
               underline: Container(
                 height: 2,
-                color: notifire.getwhite,
+                color: notifire.getdarkscolor,
               ),
               dropdownColor: notifire.getbackcolor,
               onChanged: (int? newValue) {
                 setState(() {
                   _itemsPerPage = newValue!;
-                  PagosByCliente();
+                  _currentPage = 0; // Reiniciar a la primera página
                 });
               },
               items: <int>[10, 25, 50].map<DropdownMenuItem<int>>((int value) {
@@ -234,6 +246,77 @@ class _referidos_ScreenState extends State<referidos_Screen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                                Padding(
+            padding: const EdgeInsets.all(16.0),
+            child:
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            minimumSize: const Size(40, 40),
+                            backgroundColor: (_currentPage > 0)
+                                ? notifire.getorangeprimerycolor
+                                : Colors.grey,
+                          ),
+                          onPressed: () {
+                            if (_currentPage > 0) {
+                              setState(() {
+                                _currentPage--;
+                              });
+                            }
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.arrow_back_ios_new,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          "Mostrando ${_startIndex + 1} - $_endIndex de ${listadodereferidos.length} registros",
+                          style: TextStyle(
+                            fontFamily: "Gilroy Medium",
+                            color: notifire.getdarkscolor.withOpacity(0.6),
+                            fontSize: height * 0.013,
+                          ),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            minimumSize: const Size(40, 40),
+                            backgroundColor: (_endIndex < listadodereferidos.length)
+                                ? notifire.getorangeprimerycolor
+                                : Colors.grey,
+                          ),
+                          onPressed: (_endIndex < listadodereferidos.length)
+                              ? () {
+                                  setState(() {
+                                    _currentPage++;
+                                  });
+                                }
+                              : null,
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ),
                       for (int i = _startIndex; i <= _endIndex; i++)
                         if (i < listadodereferidos.length)
                           Column(
@@ -326,45 +409,7 @@ class _referidos_ScreenState extends State<referidos_Screen> {
                               const Divider(),
                             ],
                           ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ElevatedButton(
-                            onPressed: (_startIndex > 0)
-                                ? () {
-                                    setState(() {
-                                      _startIndex -= _itemsPerPage;
-                                      _endIndex -= _itemsPerPage;
-                                    });
-                                  }
-                                : null,
-                            child: const Text('<'),
-                          ),
-                          Text(
-                            "Mostrando ${_startIndex + 1} - ${(_endIndex < listadodereferidos.length) ? _endIndex + 1 : listadodereferidos.length} de ${listadodereferidos.length} registros",
-                            style: TextStyle(
-                              fontFamily: "Gilroy Medium",
-                              color: notifire.getdarkscolor.withOpacity(0.6),
-                              fontSize: height * 0.013,
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: (_endIndex <
-                                    listadodereferidos.length - 1)
-                                ? () {
-                                    setState(() {
-                                      _startIndex += _itemsPerPage;
-                                      _endIndex = (_endIndex + _itemsPerPage <
-                                              listadodereferidos.length - 1)
-                                          ? _endIndex + _itemsPerPage
-                                          : listadodereferidos.length - 1;
-                                    });
-                                  }
-                                : null,
-                            child: const Text('>'),
-                          ),
-                        ],
-                      ),
+              
                     ],
                   ),
                 ),
