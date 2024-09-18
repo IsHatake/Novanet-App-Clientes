@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names, unused_import, prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable
+// ignore_for_file: non_constant_identifier_names, unused_import, prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, unnecessary_string_interpolations
 
 import 'dart:convert';
 
@@ -33,7 +33,7 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late ColorNotifire notifire;
   late String selectedMonth;
   String fcNombreUsuario = '';
@@ -45,6 +45,9 @@ class _HomeState extends State<Home> {
 
   bool _isExpanded = false;
   int _currentPage = 0;
+
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
   Future<void> _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -92,11 +95,22 @@ class _HomeState extends State<Home> {
     selectedMonth = '1';
     super.initState();
     _pageController = PageController();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -146,10 +160,10 @@ class _HomeState extends State<Home> {
         actions: [
           GestureDetector(
             onTap: () {
-             _launchUrlManual();
+              _launchUrlManual();
             },
             child: Icon(
-              Icons.help_outline, 
+              Icons.help_outline,
               color: notifire.getwhite,
               size: 24.0,
             ),
@@ -157,19 +171,28 @@ class _HomeState extends State<Home> {
           const SizedBox(
             width: 10,
           ),
-   
           GestureDetector(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const Notificationindex("Notificaciones"),
+                  builder: (context) =>
+                      const Notificationindex("Notificaciones"),
                 ),
               );
             },
-            child: Image.asset(
+           child:  json2[0]['fbNotificaciones']
+          ? ScaleTransition(
+              scale: _animation,
+              child: Image.asset(
+                "images/notification.png",
+                color: Colors.white, // Puedes cambiarlo según el tema
+                scale: 4,
+              ),
+            )
+          : Image.asset(
               "images/notification.png",
-              color: notifire.getwhite,
+              color: Colors.white,
               scale: 4,
             ),
           ),
@@ -233,6 +256,11 @@ class _HomeState extends State<Home> {
                                     },
                                     itemCount: cuotas.length,
                                     itemBuilder: (context, index) {
+                                      bool hasAtraso = json2[index]
+                                                  ['fcCuotasEnAtraso'] !=
+                                              '' &&
+                                          json2[index]['fitotal_debe'] != 0.00;
+
                                       return Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
@@ -245,7 +273,9 @@ class _HomeState extends State<Home> {
                                                   MainAxisAlignment.center,
                                               children: [
                                                 Text(
-                                                  'Cuota Mensual Servicio #${index + 1}',
+                                                  hasAtraso
+                                                      ? 'Cuota a Pagar Servicio #${index + 1}'
+                                                      : 'Cuota Mensual Servicio #${index + 1}',
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: height / 50,
@@ -261,10 +291,15 @@ class _HomeState extends State<Home> {
                                                   MainAxisAlignment.center,
                                               children: [
                                                 Text(
-                                                  NumberFormat.currency(
-                                                    locale: 'es',
-                                                    symbol: '\$',
-                                                  ).format(cuotas[index]),
+                                                  hasAtraso
+                                                      ? '${NumberFormat.currency(
+                                                          locale: 'es',
+                                                          symbol: '\$',
+                                                        ).format(json2[index]['fitotal_debe'])}'
+                                                      : NumberFormat.currency(
+                                                          locale: 'es',
+                                                          symbol: '\$',
+                                                        ).format(cuotas[index]),
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: height / 35,
@@ -274,7 +309,25 @@ class _HomeState extends State<Home> {
                                               ],
                                             ),
                                           ),
-                                          if (json2[index]
+                                          if (hasAtraso)
+                                            Center(
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    '${json2[index]['fcCuotasEnAtraso']}',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: height / 60,
+                                                      fontFamily:
+                                                          'Gilroy Medium',
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                          else if (json2[index]
                                                   ['fdFechaProximoPago'] !=
                                               null)
                                             Center(
@@ -283,7 +336,7 @@ class _HomeState extends State<Home> {
                                                     MainAxisAlignment.center,
                                                 children: [
                                                   Text(
-                                                    'Proximo Pago ${DateFormat('dd/MM/yyyy').format(
+                                                    'Próximo Pago: ${DateFormat('dd/MM/yyyy').format(
                                                       DateTime.parse(
                                                         json2[index][
                                                             'fdFechaProximoPago'],
@@ -332,127 +385,143 @@ class _HomeState extends State<Home> {
                             ),
                           ),
                           Center(
-  child: Padding(
-    padding: EdgeInsets.symmetric(horizontal: width / 38),
-    child: Container(
-      height: height / 7,
-      width: width,
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(
-          Radius.circular(10),
-        ),
-        color: notifire.getwhite,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: notifire.getdarkscolor.withOpacity(0.3),
-            blurRadius: 5.0,
-            offset: const Offset(0.0, 0.75),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          SizedBox(
-            height: height / 50,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              if (widget.fbprincipal) ...[
-                _buildIconButton(
-                  context,
-                  "images/referir.png",
-                  CustomStrings.referir,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const referidos_Screen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-              _buildIconButton(
-                context,
-                "images/high-speed.png",
-                'Test',
-                () {
-                  if (fcLlaveUnica.isNullOrEmpty || fcLlaveUnica == '') {
-                    CherryToast.info(
-                      backgroundColor: notifire.getbackcolor,
-                      title: Text(
-                          'Aún no cuentas con esta opción',
-                          style: TextStyle(color: notifire.getdarkscolor),
-                          textAlign: TextAlign.start),
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
-                  }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const WebviewTest_screen(),
-                    ),
-                  );
-                },
-              ),
-              _buildIconButton(
-                context,
-                "images/apoyo.png",
-                'Comunícate',
-                () {
-                  _showWPDialog(context);
-                },
-              ),
-              _buildIconButton(
-                context,
-                "images/caja.png",
-                CustomStrings.addservice,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AddServices_Screen(
-                        'Servicios',
-                        fbprincipal: widget.fbprincipal,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              _buildIconButton(
-                context,
-                "images/pagar.png",
-                CustomStrings.pay,
-                () {
-                  if (fcLlaveUnica.isNullOrEmpty || fcLlaveUnica == '') {
-                    CherryToast.info(
-                      backgroundColor: notifire.getbackcolor,
-                      title: Text(
-                          'Aún no cuentas con esta opción',
-                          style: TextStyle(color: notifire.getdarkscolor),
-                          textAlign: TextAlign.start),
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
-                  }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PayWebview_screen(keyId: fcLlaveUnica),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    ),
-  ),
-),
-
+                            child: Padding(
+                              padding:
+                                  EdgeInsets.symmetric(horizontal: width / 38),
+                              child: Container(
+                                height: height / 7,
+                                width: width,
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  color: notifire.getwhite,
+                                  boxShadow: <BoxShadow>[
+                                    BoxShadow(
+                                      color: notifire.getdarkscolor
+                                          .withOpacity(0.3),
+                                      blurRadius: 5.0,
+                                      offset: const Offset(0.0, 0.75),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      height: height / 50,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        if (widget.fbprincipal) ...[
+                                          _buildIconButton(
+                                            context,
+                                            "images/referir.png",
+                                            CustomStrings.referir,
+                                            () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const referidos_Screen(),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                        _buildIconButton(
+                                          context,
+                                          "images/high-speed.png",
+                                          'Test',
+                                          () {
+                                            if (fcLlaveUnica.isNullOrEmpty ||
+                                                fcLlaveUnica == '') {
+                                              CherryToast.info(
+                                                backgroundColor:
+                                                    notifire.getbackcolor,
+                                                title: Text(
+                                                    'Aún no cuentas con esta opción',
+                                                    style: TextStyle(
+                                                        color: notifire
+                                                            .getdarkscolor),
+                                                    textAlign: TextAlign.start),
+                                                borderRadius: 5,
+                                              ).show(context);
+                                              return;
+                                            }
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const WebviewTest_screen(),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        _buildIconButton(
+                                          context,
+                                          "images/apoyo.png",
+                                          'Comunícate',
+                                          () {
+                                            _showWPDialog(context);
+                                          },
+                                        ),
+                                        _buildIconButton(
+                                          context,
+                                          "images/caja.png",
+                                          CustomStrings.addservice,
+                                          () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AddServices_Screen(
+                                                  'Servicios',
+                                                  fbprincipal:
+                                                      widget.fbprincipal,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        _buildIconButton(
+                                          context,
+                                          "images/pagar.png",
+                                          CustomStrings.pay,
+                                          () {
+                                            if (fcLlaveUnica.isNullOrEmpty ||
+                                                fcLlaveUnica == '') {
+                                              CherryToast.info(
+                                                backgroundColor:
+                                                    notifire.getbackcolor,
+                                                title: Text(
+                                                    'Aún no cuentas con esta opción',
+                                                    style: TextStyle(
+                                                        color: notifire
+                                                            .getdarkscolor),
+                                                    textAlign: TextAlign.start),
+                                                borderRadius: 5,
+                                              ).show(context);
+                                              return;
+                                            }
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    PayWebview_screen(
+                                                        keyId: fcLlaveUnica),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -824,7 +893,7 @@ class _HomeState extends State<Home> {
                     GestureDetector(
                       onTap: () {
                         if (widget.fbprincipal) {
-                          _launchUrl('SOPORTE');
+                          _showWPDialogNumeroTexto(context, 'SOPORTE');
                         } else {
                           _showWPDialogNumero(context, 'SOPORTE');
                         }
@@ -863,7 +932,7 @@ class _HomeState extends State<Home> {
                     GestureDetector(
                       onTap: () {
                         if (widget.fbprincipal) {
-                          _launchUrl('PAGOS');
+                          _showWPDialogNumeroTexto(context, 'PAGOS');
                         } else {
                           _showWPDialogNumero(context, 'PAGOS');
                         }
@@ -902,7 +971,7 @@ class _HomeState extends State<Home> {
                     GestureDetector(
                       onTap: () {
                         if (widget.fbprincipal) {
-                          _launchUrl('CONTRATAR');
+                          _showWPDialogNumeroTexto(context, 'CONTRATAR');
                         } else {
                           _showWPDialogNumero(context, 'CONTRATAR');
                         }
@@ -1011,8 +1080,89 @@ class _HomeState extends State<Home> {
     );
   }
 
+  Future<void> _showWPDialogNumeroTexto(BuildContext context, opcion) async {
+    TextEditingController Texto = TextEditingController();
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  image: const DecorationImage(
+                    image: AssetImage('images/fondo.png'),
+                    fit: BoxFit.cover,
+                  ),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                margin: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.all(25),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Ingrese un comentario',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontFamily: 'Gilroy Bold',
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    TextField(
+                      controller: Texto,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        hintText: 'Comentario',
+                      ),
+                      keyboardType: TextInputType.text,
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        final texto = Texto.text;
+                        if (texto.isEmpty) {
+                          CherryToast.warning(
+                            backgroundColor: notifire.getbackcolor,
+                            title: Text('Necesita Ingresar un comentario',
+                                style: TextStyle(color: notifire.getdarkscolor),
+                                textAlign: TextAlign.start),
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
+                        }
+
+                        _launchUrl(opcion, texto);
+                        Navigator.of(context).pop();
+                      },
+                      child: Custombutton.button(notifire.getorangeprimerycolor,
+                          'Confirmar', width / 2),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _showWPDialogNumero(BuildContext context, opcion) async {
     TextEditingController NumeroIngresado = TextEditingController();
+    TextEditingController Texto = TextEditingController();
 
     return showDialog<void>(
       context: context,
@@ -1062,8 +1212,24 @@ class _HomeState extends State<Home> {
                     const SizedBox(
                       height: 15,
                     ),
+                    TextField(
+                      controller: Texto,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        hintText: 'Comentario',
+                      ),
+                      keyboardType: TextInputType.multiline,
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
                     GestureDetector(
                       onTap: () {
+                        final texto = Texto.text;
                         final numero = NumeroIngresado.text;
                         if (numero.isEmpty) {
                           CherryToast.warning(
@@ -1085,7 +1251,17 @@ class _HomeState extends State<Home> {
                           ).show(context);
                           return;
                         }
-                        _launchUrlSecundario(opcion, numero);
+                        if (texto.isEmpty) {
+                          CherryToast.warning(
+                            backgroundColor: notifire.getbackcolor,
+                            title: Text('Necesita Ingresar un comentario',
+                                style: TextStyle(color: notifire.getdarkscolor),
+                                textAlign: TextAlign.start),
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
+                        }
+                        _launchUrlSecundario(opcion, numero, texto);
                         Navigator.of(context).pop();
                       },
                       child: Custombutton.button(notifire.getorangeprimerycolor,
@@ -1101,7 +1277,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Future<void> _launchUrl(String opcion) async {
+  Future<void> _launchUrl(String opcion, comentario) async {
     final prefs = await SharedPreferences.getInstance();
     var fcNumeroTelefono = prefs.getString("fcTelefono");
 
@@ -1123,6 +1299,9 @@ class _HomeState extends State<Home> {
           'Hola tu referencia es %Ticket%, dentro de un momento un agente te contactará.',
       'pushId': '15',
       'token': 'RC15',
+      'variables': {
+        'comentario': '$comentario',
+      },
     };
 
     String jsonRequestBody = jsonEncode(requestBody);
@@ -1172,7 +1351,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _launchUrlSecundario(
-      String opcion, String numerodetelefonoingresado) async {
+      String opcion, String numerodetelefonoingresado, comentario) async {
     final prefs = await SharedPreferences.getInstance();
     var fcNumeroTelefono = prefs.getString("fcTelefono");
     var fcIdentidad = prefs.getString("fcIdentidad");
@@ -1198,6 +1377,7 @@ class _HomeState extends State<Home> {
       'variables': {
         'identidad': '$fcIdentidad',
         'nombre_completo': fcNombreUsuario,
+        'comentario': '$comentario',
       },
     };
     if (kDebugMode) {
@@ -1251,55 +1431,55 @@ class _HomeState extends State<Home> {
     }
   }
 
-  Widget _buildIconButton(BuildContext context, String imagePath, String label, VoidCallback onTap) {
-  return Flexible(
-    child: Column(
-      children: [
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            height: height / 15,
-            width: width / 7,
-            decoration: BoxDecoration(
-              color: notifire.getprimerycolor,
-              borderRadius: const BorderRadius.all(
-                Radius.circular(10),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26, // Sombra con el color #faa61a
-                  blurRadius: 15.0,
-                  offset: const Offset(0.0, 0.5),
-                  spreadRadius: 0.12, // Aumenta el radio de dispersión de la sombra
+  Widget _buildIconButton(BuildContext context, String imagePath, String label,
+      VoidCallback onTap) {
+    return Flexible(
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: onTap,
+            child: Container(
+              height: height / 15,
+              width: width / 7,
+              decoration: BoxDecoration(
+                color: notifire.getprimerycolor,
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(10),
                 ),
-              ],
-            ),
-            child: Center(
-              child: Image.asset(
-                imagePath,
-                 color: Color(0xFFfaa61a),
-                height: height / 20,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26, // Sombra con el color #faa61a
+                    blurRadius: 15.0,
+                    offset: const Offset(0.0, 0.5),
+                    spreadRadius:
+                        0.12, // Aumenta el radio de dispersión de la sombra
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Image.asset(
+                  imagePath,
+                  color: Color(0xFFfaa61a),
+                  height: height / 20,
+                ),
               ),
             ),
           ),
-        ),
-        SizedBox(
-          height: height / 60,
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: "Gilroy Bold",
-            color: notifire.getdarkscolor,
-            fontSize: height / 70,
+          SizedBox(
+            height: height / 60,
           ),
-        ),
-      ],
-    ),
-  );
-}
-
-
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: "Gilroy Bold",
+              color: notifire.getdarkscolor,
+              fontSize: height / 70,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _launchUrlManual() async {
     if (!await launchUrl(
