@@ -346,7 +346,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
                     child: Column(
                       children: [
                         Text(
-                          'Productos del Servicio #${index + 1}',
+                          'Productos del Servicio #${productosPropios[index]["fcIDPrestamo"]}',
                           style: TextStyle(
                             color: notifire.getdarkscolor,
                             fontSize: height / 50,

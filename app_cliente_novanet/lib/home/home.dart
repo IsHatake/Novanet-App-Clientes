@@ -274,8 +274,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                               children: [
                                                 Text(
                                                   hasAtraso
-                                                      ? 'Cuota a Pagar Servicio #${index + 1}'
-                                                      : 'Cuota Mensual Servicio #${index + 1}',
+                                                      ? 'Cuota a Pagar Servicio #${json2[index]["fcIDPrestamo"].toString()}'
+                                                      : 'Cuota Mensual Servicio #${json2[index]["fcIDPrestamo"].toString()}',
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: height / 50,
@@ -610,7 +610,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                             children: [
                                               SizedBox(height: height * 0.01),
                                               Text(
-                                                "Estado Actual de Servicio #${index + 1}",
+                                                "Estado Actual de Servicio #${json2[index]["fcIDPrestamo"].toString()}",
                                                 style: TextStyle(
                                                   fontFamily: "Gilroy Bold",
                                                   color: notifire.getdarkscolor,
