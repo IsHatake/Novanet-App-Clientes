@@ -181,23 +181,24 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 ),
               );
             },
-           child:  json2[0]['fbNotificaciones']
-          ? ScaleTransition(
-              scale: _animation,
-              child: Image.asset(
-                "images/notification.png",
-                color: Colors.white, // Puedes cambiarlo según el tema
-                scale: 4,
-              ),
-            )
-          : Image.asset(
-              "images/notification.png",
-              color: Colors.white,
-              scale: 4,
-            ),
+            child: json2[0]['fbNotificaciones']
+                ? ScaleTransition(
+                    scale: _animation,
+                    child: Image.asset(
+                      "images/notification.png",
+                      color:
+                          notifire.getwhite, // Puedes cambiarlo según el tema
+                      scale: 4,
+                    ),
+                  )
+                : Image.asset(
+                    "images/notification.png",
+                    color: notifire.getwhite,
+                    scale: 4,
+                  ),
           ),
           const SizedBox(
-            width: 2,
+            width: 10,
           ),
           GestureDetector(
             onTap: () {
@@ -214,6 +215,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               color: notifire.getwhite,
               scale: 20,
             ),
+          ),
+          const SizedBox(
+            width: 10,
           ),
         ],
       ),
@@ -435,28 +439,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                           "images/high-speed.png",
                                           'Test',
                                           () {
-                                            if (fcLlaveUnica.isEmpty ||
-                                                fcLlaveUnica == '') {
-                                              CherryToast.info(
-                                                backgroundColor:
-                                                    notifire.getbackcolor,
-                                                title: Text(
-                                                    'Aún no cuentas con esta opción',
-                                                    style: TextStyle(
-                                                        color: notifire
-                                                            .getdarkscolor),
-                                                    textAlign: TextAlign.start),
-                                                borderRadius: 5,
-                                              ).show(context);
-                                              return;
-                                            }
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const WebviewTest_screen(),
-                                              ),
-                                            );
+                                            
+                                            _launchTest();
                                           },
                                         ),
                                         _buildIconButton(
@@ -505,14 +489,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                               ).show(context);
                                               return;
                                             }
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    PayWebview_screen(
-                                                        keyId: fcLlaveUnica),
-                                              ),
-                                            );
+
+                                            _launchPago(fcLlaveUnica);
                                           },
                                         ),
                                       ],
@@ -1486,6 +1464,22 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         Uri.parse('https://novanetgroup.com/NovanetApp/Manuales/Index.html'))) {
       throw Exception(
           'Could not launch https://novanetgroup.com/NovanetApp/Manuales/Index.html');
+    }
+  }
+
+  Future<void> _launchTest() async {
+    if (!await launchUrl(
+        Uri.parse('https://www.fast.com/es/'))) {
+      throw Exception(
+          'Could not launch https://www.fast.com/es/');
+    }
+  }
+
+  Future<void> _launchPago(fcLlaveUnica) async {
+    if (!await launchUrl(
+        Uri.parse('https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica'))) {
+      throw Exception(
+          'Could not launch https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica');
     }
   }
 }
