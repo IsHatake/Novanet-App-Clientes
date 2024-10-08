@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:share_plus/share_plus.dart';
+// import 'package:share_plus/share_plus.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
+// import 'package:path_provider/path_provider.dart';
 
 class QrCodeGenerator extends StatefulWidget {
   const QrCodeGenerator({Key? key}) : super(key: key);
@@ -42,25 +42,25 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
     });
   }
 
-  Future<void> _captureAndSharePng() async {
-    try {
-      RenderRepaintBoundary boundary = _globalKey.currentContext!
-          .findRenderObject() as RenderRepaintBoundary;
-      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-      ByteData? byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
-      Uint8List pngBytes = byteData!.buffer.asUint8List();
+  // Future<void> _captureAndSharePng() async {
+  //   try {
+  //     RenderRepaintBoundary boundary = _globalKey.currentContext!
+  //         .findRenderObject() as RenderRepaintBoundary;
+  //     ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+  //     ByteData? byteData =
+  //         await image.toByteData(format: ui.ImageByteFormat.png);
+  //     Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      final tempDir = await getTemporaryDirectory();
-      final file = await File('${tempDir.path}/qr_code.png').create();
-      await file.writeAsBytes(pngBytes);
+  //     final tempDir = await getTemporaryDirectory();
+  //     final file = await File('${tempDir.path}/qr_code.png').create();
+  //     await file.writeAsBytes(pngBytes);
 
-      await Share.shareFiles([file.path], text: 'Descarga la Aplicación de Novanet\n'
-                                                'https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet'         );
-    } catch (e) {
-      print(e.toString());
-    }
-  }
+  //     await Share.shareFiles([file.path], text: 'Descarga la Aplicación de Novanet\n'
+  //                                               'https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet'         );
+  //   } catch (e) {
+  //     print(e.toString());
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -96,12 +96,12 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
             child: Icon(Icons.arrow_back, color: notifire.getwhite),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.share, color: notifire.getwhite),
-            onPressed: _captureAndSharePng,
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.share, color: notifire.getwhite),
+        //     onPressed: _captureAndSharePng,
+        //   ),
+        // ],
       ),
       body: Center(
         child: RepaintBoundary(

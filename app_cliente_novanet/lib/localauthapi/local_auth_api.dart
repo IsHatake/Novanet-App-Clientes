@@ -2,7 +2,7 @@
 
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_ios/local_auth_ios.dart';
+import 'package:local_auth_darwin/local_auth_darwin.dart'; // Reemplaza local_auth_ios por local_auth_darwin
 
 class LocalAuth {
   static final _auth = LocalAuthentication();
@@ -23,9 +23,7 @@ class LocalAuth {
               signInTitle: 'Iniciar Sesión',
               cancelButton: 'No Gracias',
             ),
-            IOSAuthMessages(
-              cancelButton: 'No Gracias',
-            ),
+  
           ]);
     } catch (e) {
       // Handle exceptions here if needed

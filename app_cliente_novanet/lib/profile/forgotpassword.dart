@@ -2,10 +2,11 @@
 
 import 'dart:convert';
 
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/api.dart';
 import 'package:app_cliente_novanet/profile/confirmPinPass.dart';
-import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
+//import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/media.dart';
 import 'package:app_cliente_novanet/utils/string.dart';
 import 'package:provider/provider.dart';

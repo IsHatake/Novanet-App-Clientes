@@ -6,10 +6,11 @@ import 'dart:io';
 import 'package:app_cliente_novanet/api.dart';
 import 'package:app_cliente_novanet/screens/adduserFamily.dart';
 import 'package:app_cliente_novanet/screens/preguntas_register.dart';
-import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
+//import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/button.dart';
 
 import 'package:app_cliente_novanet/utils/textfeilds.dart';
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

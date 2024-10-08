@@ -3,9 +3,10 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
+//import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/media.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';

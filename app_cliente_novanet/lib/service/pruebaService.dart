@@ -1,10 +1,11 @@
 // ignore_for_file: use_build_context_synchronously, camel_case_types, sized_box_for_whitespace, non_constant_identifier_names, file_names
 
 import 'dart:convert';
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/home/home.dart';
-import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
+//import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:http/http.dart' as http;
 import 'package:app_cliente_novanet/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';

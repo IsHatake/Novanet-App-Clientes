@@ -1,4 +1,4 @@
-package com.example.app_cliente_novanet
+package com.prestaditonovanet.novanet
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

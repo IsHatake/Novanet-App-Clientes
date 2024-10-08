@@ -1,7 +1,8 @@
 
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/login/registerdatos.dart';
-import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
+//import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:app_cliente_novanet/utils/media.dart';
 import 'package:otp_text_field/otp_field.dart';

@@ -60,5 +60,11 @@
 			</array>
 		</dict>
 	</array>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>EnableImpeller</key>
+	<false/>
 </dict>
 </plist>

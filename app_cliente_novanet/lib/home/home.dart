@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:app_cliente_novanet/screens/pagoshome.dart';
 import 'package:app_cliente_novanet/screens/referidos_screen.dart';
 import 'package:app_cliente_novanet/utils/button.dart';
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/api.dart';
@@ -14,11 +15,10 @@ import 'package:app_cliente_novanet/screens/payservice_screen.dart';
 import 'package:app_cliente_novanet/screens/referir_screen.dart';
 import 'package:app_cliente_novanet/screens/services_screen.dart';
 import 'package:app_cliente_novanet/screens/webviewtest_screen.dart';
-import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
+//import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:app_cliente_novanet/utils/media.dart';
 import 'package:app_cliente_novanet/utils/string.dart';
-import 'package:flutter_credit_card/extension.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -435,7 +435,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                           "images/high-speed.png",
                                           'Test',
                                           () {
-                                            if (fcLlaveUnica.isNullOrEmpty ||
+                                            if (fcLlaveUnica.isEmpty ||
                                                 fcLlaveUnica == '') {
                                               CherryToast.info(
                                                 backgroundColor:
@@ -490,7 +490,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                           "images/pagar.png",
                                           CustomStrings.pay,
                                           () {
-                                            if (fcLlaveUnica.isNullOrEmpty ||
+                                            if (fcLlaveUnica.isEmpty ||
                                                 fcLlaveUnica == '') {
                                               CherryToast.info(
                                                 backgroundColor:
