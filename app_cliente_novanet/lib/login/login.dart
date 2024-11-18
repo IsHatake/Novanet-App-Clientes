@@ -115,7 +115,7 @@ class _LoginState extends State<Login> {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Toca la opcion de Usuario Secundario para escanear un código QR y crear un usuario secundario.',
+                    'Toca la opcion de Usuario Familiar para escanear un código QR y crear un usuario Familiar.',
                   ),
                 ),
               ],
@@ -168,7 +168,7 @@ class _LoginState extends State<Login> {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Toca la opcion de Usuario Secundario para escanear un código QR y crear un usuario secundario.',
+                    'Toca la opcion de Usuario Familiar para escanear un código QR y crear un usuario Familiar.',
                   ),
                 ),
               ],
@@ -266,7 +266,7 @@ class _LoginState extends State<Login> {
                                       inactiveTrackColor: Colors.grey.shade400,
                                     ),
                                     Text(
-                                      "Usuario Secundario",
+                                      "Usuario Familiar",
                                       style: TextStyle(
                                         color: !_isPrincipal
                                             ? notifire.getorangeprimerycolor
@@ -354,7 +354,7 @@ class _LoginState extends State<Login> {
                                         height: height / 40,
                                         color: Colors.transparent,
                                         child: Text(
-                                          'Usuario Secundario',
+                                          'Usuario Familiar',
                                           style: TextStyle(
                                               color: notifire.getdarkscolor,
                                               fontSize: height / 60,

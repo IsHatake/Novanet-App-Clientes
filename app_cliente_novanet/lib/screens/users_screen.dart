@@ -16,7 +16,8 @@ import '../utils/media.dart';
 
 class usuarios_Screen extends StatefulWidget {
   final bool fbprincipal;
-  const usuarios_Screen({Key? key, required this.fbprincipal}) : super(key: key);
+  const usuarios_Screen({Key? key, required this.fbprincipal})
+      : super(key: key);
 
   @override
   State<usuarios_Screen> createState() => _usuarios_ScreenState();
@@ -25,7 +26,6 @@ class usuarios_Screen extends StatefulWidget {
 class _usuarios_ScreenState extends State<usuarios_Screen> {
   late ColorNotifire notifire;
   int _itemsPerPage = 10;
-
 
   int _currentPage = 0;
   List listadodeusuarios = [];
@@ -60,7 +60,6 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
 
         setState(() {
           listadodeusuarios = data;
-         
         });
       } else {
         if (kDebugMode) {
@@ -125,9 +124,10 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
   Widget build(BuildContext context) {
     notifire = Provider.of<ColorNotifire>(context, listen: true);
     final int _startIndex = _currentPage * _itemsPerPage;
-    final int _endIndex = (_startIndex + _itemsPerPage) > listadodeusuarios.length
-        ? listadodeusuarios.length
-        : _startIndex + _itemsPerPage;
+    final int _endIndex =
+        (_startIndex + _itemsPerPage) > listadodeusuarios.length
+            ? listadodeusuarios.length
+            : _startIndex + _itemsPerPage;
 
     // Elementos para la página actual
     List<dynamic> currentPageItems = [];
@@ -199,22 +199,6 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
           const SizedBox(
             width: 5,
           ),
-          IconButton(
-            icon: Icon(Icons.person_add_alt, color: notifire.getdarkscolor),
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              int fiIDEquifax = int.parse(prefs.getString("fiIDCuentaFamiliar") ?? '0');
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AdduserFamily(fiIDEquifax: fiIDEquifax, redireccion: false, fbprincipal:widget.fbprincipal),
-                ),
-              );
-            },
-          ),
-          const SizedBox(
-            width: 5,
-          ),
         ],
       ),
       backgroundColor: notifire.getprimerycolor,
@@ -246,6 +230,7 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
                           color: notifire.getdarkscolor,
                         ),
                         const SizedBox(height: 20),
+                        
                       ],
                     ),
                   ),
@@ -267,79 +252,101 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
                     vertical: height * 0.01,
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Padding(
-            padding: const EdgeInsets.all(16.0),
-            child:
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            minimumSize: const Size(40, 40),
-                            backgroundColor: (_currentPage > 0)
-                                ? notifire.getorangeprimerycolor
-                                : Colors.grey,
-                          ),
-                          onPressed: () {
-                            if (_currentPage > 0) {
-                              setState(() {
-                                _currentPage--;
-                              });
-                            }
+                      ElevatedButton.icon(
+                          onPressed: () async {
+                            final prefs = await SharedPreferences.getInstance();
+                            int fiIDEquifax = int.parse(
+                                prefs.getString("fiIDCuentaFamiliar") ?? '0');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AdduserFamily(
+                                    fiIDEquifax: fiIDEquifax,
+                                    redireccion: false,
+                                    fbprincipal: widget.fbprincipal),
+                              ),
+                            );
                           },
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(
-                              Icons.arrow_back_ios_new,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          "Mostrando ${_startIndex + 1} - $_endIndex de ${listadodeusuarios.length} registros",
-                          style: TextStyle(
-                            fontFamily: "Gilroy Medium",
-                            color: notifire.getdarkscolor.withOpacity(0.6),
-                            fontSize: height * 0.013,
-                          ),
-                        ),
-                        ElevatedButton(
+                          icon: Icon(Icons.person_add_alt,
+                              color: notifire.getdarkscolor),
+                          label: const Text('Agregar Usuario'),
                           style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            minimumSize: const Size(40, 40),
-                            backgroundColor: (_endIndex < listadodeusuarios.length)
-                                ? notifire.getorangeprimerycolor
-                                : Colors.grey,
+                            backgroundColor: notifire.getorangeprimerycolor,
                           ),
-                          onPressed: (_endIndex < listadodeusuarios.length)
-                              ? () {
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                minimumSize: const Size(40, 40),
+                                backgroundColor: (_currentPage > 0)
+                                    ? notifire.getorangeprimerycolor
+                                    : Colors.grey,
+                              ),
+                              onPressed: () {
+                                if (_currentPage > 0) {
                                   setState(() {
-                                    _currentPage++;
+                                    _currentPage--;
                                   });
                                 }
-                              : null,
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              color: Colors.white,
-                              size: 20,
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Icon(
+                                  Icons.arrow_back_ios_new,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
                             ),
-                          ),
+                            Text(
+                              "Mostrando ${_startIndex + 1} - $_endIndex de ${listadodeusuarios.length} registros",
+                              style: TextStyle(
+                                fontFamily: "Gilroy Medium",
+                                color: notifire.getdarkscolor.withOpacity(0.6),
+                                fontSize: height * 0.013,
+                              ),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                minimumSize: const Size(40, 40),
+                                backgroundColor:
+                                    (_endIndex < listadodeusuarios.length)
+                                        ? notifire.getorangeprimerycolor
+                                        : Colors.grey,
+                              ),
+                              onPressed: (_endIndex < listadodeusuarios.length)
+                                  ? () {
+                                      setState(() {
+                                        _currentPage++;
+                                      });
+                                    }
+                                  : null,
+                              child: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    ),
+                      ),
                       for (int i = _startIndex; i <= _endIndex; i++)
                         if (i < listadodeusuarios.length)
                           Column(
@@ -386,7 +393,7 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
                                                       ['fiTipodeUsuario'] ==
                                                   1
                                               ? 'Usuario Principal'
-                                              : 'Usuario Secundario',
+                                              : 'Usuario Familiar',
                                           style: TextStyle(
                                             fontFamily: "Gilroy Medium",
                                             color: listadodeusuarios[i]
@@ -447,7 +454,6 @@ class _usuarios_ScreenState extends State<usuarios_Screen> {
                               const Divider(),
                             ],
                           ),
-                      
                     ],
                   ),
                 ),

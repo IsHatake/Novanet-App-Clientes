@@ -116,7 +116,7 @@ class _LandingPageState extends State<LandingPage> {
                       );
                     },
                     child: const Text(
-                      'Registrarse',
+                      'Formulario Precalificado',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

@@ -181,20 +181,20 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 ),
               );
             },
-           child:  json2[0]['fbNotificaciones']
-          ? ScaleTransition(
-              scale: _animation,
-              child: Image.asset(
-                "images/notification.png",
-                color: Colors.white, // Puedes cambiarlo según el tema
-                scale: 4,
-              ),
-            )
-          : Image.asset(
-              "images/notification.png",
-              color: Colors.white,
-              scale: 4,
-            ),
+            child: json2[0]['fbNotificaciones']
+                ? ScaleTransition(
+                    scale: _animation,
+                    child: Image.asset(
+                      "images/notification.png",
+                      color: notifire.getwhite,
+                      scale: 4,
+                    ),
+                  )
+                : Image.asset(
+                    "images/notification.png",
+                    color: notifire.getwhite,
+                    scale: 4,
+                  ),
           ),
           const SizedBox(
             width: 2,
@@ -261,6 +261,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                               '' &&
                                           json2[index]['fitotal_debe'] != 0.00;
 
+                                      // Determina el símbolo y formato de la moneda
+                                      String currencySymbol =
+                                          json2[index]['fiIDMoneda'] == 2
+                                              ? '\$'
+                                              : 'L';
+                                      NumberFormat currencyFormat =
+                                          NumberFormat.currency(
+                                        locale:
+                                            'en', // Usa configuración que emplea '.' como separador decimal
+                                        symbol: currencySymbol,
+                                        decimalDigits: 2,
+                                      );
+
                                       return Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
@@ -292,14 +305,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                               children: [
                                                 Text(
                                                   hasAtraso
-                                                      ? '${NumberFormat.currency(
-                                                          locale: 'es',
-                                                          symbol: '\$',
-                                                        ).format(json2[index]['fitotal_debe'])}'
-                                                      : NumberFormat.currency(
-                                                          locale: 'es',
-                                                          symbol: '\$',
-                                                        ).format(cuotas[index]),
+                                                      ? currencyFormat.format(
+                                                          json2[index]
+                                                              ['fitotal_debe'])
+                                                      : currencyFormat.format(
+                                                          cuotas[index]),
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: height / 35,
@@ -489,7 +499,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                           context,
                                           "images/pagar.png",
                                           CustomStrings.pay,
-                                          () {
+                                          () async {
                                             if (fcLlaveUnica.isNullOrEmpty ||
                                                 fcLlaveUnica == '') {
                                               CherryToast.info(
@@ -505,14 +515,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                               ).show(context);
                                               return;
                                             }
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    PayWebview_screen(
-                                                        keyId: fcLlaveUnica),
-                                              ),
-                                            );
+                                            if (!await launchUrl(Uri.parse(
+                                                'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica'))) {
+                                              throw Exception(
+                                                  'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica');
+                                            }
                                           },
                                         ),
                                       ],

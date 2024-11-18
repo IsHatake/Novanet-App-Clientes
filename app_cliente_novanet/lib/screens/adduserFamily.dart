@@ -175,7 +175,7 @@ class _AdduserFamilyState extends State<AdduserFamily> {
         iconTheme: IconThemeData(color: notifire.getwhite),
         backgroundColor: notifire.getorangeprimerycolor,
         title: Text(
-          'Registrar Usuario Secundario',
+          'Registrar Usuario Familiar',
           style: TextStyle(
               fontFamily: "Gilroy Bold",
               color: notifire.getwhite,

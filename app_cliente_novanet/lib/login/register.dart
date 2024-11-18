@@ -154,7 +154,7 @@ class _RegisterState extends State<Register> {
         elevation: 0,
         backgroundColor: notifire.getprimerycolor,
         title: Text(
-          'Registrarme como Usuario Secundario',
+          'Registrarme como Usuario Familiar',
           style: TextStyle(
             color: notifire.getdarkscolor,
             fontFamily: 'Gilroy Bold',

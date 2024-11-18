@@ -135,7 +135,7 @@ Future<void> validacionCampos() async {
         elevation: 0,
         backgroundColor: notifire.getprimerycolor,
         title: Text(
-          'Registrar Usuario Secundario',
+          'Registrar Usuario Familiar',
           style: TextStyle(
             color: notifire.getdarkscolor,
             fontFamily: 'Gilroy Bold',

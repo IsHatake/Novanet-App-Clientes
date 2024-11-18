@@ -270,8 +270,11 @@ class _PagosPageState extends State<PagosPage> {
                                           SizedBox(height: height * 0.005),
                                           Text(
                                             NumberFormat.currency(
-                                              locale: 'es',
-                                              symbol: '\$',
+                                              locale:
+                                                  'en', 
+                                              symbol: item['fiIDMoneda'] == 1
+                                                  ? 'L'
+                                                  : '\$',
                                             ).format(
                                               double.tryParse(
                                                       item['fnValorAbonado']
@@ -287,7 +290,7 @@ class _PagosPageState extends State<PagosPage> {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             softWrap: true,
-                                          ),
+                                          )
                                         ],
                                       ),
                                     ),

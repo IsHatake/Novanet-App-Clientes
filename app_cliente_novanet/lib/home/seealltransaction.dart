@@ -338,15 +338,18 @@ class _SeealltransactionState extends State<Seealltransaction> {
                                         SizedBox(height: height * 0.005),
                                         Text(
                                           NumberFormat.currency(
-                                            locale: 'es',
-                                            symbol: '\$',
-                                          ).format(
-                                            double.parse(
-                                              currentPageItems[i]
-                                                      ['fnValorAbonado']
-                                                  .toString(),
+                                              locale:
+                                                  'en', 
+                                              symbol:    currentPageItems[i]['fiIDMoneda'] == 1
+                                                  ? 'L'
+                                                  : '\$',
+                                            ).format(
+                                              double.tryParse(
+                                                         currentPageItems[i]['fnValorAbonado']
+                                                              ?.toString() ??
+                                                          '0') ??
+                                                  0,
                                             ),
-                                          ),
                                           style: TextStyle(
                                             fontFamily: "Gilroy Bold",
                                             color: notifire.getdarkscolor,
