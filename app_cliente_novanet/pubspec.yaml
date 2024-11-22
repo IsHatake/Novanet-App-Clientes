@@ -64,6 +64,8 @@ dependencies:
   # firebase_messaging: ^14.7.10
   # flutter_foreground_task: ^6.5.0
   pixelpay_sdk: ^2.0.0
+  dropdown_search: ^5.0.3
+  device_info_plus: ^9.1.2
 
  # flutter_localizations:
    # sdk: flutter

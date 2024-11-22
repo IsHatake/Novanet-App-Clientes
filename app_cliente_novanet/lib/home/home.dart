@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:app_cliente_novanet/screens/pagoshome.dart';
+import 'package:app_cliente_novanet/screens/payment_screen.dart';
 import 'package:app_cliente_novanet/screens/referidos_screen.dart';
 import 'package:app_cliente_novanet/utils/button.dart';
 import 'package:flutter/foundation.dart';
@@ -515,11 +516,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                               ).show(context);
                                               return;
                                             }
-                                            if (!await launchUrl(Uri.parse(
-                                                'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica'))) {
-                                              throw Exception(
-                                                  'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica');
-                                            }
+                                            // if (!await launchUrl(Uri.parse(
+                                            //     'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica'))) {
+                                            //   throw Exception(
+                                            //       'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica');
+                                            // }
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    PaymentScreen(
+                                                        keyId: fcLlaveUnica),
+                                              ),
+                                            );
                                           },
                                         ),
                                       ],

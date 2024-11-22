@@ -3,7 +3,6 @@
 import 'dart:convert';
 
 import 'package:cherry_toast/cherry_toast.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/login/login.dart';
 import 'package:app_cliente_novanet/screens/formwebPrecalificado.dart';
@@ -42,104 +41,6 @@ class _RegisterclientState extends State<Registerclient> {
     } else {
       notifire.setIsDark = previousState;
     }
-  }
-
-  Future<void> _checkFirstVisit() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bool isFirstVisit = prefs.getBool('isFirstVisitRegister') ?? true;
-
-      await _showExplanationDialog();
-    if (isFirstVisit) {
-      await prefs.setBool('isFirstVisitRegister', false);
-    }
-  }
-
-  Future<void> _showExplanationDialog() async {
-    Widget dialogContent;
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
-      dialogContent = CupertinoAlertDialog(
-        title: const Text('Formulario de Precalificado'),
-        content: Column(
-          children: [
-            ClipOval(
-              child: Image.asset(
-                'images/informacionnecesaria.gif',
-                height: 200,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: const [
-                Icon(
-                  CupertinoIcons.person_fill,
-                  color: Colors.orange,
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Para llenar el formulario de precalificado, ingresa el número de identidad que proporcionaste al vendedor.',
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child: const Text('Entendido'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    } else {
-      dialogContent = AlertDialog(
-        title: const Text('Formulario de Precalificado'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipOval(
-              child: Image.asset(
-                'images/informacionnecesaria.gif',
-                height: 200,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: const [
-                Icon(
-                  Icons.person,
-                 color: Colors.orange,
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Para llenar el formulario de precalificado, ingresa el número de identidad que proporcionaste al vendedor.',
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Entendido'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    }
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return dialogContent;
-      },
-    );
   }
 
   Future<void> handleTap() async {
@@ -332,6 +233,21 @@ class _RegisterclientState extends State<Registerclient> {
                         height: MediaQuery.of(context).size.height / 8,
                       ),
                     ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height / 15,
+                    ),
+                    Center(
+                      child: Text(
+                        "ESTA SECCIÓN ES SOLO PARA USO DE\nCLIENTES QUE ESTÁN EN PROCESO DE CONTRATACIÓN",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: notifire.getdarkscolor,
+                          fontSize: MediaQuery.of(context).size.height / 50,
+                          fontWeight: FontWeight.bold,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -364,6 +280,7 @@ class _RegisterclientState extends State<Registerclient> {
         SizedBox(
           height: MediaQuery.of(context).size.height / 15,
         ),
+        SizedBox(height: MediaQuery.of(context).size.height / 70),
         _buildTextRow("Ingrese su DNI"),
         SizedBox(height: MediaQuery.of(context).size.height / 70),
         DNI.textField(
