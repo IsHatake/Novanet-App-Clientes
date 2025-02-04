@@ -516,19 +516,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                               ).show(context);
                                               return;
                                             }
-                                            // if (!await launchUrl(Uri.parse(
-                                            //     'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica'))) {
-                                            //   throw Exception(
-                                            //       'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica');
-                                            // }
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    PaymentScreen(
-                                                        keyId: fcLlaveUnica),
-                                              ),
-                                            );
+                                            if (!await launchUrl(Uri.parse(
+                                                'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica'))) {
+                                              throw Exception(
+                                                  'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica');
+                                            }
+                                            // Navigator.push(
+                                            //   context,
+                                            //   MaterialPageRoute(
+                                            //     builder: (context) =>
+                                            //         PaymentScreen(
+                                            //             keyId: fcLlaveUnica),
+                                            //   ),
+                                            // );
                                           },
                                         ),
                                       ],
@@ -1131,17 +1131,25 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     const SizedBox(
                       height: 15,
                     ),
-                    TextField(
-                      controller: Texto,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                 SizedBox(
+                      height: 200, // Alto predeterminado del campo de texto
+                      child: TextField(
+                        controller: Texto,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          hintText: 'Comentario',
                         ),
-                        hintText: 'Comentario',
+                        keyboardType: TextInputType
+                            .multiline, // Permite entrada multilínea
+                        maxLines:
+                            null, // Sin límite de líneas visibles (scrollable)
+                        textAlignVertical:
+                            TextAlignVertical.top, // Texto alineado arriba
                       ),
-                      keyboardType: TextInputType.text,
                     ),
                     const SizedBox(
                       height: 15,
@@ -1228,17 +1236,25 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     const SizedBox(
                       height: 15,
                     ),
-                    TextField(
-                      controller: Texto,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    SizedBox(
+                      height: 200, // Alto predeterminado del campo de texto
+                      child: TextField(
+                        controller: Texto,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          hintText: 'Comentario',
                         ),
-                        hintText: 'Comentario',
+                        keyboardType: TextInputType
+                            .multiline, // Permite entrada multilínea
+                        maxLines:
+                            null, // Sin límite de líneas visibles (scrollable)
+                        textAlignVertical:
+                            TextAlignVertical.top, // Texto alineado arriba
                       ),
-                      keyboardType: TextInputType.multiline,
                     ),
                     const SizedBox(
                       height: 15,
@@ -1346,14 +1362,69 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           print(json);
         }
 
-        String Url =
-            "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
 
-        Navigator.of(context).pop();
+      Navigator.of(context).pop(); // Cerrar el indicador de carga
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.check_circle_outline,
+                    color: Colors.green, size: 30),
+                const SizedBox(width: 10),
+                const Text('¡Éxito!'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'El ticket se generó correctamente. Nuestro equipo se pondrá en contacto contigo en breve.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                Icon(Icons.verified, color: Colors.green, size: 80),
+              ],
+            ),
+            actions: [
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Cerrar el diálogo de éxito
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: notifire.getorangeprimerycolor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Text(
+                      'OK',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
 
-        if (!await launchUrl(Uri.parse(Url))) {
-          throw Exception('Could not launch $Url');
-        }
+        // String Url =
+        //     "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
+
+        // Navigator.of(context).pop();
+
+        // if (!await launchUrl(Uri.parse(Url))) {
+        //   throw Exception('Could not launch $Url');
+        // }
       } else {
         Navigator.of(context).pop();
         throw Exception('Failed to send message: ${response.statusCode}');
@@ -1427,14 +1498,68 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           print(json);
         }
 
-        String Url =
-            "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
+           Navigator.of(context).pop(); // Cerrar el indicador de carga
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.check_circle_outline,
+                    color: Colors.green, size: 30),
+                const SizedBox(width: 10),
+                const Text('¡Éxito!'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'El ticket se generó correctamente. Nuestro equipo se pondrá en contacto contigo en breve.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                Icon(Icons.verified, color: Colors.green, size: 80),
+              ],
+            ),
+            actions: [
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Cerrar el diálogo de éxito
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: notifire.getorangeprimerycolor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Text(
+                      'OK',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
 
-        Navigator.of(context).pop();
+        // String Url =
+        //     "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
 
-        if (!await launchUrl(Uri.parse(Url))) {
-          throw Exception('Could not launch $Url');
-        }
+        // Navigator.of(context).pop();
+
+        // if (!await launchUrl(Uri.parse(Url))) {
+        //   throw Exception('Could not launch $Url');
+        // }
       } else {
         Navigator.of(context).pop();
         throw Exception('Failed to send message: ${response.statusCode}');
@@ -1489,7 +1614,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             style: TextStyle(
               fontFamily: "Gilroy Bold",
               color: notifire.getdarkscolor,
-              fontSize: height / 70,
+              fontSize: height / 80,
             ),
           ),
         ],

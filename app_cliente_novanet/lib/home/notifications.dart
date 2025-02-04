@@ -60,7 +60,7 @@ class _NotificationindexState extends State<Notificationindex> {
   }
 
   void _deleteNotification(String? index) async {
-    final response = await http.get(Uri.parse(
+    await http.get(Uri.parse(
         'https://api.novanetgroup.com/api/Novanet/Usuario/Notificaciones_By_Cliente_Eliminar?piIDNotificacion=$index'));
 
     // Lógica para eliminar la notificación de la lista local
@@ -68,6 +68,94 @@ class _NotificationindexState extends State<Notificationindex> {
       notifications.removeWhere((notification) => notification['id'] == index);
     });
   }
+
+  void _showNotificationDetails(String title, String date) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20), // Bordes más redondeados
+        ),
+        titlePadding: EdgeInsets.zero, // Elimina padding predeterminado del título
+        contentPadding: const EdgeInsets.all(20),
+        title: Container(
+          decoration:  BoxDecoration(
+            color: notifire.getorangeprimerycolor, // Color de fondo del encabezado
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            children: const [
+              Icon(Icons.notifications_active, color: Colors.white),
+              SizedBox(width: 10),
+              Text(
+                'Detalle de la Notificación',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.justify,
+              style: TextStyle(
+                fontFamily: 'Gilroy Medium',
+                fontSize: 16,
+                color: notifire.getdarkscolor,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Icon(Icons.calendar_today, size: 20, color: Colors.grey),
+                const SizedBox(width: 10),
+                Text(
+                  'Fecha: ${DateFormat('dd/MM/yyyy hh:mm:ss a').format(DateTime.parse(date))}',
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontFamily: 'Gilroy Medium',
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor:notifire.getorangeprimerycolor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            child: const Text(
+              'Cerrar',
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -138,13 +226,21 @@ class _NotificationindexState extends State<Notificationindex> {
                                     color: Colors.white,
                                   ),
                                 ),
-                                child: _notificationItem(
-                                  notifire.getprimerycolor,
-                                  'images/logos.png',
-                                  notifications[index]['title']!,
-                                  DateFormat('dd/MM/yyyy hh:mm:ss a').format(
-                                    DateTime.parse(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    _showNotificationDetails(
+                                      notifications[index]['title']!,
                                       notifications[index]['date']!,
+                                    );
+                                  },
+                                  child: _notificationItem(
+                                    notifire.getprimerycolor,
+                                    'images/logos.png',
+                                    notifications[index]['title']!,
+                                    DateFormat('dd/MM/yyyy hh:mm:ss a').format(
+                                      DateTime.parse(
+                                        notifications[index]['date']!,
+                                      ),
                                     ),
                                   ),
                                 ),

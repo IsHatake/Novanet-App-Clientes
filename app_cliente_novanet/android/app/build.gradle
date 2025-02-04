@@ -35,6 +35,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     compileSdkVersion 33
+    // compileSdkVersion 33
+    // compileSdkVersion 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -53,9 +55,11 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.prestaditonovanet.novanet"
         minSdkVersion 21
+        // targetSdkVersion 33
+        // targetSdkVersion 34
         targetSdkVersion 33
-        versionCode 20
-        versionName "2.0.0"
+        versionCode 23
+        versionName "2.0.3"
     }
 
     signingConfigs {

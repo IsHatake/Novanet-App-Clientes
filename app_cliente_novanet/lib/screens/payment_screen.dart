@@ -17,7 +17,6 @@ import 'package:pixelpay_sdk/models/billing.dart' as pixelpay;
 import 'package:pixelpay_sdk/entities/transaction_result.dart' as pixelpay;
 import 'package:pixelpay_sdk/requests/sale_transaction.dart' as pixelpay;
 import 'package:pixelpay_sdk/services/transaction.dart' as pixelpay;
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:http/http.dart' as http;
 
 class PaymentScreen extends StatefulWidget {
@@ -111,7 +110,6 @@ class _PaymentScreenState extends State<PaymentScreen>
       });
       handleSetChangeData(selectedItems);
     } catch (error) {
-      print('Error obteniendo datos: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error obteniendo datos del cliente')),
       );
@@ -132,25 +130,10 @@ class _PaymentScreenState extends State<PaymentScreen>
         },
       );
 
-      double totalD = newValue.fold(
-        0.0,
-        (accumulator, currentValue) {
-          Map<String, dynamic> valueMap = jsonDecode(currentValue['value']);
-          double value =
-              double.tryParse(valueMap['fnValorCuota']?.toString() ?? '0') ??
-                  0.0;
-          double updatedAccumulator = accumulator + value;
-          return updatedAccumulator;
-        },
-      );
-
       setState(() {
         selectedItems = newValue;
         totalAmount = total;
       });
-
-      print('Total calculado [fnValorCuotaMonedaNacional]: $total');
-      print('Total calculado [fnValorCuota]: $totalD');
     } else {
       setState(() {
         selectedItems = [];
@@ -192,46 +175,51 @@ class _PaymentScreenState extends State<PaymentScreen>
       settings.setupCredentials(
           "FH1059496235", "c32c713735c9f8c441ffaa616f8fe0a0");
 
-      final card = pixelpay.Card();
-      card.number = cardNumberController.text;
-      card.cvv2 = cvvController.text;
-      card.expire_month = int.parse(selectedMonth);
-      card.expire_year = int.parse(selectedYear);
-      card.cardholder = cardholderController.text;
+      final card = pixelpay.Card()
+        ..number = cardNumberController.text
+        ..cvv2 = cvvController.text
+        ..expire_month = int.parse(selectedMonth)
+        ..expire_year = int.parse(selectedYear)
+        ..cardholder = cardholderController.text;
 
-      final billing = pixelpay.Billing();
-      billing.address = billingAddressController.text;
-      billing.country = "HN";
-      billing.state = "HN-CR";
-      billing.city = "San Pedro Sula";
-      billing.phone = billingPhoneController.text;
+      final billing = pixelpay.Billing()
+        ..address = billingAddressController.text
+        ..country = "HN"
+        ..state = "HN-CR"
+        ..city = "San Pedro Sula"
+        ..phone = billingPhoneController.text;
 
-      final item = pixelpay.Item();
-      item.code = "00001";
-      item.title = descripciondebito.text;
-      item.price = totalAmount;
-      item.qty = 1;
+      final item = pixelpay.Item()
+        ..code = "00001"
+        ..title = descripciondebito.text
+        ..price = totalAmount
+        ..qty = 1;
 
       final orderID = selectedItems
-          .map((item) => jsonDecode(item['value'])['fcIDPrestamo'].toString())
+          .map((item) =>
+              jsonDecode(item['value'])['fiIDUnicoPrestamo'].toString())
           .join("-");
-      final order = pixelpay.Order();
-      order.id = orderID;
-      order.currency = currency;
-      order.customer_name = nombrecliente.text;
-      order.customer_email = emailController.text;
-      order.addItem(item);
+      final order = pixelpay.Order()
+        ..id = orderID
+        ..currency = currency
+        ..customer_name = nombrecliente.text
+        ..customer_email = emailController.text
+        ..addItem(item);
 
-      final sale = pixelpay.SaleTransaction();
-      sale.setOrder(order);
-      sale.setCard(card);
-      sale.setBilling(billing);
-      sale.authentication_identifier = orderID;
-      // ..payment_uuid = const Uuid().v4()
+      final sale = pixelpay.SaleTransaction()
+        ..setOrder(order)
+        ..setCard(card)
+        ..setBilling(billing)
+        ..withAuthenticationRequest();
 
       final transactionService = pixelpay.Transaction(settings);
       final response = await transactionService.doSale(sale);
       final statusCode = response!.getStatus();
+
+      print("Response Status: ${response!.getStatus()}");
+      print("Response Message: ${response.message}");
+      print("Response Data: ${response.data}");
+
       switch (statusCode) {
         case 200:
           CherryToast.success(
@@ -243,16 +231,14 @@ class _PaymentScreenState extends State<PaymentScreen>
             ),
             borderRadius: 5,
           ).show(context);
-          handleContinue();
           await abono(response.message ?? '', jsonEncode(response.data),
               "${response.data!["transaction_auth"]}");
 
           await logTransaction(
               response.message ?? '', jsonEncode(response), orderID);
+          handleContinue();
 
           break;
-
-        // --------------------------------------------------------------------
 
         case 400:
         case 401:
@@ -274,8 +260,6 @@ class _PaymentScreenState extends State<PaymentScreen>
               response.message ?? '', jsonEncode(response), orderID);
           break;
 
-        // --------------------------------------------------------------------
-
         case 402:
           CherryToast.warning(
             backgroundColor: notifire.getbackcolor,
@@ -289,8 +273,6 @@ class _PaymentScreenState extends State<PaymentScreen>
           await logTransaction(
               response.message ?? '', jsonEncode(response), orderID);
           break;
-
-        // --------------------------------------------------------------------
 
         case 408:
           CherryToast.warning(
@@ -323,7 +305,7 @@ class _PaymentScreenState extends State<PaymentScreen>
           break;
       }
 
-      if (pixelpay.TransactionResult.validateResponse(response!)) {
+      if (pixelpay.TransactionResult.validateResponse(response)) {
         final result = pixelpay.TransactionResult.fromResponse(response);
 
         final isValidPayment = transactionService.verifyPaymentHash(
@@ -338,9 +320,9 @@ class _PaymentScreenState extends State<PaymentScreen>
         // ERROR
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error procesando la transacción: $e')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Error procesando la transacción: $e')),
+      // );
     }
   }
 
@@ -352,11 +334,9 @@ class _PaymentScreenState extends State<PaymentScreen>
         final data = jsonDecode(response.body);
         return data['ip'] ?? '';
       } else {
-        print('Error al obtener la IP: ${response.statusCode}');
         return '';
       }
     } catch (error) {
-      print('Error al obtener la IP: $error');
       return '';
     }
   }
@@ -367,13 +347,15 @@ class _PaymentScreenState extends State<PaymentScreen>
       final pcIP = await getIPAddress();
 
       for (final item in selectedItems) {
+        Map<String, dynamic> valuedecoded = jsonDecode(item['value']);
+
         final data = {
           "piIDApp": 118,
           "piIDUsuario": 337,
           "pcIP": pcIP,
-          "pcIdentidad": item['fcIdentidad'],
-          "pnValordelAbono": item['fnValorCuota'] ?? 0.00,
-          "pcIDPrestamo": item['fcIDPrestamo'],
+          "pcIdentidad": valuedecoded['fcIdentidad'],
+          "pnValordelAbono": valuedecoded['fnValorCuota'] ?? 0.00,
+          "pcIDPrestamo": valuedecoded['fcIDPrestamo'],
           "pcComentarioAdicional": message,
           "pcReferencia": transactionAuth,
           "piIDTransaccion": '',
@@ -392,8 +374,8 @@ class _PaymentScreenState extends State<PaymentScreen>
       final log = {
         "Pago": orderId,
         "Descripciondebito": "Paquete de Internet",
-        "Cliente": nombrecliente.text ?? '',
-        "TotalPago": totalAmount ?? 0.00,
+        "Cliente": nombrecliente.text,
+        "TotalPago": totalAmount,
         "RespuestaApi": responseData,
         "Comentario": message,
       };
@@ -453,7 +435,11 @@ class _PaymentScreenState extends State<PaymentScreen>
             Expanded(
               child: Stepper(
                 type: StepperType.vertical, // Cambiar a diseño vertical
-
+                // onStepTapped: (value) {
+                //   setState(() {
+                //     activeStep = value;
+                //   });
+                // },
                 currentStep: activeStep,
                 onStepContinue: () {
                   if (_formKeys[activeStep].currentState?.validate() ?? false) {
@@ -787,6 +773,14 @@ class _PaymentScreenState extends State<PaymentScreen>
                                   onChanged: (value) {
                                     setState(() {
                                       selectedYear = value!;
+                                      if (selectedYear ==
+                                          currentYear.toString()) {
+                                        selectedMonth = currentMonth
+                                            .toString()
+                                            .padLeft(2, '0');
+                                      } else {
+                                        selectedMonth = '01';
+                                      }
                                     });
                                   },
                                   decoration: const InputDecoration(
@@ -1220,12 +1214,13 @@ class CustomStepper extends StatelessWidget {
   final Function() onStepCancel;
 
   const CustomStepper({
+    Key? key,
     required this.currentStep,
     required this.steps,
     required this.onStepTapped,
     required this.onStepContinue,
     required this.onStepCancel,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

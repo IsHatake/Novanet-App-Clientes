@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, deprecated_member_use, empty_catches
+
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -60,7 +62,6 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
               'CREA TU USUARIO FAMILIAR AQUI \n'
               'https://novanetgroup.com/NovanetApp/formulario_usuario_secundario.html?id=$fcIdentidad');
     } catch (e) {
-      print(e.toString());
     }
   }
 

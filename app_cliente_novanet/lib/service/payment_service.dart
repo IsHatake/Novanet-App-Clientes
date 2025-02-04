@@ -35,7 +35,6 @@ class PagoService {
             "Error en getDataClient: ${response.statusCode} ${response.body}");
       }
     } catch (e) {
-      print("Error en getDataClient: $e");
       rethrow;
     }
   }
@@ -53,7 +52,6 @@ class PagoService {
 
       return data;
     } catch (e) {
-      print("Error en prestamosDDL: $e");
       rethrow;
     }
   }
@@ -85,7 +83,6 @@ class PagoService {
             "Error en abono: ${response.statusCode} ${response.body}");
       }
     } catch (e) {
-      print("Error en abono: $e");
       rethrow;
     }
   }
@@ -113,7 +110,6 @@ class PagoService {
             "Error en log: ${response.statusCode} ${response.body}");
       }
     } catch (e) {
-      print("Error en log: $e");
       rethrow;
     }
   }
