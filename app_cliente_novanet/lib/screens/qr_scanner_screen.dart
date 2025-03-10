@@ -145,7 +145,7 @@ class _QrCodeScannerState extends State<QrCodeScanner>
           elevation: 0,
           centerTitle: true,
           title: Text(
-            'Usuario Secundario',
+            'Usuario Familiar',
             style: TextStyle(
               fontSize: 15,
               fontFamily: 'Gilroy Bold',
@@ -211,7 +211,7 @@ class _QrCodeScannerState extends State<QrCodeScanner>
                               },
                               child: Custombutton.button(
                                   notifire.getorangeprimerycolor,
-                                  'Crear Usuario Secundario',
+                                  'Crear Usuario Familiar',
                                   MediaQuery.of(context).size.width / 2),
                             )
                           : Text(

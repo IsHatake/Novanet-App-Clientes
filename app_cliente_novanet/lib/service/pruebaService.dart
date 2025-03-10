@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, camel_case_types, sized_box_for_whitespace, non_constant_identifier_names, file_names
 
 import 'dart:convert';
+import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/home/home.dart';
@@ -47,13 +48,22 @@ Future<void> fetchLogin(
         prefs.setString("fcIdentidad", data[1][0]["fcIdentidad"].toString());
         prefs.setString(
             "fcURLFotoPersonalizda", data[0][0]["NombreArchivo"].toString());
-        prefs.setString("fcLlaveUnica", data[5][0]["fcLlaveUnica"].toString());
+        if (data[5].length != 0) {
+          prefs.setString("fcLlaveUnica", data[5][0]["fcLlaveUnica"] ?? '');
+        }
+        else{
+          prefs.setString("fcLlaveUnica", '');
+
+        }
 
         prefs.setString("datalogin[0]", jsonEncode(data[0]));
         prefs.setString("datalogin[1]", jsonEncode(data[1]));
         prefs.setString("datalogin[2]", jsonEncode(data[2]));
         prefs.setString("datalogin[3]", jsonEncode(data[3]));
         prefs.setString("datalogin[4]", jsonEncode(data[4]));
+
+
+       
 
         Navigator.pushReplacement(
           context,
@@ -88,6 +98,9 @@ Future<void> fetchLogin(
     ).show(context);
   } finally {}
 }
+
+
+
 
 Future<void> fetchDatosRegistro(
     BuildContext context, int pilDUsuario, int pilDSolicitud) async {

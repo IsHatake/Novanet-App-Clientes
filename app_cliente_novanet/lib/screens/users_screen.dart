@@ -1,7 +1,6 @@
-// ignore_for_file: non_constant_identifier_names, camel_case_types
+// ignore_for_file: non_constant_identifier_names, camel_case_types, unused_local_variable
 
 import 'dart:convert';
-
 import 'package:app_cliente_novanet/screens/adduserFamily.dart';
 import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:flutter/foundation.dart';
@@ -9,14 +8,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-
 import '../api.dart';
 import '../utils/colornotifire.dart';
 import '../utils/media.dart';
 
 class usuarios_Screen extends StatefulWidget {
   final bool fbprincipal;
-  const usuarios_Screen({Key? key, required this.fbprincipal}) : super(key: key);
+  const usuarios_Screen({Key? key, required this.fbprincipal})
+      : super(key: key);
 
   @override
   State<usuarios_Screen> createState() => _usuarios_ScreenState();
@@ -24,515 +23,445 @@ class usuarios_Screen extends StatefulWidget {
 
 class _usuarios_ScreenState extends State<usuarios_Screen> {
   late ColorNotifire notifire;
-  int _startIndex = 0;
-  int _endIndex = 0;
   int _itemsPerPage = 10;
+  int _currentPage = 0;
   List listadodeusuarios = [];
-
-  getdarkmodepreviousstate() async {
-    final prefs = await SharedPreferences.getInstance();
-    bool? previusstate = prefs.getBool("setIsDark");
-    if (previusstate == null) {
-      notifire.setIsDark = false;
-    } else {
-      notifire.setIsDark = previusstate;
-    }
-  }
+  bool _isLoading = true;
 
   @override
   void initState() {
-    UsuariosByCliente();
     super.initState();
+    _loadUsuarios();
   }
 
-  Future<void> UsuariosByCliente() async {
+  Future<void> _loadUsuarios() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-
-      var piIDCliente = prefs.getString("fiIDCliente");
+      var piIDCliente = prefs.getString("fiIDCliente") ?? '0';
 
       final response = await http.get(Uri.parse(
           '${apiUrl}Usuario/Usuarios_Listado_ByCliente?piIDCuentaFamiliar=$piIDCliente'));
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
         setState(() {
-          listadodeusuarios = data;
-          _endIndex = (_itemsPerPage < listadodeusuarios.length)
-              ? _itemsPerPage - 1
-              : listadodeusuarios.length - 1;
+          listadodeusuarios = jsonDecode(response.body);
+          _isLoading = false;
         });
       } else {
-        if (kDebugMode) {
-          print('Error en la solicitud: ${response.statusCode}');
-        }
+        if (kDebugMode) print('Error en la solicitud: ${response.statusCode}');
+        setState(() => _isLoading = false);
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Excepción en la solicitud: $e');
-      }
+      if (kDebugMode) print('Excepción en la solicitud: $e');
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> Usuarios_Delete(id) async {
+  Future<void> _deleteUsuario(int id) async {
     try {
-      final response = await http
-          .post(Uri.parse('${apiUrl}Usuario/Usuarios_Delete?piIDUnico=$id'));
+      final response = await http.post(Uri.parse('${apiUrl}Usuario/Usuarios_Delete?piIDUnico=$id'));
+      final decodedJson = jsonDecode(response.body);
+      final codeStatus = decodedJson["code"];
+      final messageStatus = decodedJson["message"];
 
-      if (response.statusCode == 200) {
-        final decodedJson = jsonDecode(response.body);
-        final codeStatus = decodedJson["code"];
-        final messageStatus = decodedJson["message"];
-
-        if (codeStatus.toString() == '200') {
-          CherryToast.success(
-            backgroundColor: notifire.getbackcolor,
-            title: Text(
-              '$messageStatus',
-              style: TextStyle(color: notifire.getdarkscolor),
-              textAlign: TextAlign.start,
-            ),
-            borderRadius: 5,
-          ).show(context);
-        } else if (codeStatus.toString() == '409') {
-          CherryToast.warning(
-            backgroundColor: notifire.getbackcolor,
-            title: Text('$messageStatus',
-                style: TextStyle(color: notifire.getdarkscolor),
-                textAlign: TextAlign.start),
-            borderRadius: 5,
-          ).show(context);
-
-          return;
-        } else {
-          CherryToast.error(
-            backgroundColor: notifire.getbackcolor,
-            title: Text('$messageStatus',
-                style: TextStyle(color: notifire.getdarkscolor),
-                textAlign: TextAlign.start),
-            borderRadius: 5,
-          ).show(context);
-        }
+      if (response.statusCode == 200 && codeStatus.toString() == '200') {
+        CherryToast.success(
+          backgroundColor: notifire.getbackcolor,
+          title: Text(messageStatus, style: TextStyle(color: notifire.getdarkscolor)),
+          borderRadius: 5,
+        ).show(context);
+        await _loadUsuarios(); // Refresh the list
+      } else {
+        CherryToast.warning(
+          backgroundColor: notifire.getbackcolor,
+          title: Text(messageStatus, style: TextStyle(color: notifire.getdarkscolor)),
+          borderRadius: 5,
+        ).show(context);
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Excepción en la solicitud: $e');
-      }
+      if (kDebugMode) print('Excepción en la solicitud: $e');
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text('Error al eliminar usuario', style: TextStyle(color: notifire.getdarkscolor)),
+      ).show(context);
     }
   }
+
+  List<dynamic> _getPaginatedItems() {
+    final startIndex = _currentPage * _itemsPerPage;
+    final endIndex = (startIndex + _itemsPerPage) > listadodeusuarios.length
+        ? listadodeusuarios.length
+        : startIndex + _itemsPerPage;
+    return listadodeusuarios.sublist(startIndex, endIndex);
+  }
+
+  int get _totalPages => (listadodeusuarios.length / _itemsPerPage).ceil();
 
   @override
   Widget build(BuildContext context) {
-    notifire = Provider.of<ColorNotifire>(context, listen: true);
+    notifire = Provider.of<ColorNotifire>(context);
+    final paginatedItems = _getPaginatedItems();
+
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
+        elevation: 2,
+        shadowColor: Colors.black26,
         centerTitle: true,
-        iconTheme: IconThemeData(color: notifire.getwhite),
-        backgroundColor: notifire.getorangeprimerycolor,
+        backgroundColor: notifire.getprimerycolor,
         title: Text(
           'Usuarios',
           style: TextStyle(
-              fontFamily: "Gilroy Bold",
-              color: notifire.getwhite,
-              fontSize: 20),
-        ),
-        leading: GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-          },
-          child: Container(
-            height: 40,
-            width: 40,
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: notifire.getwhite),
-            ),
-            child: Icon(Icons.arrow_back, color: notifire.getwhite),
+            fontFamily: "Gilroy Bold",
+            color: notifire.getdarkscolor,
+            fontSize: height * 0.026,
           ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: notifire.getdarkscolor),
+          onPressed: () => Navigator.pop(context),
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: DropdownButton<int>(
-              value: _itemsPerPage,
-              icon: const Icon(Icons.arrow_drop_down),
-              iconSize: 24,
-              elevation: 16,
-              style: TextStyle(color: notifire.getdarkscolor),
-              underline: Container(
-                height: 2,
-                color: notifire.getdarkscolor,
-              ),
-              dropdownColor: notifire.getbackcolor,
-              onChanged: (int? newValue) {
-                setState(() {
-                  _itemsPerPage = newValue!;
-                  UsuariosByCliente();
-                });
-              },
-              items: <int>[10, 25, 50].map<DropdownMenuItem<int>>((int value) {
-                return DropdownMenuItem<int>(
+            padding: EdgeInsets.only(right: width * 0.03),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<int>(
+                value: _itemsPerPage,
+                icon: Icon(Icons.arrow_drop_down, color: notifire.getdarkscolor),
+                dropdownColor: notifire.getbackcolor,
+                onChanged: (int? newValue) {
+                  setState(() {
+                    _itemsPerPage = newValue!;
+                    _currentPage = 0;
+                  });
+                },
+                items: [10, 25, 50].map<DropdownMenuItem<int>>((int value) => DropdownMenuItem<int>(
                   value: value,
                   child: Text(
-                    'Mostrar ' + value.toString(),
-                    style: TextStyle(color: notifire.getdarkscolor),
+                    'Mostrar $value',
+                    style: TextStyle(
+                      fontFamily: "Gilroy Medium",
+                      color: notifire.getdarkscolor,
+                      fontSize: height * 0.018,
+                    ),
                   ),
-                );
-              }).toList(),
+                )).toList(),
+              ),
             ),
-          ),
-          const SizedBox(
-            width: 5,
-          ),
-          IconButton(
-            icon: Icon(Icons.person_add_alt, color: notifire.getwhite),
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              int fiIDEquifax = int.parse(prefs.getString("fiIDCuentaFamiliar") ?? '0');
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AdduserFamily(fiIDEquifax: fiIDEquifax, redireccion: false, fbprincipal:widget.fbprincipal),
-                ),
-              );
-            },
-          ),
-          const SizedBox(
-            width: 5,
           ),
         ],
       ),
       backgroundColor: notifire.getprimerycolor,
-      body: SingleChildScrollView(
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: height * 0.02),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: height / 50,
-            ),
-            if (listadodeusuarios.isEmpty)
-              Center(
-                child: CircularProgressIndicator(
-                  color: notifire.getorangeprimerycolor,
-                ),
-              )
+            if (_isLoading)
+              _buildLoadingState()
+            else if (listadodeusuarios.isEmpty)
+              _buildEmptyState()
             else
-              Container(
-                color: notifire.getprimerycolor,
-                child: Center(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'images/familia.png',
-                          height: 200,
-                          width: 200,
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            Container(
-              height: height / 1.15,
-              color: Colors.transparent,
-              child: Card(
-                color: notifire.getbackcolor,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: Colors.black12, width: 4),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: width * 0.05,
-                    vertical: height * 0.01,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (int i = _startIndex; i <= _endIndex; i++)
-                        if (i < listadodeusuarios.length)
-                          Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    height: height * 0.07,
-                                    width: width / 7,
-                                    decoration: BoxDecoration(
-                                      color: notifire.getprimerycolor,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Center(
-                                      child: Image.network(
-                                        listadodeusuarios[i]['NombreArchivo']
-                                            .toString(),
-                                        height: height / 30,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: width * 0.02),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          listadodeusuarios[i]
-                                                  ['fcNombreUsuario']
-                                              .toString(),
-                                          style: TextStyle(
-                                            fontFamily: "Gilroy Bold",
-                                            color: notifire.getdarkscolor,
-                                            fontSize: height * 0.015,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          softWrap: true,
-                                        ),
-                                        SizedBox(height: height * 0.005),
-                                        Text(
-                                          listadodeusuarios[i]
-                                                      ['fiTipodeUsuario'] ==
-                                                  1
-                                              ? 'Usuario Principal'
-                                              : 'Usuario Secundario',
-                                          style: TextStyle(
-                                            fontFamily: "Gilroy Medium",
-                                            color: listadodeusuarios[i]
-                                                        ['fiTipodeUsuario'] ==
-                                                    1
-                                                ? Colors.green.shade200
-                                                : Colors.orange.shade200,
-                                            fontSize: height * 0.015,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          softWrap: true,
-                                        ),
-                                        SizedBox(height: height * 0.005),
-                                        Text(
-                                          listadodeusuarios[i]
-                                                  ['fcUsuarioAcceso']
-                                              .toString(),
-                                          style: TextStyle(
-                                            fontFamily: "Gilroy Medium",
-                                            color: notifire.getdarkscolor
-                                                .withOpacity(0.6),
-                                            fontSize: height * 0.013,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          softWrap: true,
-                                        ),
-                                        SizedBox(height: height * 0.005),
-                                      ],
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  if (listadodeusuarios[i]['fiTipodeUsuario'] !=
-                                      1)
-                                    ElevatedButton.icon(
-                                      icon: const Icon(Icons.delete,
-                                          color: Colors.white),
-                                      label: const Text("Eliminar"),
-                                      style: ElevatedButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        backgroundColor: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        _showMyDialog(
-                                            listadodeusuarios[i]
-                                                    ['fcNombreUsuario']
-                                                .toString(),
-                                            listadodeusuarios[i]
-                                                    ['fcUsuarioAcceso']
-                                                .toString(),
-                                            listadodeusuarios[i]['fiIDUnico']);
-                                      },
-                                    ),
-                                ],
-                              ),
-                              SizedBox(height: height * 0.005),
-                              const Divider(),
-                            ],
-                          ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ElevatedButton(
-                            onPressed: (_startIndex > 0)
-                                ? () {
-                                    setState(() {
-                                      _startIndex -= _itemsPerPage;
-                                      _endIndex -= _itemsPerPage;
-                                    });
-                                  }
-                                : null,
-                            child: const Text('<'),
-                          ),
-                          Text(
-                            "Mostrando ${_startIndex + 1} - ${(_endIndex < listadodeusuarios.length) ? _endIndex + 1 : listadodeusuarios.length} de ${listadodeusuarios.length} registros",
-                            style: TextStyle(
-                              fontFamily: "Gilroy Medium",
-                              color: notifire.getdarkscolor.withOpacity(0.6),
-                              fontSize: height * 0.013,
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: (_endIndex <
-                                    listadodeusuarios.length - 1)
-                                ? () {
-                                    setState(() {
-                                      _startIndex += _itemsPerPage;
-                                      _endIndex = (_endIndex + _itemsPerPage <
-                                              listadodeusuarios.length - 1)
-                                          ? _endIndex + _itemsPerPage
-                                          : listadodeusuarios.length - 1;
-                                    });
-                                  }
-                                : null,
-                            child: const Text('>'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+              _buildUsuariosList(paginatedItems),
+            if (!_isLoading && listadodeusuarios.isNotEmpty)
+              _buildPaginationControls(),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _showMyDialog(String Usuario, String Correo, int id) async {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(32.0),
-            ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: notifire.getprimerycolor,
-              borderRadius: const BorderRadius.all(
-                Radius.circular(20),
-              ),
-            ),
-            height: height / 3,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: height / 40,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Row(
-                    children: [
-                      const Spacer(),
-                      Icon(
-                        Icons.clear,
-                        color: notifire.getdarkscolor,
-                      ),
-                      SizedBox(
-                        width: width / 20,
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: height / 40,
-                ),
-                Text(
-                  'Desea eliminar al Usuario de $Usuario',
-                  style: TextStyle(
-                    color: notifire.getdarkscolor,
-                    fontFamily: 'Gilroy Bold',
-                    fontSize: height / 50,
-                  ),
-                ),
-                Text(
-                  'con correo $Correo',
-                  style: TextStyle(
-                    color: notifire.getdarkscolor,
-                    fontFamily: 'Gilroy Bold',
-                    fontSize: height / 50,
-                  ),
-                ),
-                SizedBox(
-                  height: height / 20,
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await Future.delayed(const Duration(seconds: 1));
+  Widget _buildLoadingState() => SizedBox(
+        height: height * 0.5,
+        child: Center(
+          child: CircularProgressIndicator(color: notifire.getorangeprimerycolor),
+        ),
+      );
 
-                    await Usuarios_Delete(id);
-                    await UsuariosByCliente();
-                  },
-                  child: Container(
-                    height: height / 18,
-                    width: width / 2.5,
-                    decoration: BoxDecoration(
-                      color: notifire.getorangeprimerycolor,
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(20),
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Eliminar',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'Gilroy Bold',
-                            fontSize: height / 55),
-                      ),
-                    ),
+  Widget _buildEmptyState() => SizedBox(
+        height: height * 0.5,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'images/familia.png',
+                height: height * 0.15,
+                color: notifire.getdarkscolor.withOpacity(0.7),
+              ),
+              SizedBox(height: height * 0.03),
+              Text(
+                'No Hay Usuarios',
+                style: TextStyle(
+                  fontFamily: "Gilroy Bold",
+                  color: notifire.getdarkscolor,
+                  fontSize: height * 0.024,
+                ),
+              ),
+              SizedBox(height: height * 0.01),
+              Text(
+                'Agrega usuarios para verlos aquí',
+                style: TextStyle(
+                  fontFamily: "Gilroy Medium",
+                  color: notifire.getdarkscolor.withOpacity(0.6),
+                  fontSize: height * 0.018,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _buildUsuariosList(List<dynamic> items) => Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Mis Usuarios',
+                  style: TextStyle(
+                    fontFamily: "Gilroy Bold",
+                    color: notifire.getdarkscolor,
+                    fontSize: height * 0.024,
                   ),
                 ),
-                SizedBox(
-                  height: height / 100,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    int fiIDEquifax = int.parse(prefs.getString("fiIDCuentaFamiliar") ?? '0');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AdduserFamily(
+                          fiIDEquifax: fiIDEquifax,
+                          redireccion: false,
+                          fbprincipal: widget.fbprincipal,
+                        ),
+                      ),
+                    );
                   },
-                  child: Container(
-                    height: height / 18,
-                    width: width / 2.5,
-                    decoration: const BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(20),
-                      ),
+                  icon: Icon(Icons.person_add_alt, color: Colors.white, size: height * 0.025),
+                  label: Text(
+                    'Agregar',
+                    style: TextStyle(
+                      fontFamily: "Gilroy Bold",
+                      color: Colors.white,
+                      fontSize: height * 0.018,
                     ),
-                    child: Center(
-                      child: Text(
-                        'Cancelar',
-                        style: TextStyle(
-                            color: const Color(0xffEB5757),
-                            fontFamily: 'Gilroy Bold',
-                            fontSize: height / 55),
-                      ),
-                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: notifire.getorangeprimerycolor,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: height * 0.015),
                   ),
                 ),
               ],
             ),
+            SizedBox(height: height * 0.015),
+            Expanded(
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) => _buildUsuarioCard(items[index]),
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _buildUsuarioCard(dynamic item) => Padding(
+        padding: EdgeInsets.symmetric(vertical: height * 0.008),
+        child: Card(
+          color: notifire.getbackcolor,
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey.withOpacity(0.1)),
           ),
+          child: Padding(
+            padding: EdgeInsets.all(width * 0.04),
+            child: Row(
+              children: [
+                Container(
+                  height: height * 0.06,
+                  width: height * 0.06,
+                  decoration: BoxDecoration(
+                    color: notifire.getprimerycolor.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Image.network(
+                      item['NombreArchivo'].toString(),
+                      height: height * 0.03,
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        Icons.person,
+                        color: notifire.getdarkscolor,
+                        size: height * 0.03,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: width * 0.03),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item['fcNombreUsuario'].toString(),
+                        style: TextStyle(
+                          fontFamily: "Gilroy Bold",
+                          color: notifire.getdarkscolor,
+                          fontSize: height * 0.02,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: height * 0.008),
+                      Text(
+                        item['fiTipodeUsuario'] == 1 ? 'Usuario Principal' : 'Usuario Familiar',
+                        style: TextStyle(
+                          fontFamily: "Gilroy Medium",
+                          color: item['fiTipodeUsuario'] == 1 ? Colors.green : Colors.orange,
+                          fontSize: height * 0.016,
+                        ),
+                      ),
+                      SizedBox(height: height * 0.005),
+                      Text(
+                        item['fcUsuarioAcceso'].toString(),
+                        style: TextStyle(
+                          fontFamily: "Gilroy Medium",
+                          color: notifire.getdarkscolor.withOpacity(0.7),
+                          fontSize: height * 0.016,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                if (item['fiTipodeUsuario'] != 1)
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red, size: height * 0.03),
+                    onPressed: () => _showDeleteDialog(
+                      item['fcNombreUsuario'].toString(),
+                      item['fcUsuarioAcceso'].toString(),
+                      item['fiIDUnico'],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+  Widget _buildPaginationControls() => Padding(
+        padding: EdgeInsets.symmetric(vertical: height * 0.02),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios_new,
+                color: _currentPage > 0 ? notifire.getorangeprimerycolor : Colors.grey,
+                size: height * 0.025,
+              ),
+              onPressed: _currentPage > 0 ? () => setState(() => _currentPage--) : null,
+            ),
+            Text(
+              'Página ${_currentPage + 1} de $_totalPages',
+              style: TextStyle(
+                fontFamily: "Gilroy Medium",
+                color: notifire.getdarkscolor,
+                fontSize: height * 0.018,
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: _currentPage < _totalPages - 1 ? notifire.getorangeprimerycolor : Colors.grey,
+                size: height * 0.025,
+              ),
+              onPressed: _currentPage < _totalPages - 1 ? () => setState(() => _currentPage++) : null,
+            ),
+          ],
+        ),
+      );
+
+  Future<void> _showDeleteDialog(String usuario, String correo, int id) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: notifire.getbackcolor,
+          title: Row(
+            children: [
+              Icon(Icons.warning, color: Colors.red, size: height * 0.03),
+              SizedBox(width: width * 0.03),
+              Text(
+                'Eliminar Usuario',
+                style: TextStyle(
+                  fontFamily: 'Gilroy Bold',
+                  color: notifire.getdarkscolor,
+                  fontSize: height * 0.024,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '¿Estás seguro de eliminar al usuario "$usuario"?',
+                style: TextStyle(
+                  fontFamily: 'Gilroy Medium',
+                  color: notifire.getdarkscolor,
+                  fontSize: height * 0.018,
+                ),
+              ),
+              SizedBox(height: height * 0.01),
+              Text(
+                'Correo: $correo',
+                style: TextStyle(
+                  fontFamily: 'Gilroy Medium',
+                  color: notifire.getdarkscolor.withOpacity(0.7),
+                  fontSize: height * 0.016,
+                ),
+              ),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(
+                  fontFamily: 'Gilroy Bold',
+                  color: Colors.red,
+                  fontSize: height * 0.018,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _deleteUsuario(id);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: notifire.getorangeprimerycolor,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: EdgeInsets.symmetric(horizontal: width * 0.06, vertical: height * 0.015),
+              ),
+              child: Text(
+                'Eliminar',
+                style: TextStyle(
+                  fontFamily: 'Gilroy Bold',
+                  color: Colors.white,
+                  fontSize: height * 0.018,
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
