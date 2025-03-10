@@ -77,10 +77,11 @@ class _NotificationindexState extends State<Notificationindex> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20), // Bordes más redondeados
         ),
+        backgroundColor: notifire.getbackcolor, // Custom background color
         titlePadding: EdgeInsets.zero, // Elimina padding predeterminado del título
         contentPadding: const EdgeInsets.all(20),
         title: Container(
-          decoration:  BoxDecoration(
+          decoration: BoxDecoration(
             color: notifire.getorangeprimerycolor, // Color de fondo del encabezado
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
@@ -135,11 +136,9 @@ class _NotificationindexState extends State<Notificationindex> {
         actionsAlignment: MainAxisAlignment.center,
         actions: [
           ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+            onPressed: () => Navigator.of(context).pop(),
             style: ElevatedButton.styleFrom(
-              backgroundColor:notifire.getorangeprimerycolor,
+              backgroundColor: notifire.getorangeprimerycolor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),

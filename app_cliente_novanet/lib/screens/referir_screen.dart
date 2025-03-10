@@ -1,13 +1,12 @@
 import 'dart:convert';
-
 import 'package:app_cliente_novanet/api.dart';
 import 'package:app_cliente_novanet/utils/button.dart';
 import 'package:app_cliente_novanet/utils/media.dart';
+import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:http/http.dart' as http;
 import '../toastconfig/toastconfig.dart';
 
@@ -20,228 +19,202 @@ class ReferirScreen extends StatefulWidget {
 
 class _ReferirScreenState extends State<ReferirScreen> {
   late ColorNotifire notifire;
-  TextEditingController name = TextEditingController();
-  TextEditingController numberphone = TextEditingController();
+  final TextEditingController name = TextEditingController();
+  final TextEditingController numberphone = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    notifire = Provider.of<ColorNotifire>(context, listen: true);
+    notifire = Provider.of<ColorNotifire>(context);
     final height = MediaQuery.of(context).size.height;
+    final width = MediaQuery.of(context).size.width;
+
     return Scaffold(
+      backgroundColor: notifire.getprimerycolor,
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
         title: Text(
           'Referir',
           style: TextStyle(
-            fontSize: 20,
             fontFamily: 'Gilroy Bold',
+            fontSize: height * 0.025,
             color: notifire.getbackcolor,
           ),
         ),
         backgroundColor: notifire.getorangeprimerycolor,
-        leading: GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-          },
-          child: Container(
-            height: 40,
-            width: 40,
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: notifire.getbackcolor),
-            ),
-            child: Icon(Icons.arrow_back, color: notifire.getbackcolor),
-          ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: notifire.getbackcolor),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Container(
         color: notifire.getprimerycolor,
-        child: Center(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'images/referidos.png',
-                  height: 300,
-                  width: 300,
+        padding: EdgeInsets.symmetric(horizontal: width * 0.06, vertical: height * 0.02),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                'images/referidos.png',
+                height: height * 0.25,
+                width: height * 0.25,
+              ),
+              SizedBox(height: height * 0.03),
+              Text(
+                '¡Invita a un amigo!',
+                style: TextStyle(
+                  fontFamily: 'Gilroy Bold',
+                  fontSize: height * 0.028,
+                  color: notifire.getdarkscolor,
                 ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: TextField(
-                    controller: name,
-                    keyboardType: TextInputType.text,
-                    decoration: InputDecoration(
-                      filled: true,
-                      labelText: 'Nombre de Referido',
-                      prefixIcon:
-                          Icon(Icons.person, color: notifire.getdarkscolor),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffd3d3d3)),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      hintText: 'Ingrese el Nombre del Referido',
-                      hintStyle: TextStyle(
-                        color: notifire.getdarkgreycolor,
-                        fontSize: height / 60,
-                      ),
-                      fillColor: notifire.getbackcolor,
-                      border: const OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: notifire.getorangeprimerycolor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
+              ),
+              SizedBox(height: height * 0.01),
+              Text(
+                'Comparte los beneficios con alguien que conoces',
+                style: TextStyle(
+                  fontFamily: 'Gilroy Medium',
+                  fontSize: height * 0.018,
+                  color: notifire.getdarkscolor.withOpacity(0.7),
                 ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: TextField(
-                    controller: numberphone,
-                    keyboardType: TextInputType.number,
-                    maxLength: 8,
-                    decoration: InputDecoration(
-                      labelText: 'Número de Teléfono',
-                      iconColor: notifire.getdarkscolor,
-                      prefixIcon:
-                          Icon(Icons.phone, color: notifire.getdarkscolor),
-                      filled: true,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffd3d3d3)),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      hintText: 'Ingrese el Número de Teléfono del Referido',
-                      hintStyle: TextStyle(
-                        color: notifire.getdarkgreycolor,
-                        fontSize: height / 60,
-                      ),
-                      fillColor: notifire.getbackcolor,
-                      border: const OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: notifire.getorangeprimerycolor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: height * 0.04),
+              _buildTextField(
+                controller: name,
+                label: 'Nombre del Referido',
+                icon: Icons.person,
+                keyboardType: TextInputType.text,
+              ),
+              SizedBox(height: height * 0.02),
+              _buildTextField(
+                controller: numberphone,
+                label: 'Número de Teléfono',
+                icon: Icons.phone,
+                keyboardType: TextInputType.number,
+                maxLength: 8,
+              ),
+              SizedBox(height: height * 0.04),
+              GestureDetector(
+                onTap: _validarYEnviar,
+                child: Custombutton.button(
+                  notifire.getorangeprimerycolor,
+                  'Confirmar',
+                  width * 0.9,
+                  
                 ),
-                const SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () {
-                    validacion();
-                  },
-                  child: Custombutton.button(
-                    notifire.getorangeprimerycolor,
-                    'Confirmar',
-                    width / 1.1,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  validacion() async {
-    if (numberphone.text.isEmpty || name.text.isEmpty) {
-      CherryToast.warning(
-        backgroundColor: notifire.getbackcolor,
-        title: Text(
-          'Llene los Campos Vacio',
-          style: TextStyle(color: notifire.getdarkscolor),
-          textAlign: TextAlign.start,
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required TextInputType keyboardType,
+    int? maxLength,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLength: maxLength,
+      style: TextStyle(color: notifire.getdarkscolor),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: notifire.getdarkscolor.withOpacity(0.7)),
+        prefixIcon: Icon(icon, color: notifire.getorangeprimerycolor),
+        filled: true,
+        fillColor: notifire.getbackcolor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
-        borderRadius: 5,
-      ).show(context);
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: notifire.getorangeprimerycolor, width: 1.5),
+        ),
+        contentPadding: EdgeInsets.symmetric(vertical: height * 0.02, horizontal: width * 0.04),
+      ),
+    );
+  }
+
+  Future<void> _validarYEnviar() async {
+    if (name.text.trim().isEmpty || numberphone.text.trim().isEmpty) {
+      _showToast('Por favor, llene todos los campos', isError: true);
       return;
     }
 
-    if (numberphone.text.length != 8) {
-      CherryToast.warning(
-        backgroundColor: notifire.getbackcolor,
-        title: Text(
-          'El Campo de Numero Requiere 8 digitos',
-          style: TextStyle(color: notifire.getdarkscolor),
-          textAlign: TextAlign.start,
-        ),
-        borderRadius: 5,
-      ).show(context);
+    if (numberphone.text.length != 8 || !RegExp(r'^[0-9]{8}$').hasMatch(numberphone.text)) {
+      _showToast('El número debe ser exactamente 8 dígitos numéricos', isError: true);
       return;
     }
+
     final prefs = await SharedPreferences.getInstance();
     var fiIDCliente = prefs.getString("fiIDCliente") ?? '0';
 
     var referido = {
       'fiIdequifaxClienteReferente': int.parse(fiIDCliente),
-      'fcNombreReferido': name.text,
-      'fcNumeroTelefono': '504${numberphone.text}',
+      'fcNombreReferido': name.text.trim(),
+      'fcNumeroTelefono': numberphone.text, // No prefix added here
     };
 
     String jsonCreate = jsonEncode(referido);
 
-    final response = await http.post(
-      Uri.parse('${apiUrl}Usuario/ReferirCliente'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Accept': 'application/json',
-      },
-      body: jsonCreate,
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('${apiUrl}Usuario/ReferirCliente'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+        },
+        body: jsonCreate,
+      );
 
-    if (response.statusCode == 200) {
       final decodedJson = jsonDecode(response.body);
       final codeStatus = decodedJson["code"];
       final messageStatus = decodedJson["message"];
 
-      if (codeStatus.toString() == '200') {
-        CherryToast.success(
-          backgroundColor: notifire.getbackcolor,
-          title: Text(
-            '$messageStatus',
-            style: TextStyle(color: notifire.getdarkscolor),
-            textAlign: TextAlign.start,
-          ),
-          borderRadius: 5,
-        ).show(context);
+      if (response.statusCode == 200 && codeStatus.toString() == '200') {
+        _showToast(messageStatus, isSuccess: true);
         setState(() {
-          name.value = TextEditingValue.empty;
-          numberphone.value = TextEditingValue.empty;
+          name.clear();
+          numberphone.clear();
         });
-        return;
-      } else if (codeStatus.toString() == '409') {
-        CherryToast.warning(
-          backgroundColor: notifire.getbackcolor,
-          title: Text('$messageStatus',
-              style: TextStyle(color: notifire.getdarkscolor),
-              textAlign: TextAlign.start),
-          borderRadius: 5,
-        ).show(context);
-        return;
       } else {
-        CherryToast.error(
-          backgroundColor: notifire.getbackcolor,
-          title: Text('$messageStatus',
-              style: TextStyle(color: notifire.getdarkscolor),
-              textAlign: TextAlign.start),
-          borderRadius: 5,
-        ).show(context);
+        _showToast(messageStatus, isError: codeStatus.toString() != '409', isWarning: codeStatus.toString() == '409');
       }
-    } else {
-      CherryToast.error(
-        backgroundColor: notifire.getbackcolor,
-        title: Text('Ha ocurrido un error Inesperado',
-            style: TextStyle(color: notifire.getdarkscolor),
-            textAlign: TextAlign.start),
-        borderRadius: 5,
-      ).show(context);
+    } catch (e) {
+      _showToast('Error inesperado al enviar la solicitud', isError: true);
+      debugPrint('Error: $e');
     }
+  }
+
+  void _showToast(String message, {bool isError = false, bool isWarning = false, bool isSuccess = false}) {
+    CherryToast(
+      themeColor: notifire.getbackcolor,
+      backgroundColor: notifire.getbackcolor,
+      title: Text(
+        message,
+        style: TextStyle(color: notifire.getdarkscolor),
+        textAlign: TextAlign.start,
+      ),
+      borderRadius: 8,
+      animationType: AnimationType.fromTop,
+      toastDuration: const Duration(seconds: 3),
+      icon: isSuccess
+          ? Icons.check_circle
+          : isWarning
+              ? Icons.warning
+              : Icons.error,
+      iconColor: isSuccess
+          ? Colors.green
+          : isWarning
+              ? Colors.orange
+              : Colors.red,
+    ).show(context);
   }
 }

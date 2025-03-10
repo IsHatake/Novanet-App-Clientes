@@ -1,111 +1,61 @@
-// ignore_for_file: non_constant_identifier_names, unused_import, prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, unnecessary_string_interpolations
-
 import 'dart:convert';
-
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:app_cliente_novanet/screens/chat_screen.dart';
 import 'package:app_cliente_novanet/screens/pagoshome.dart';
 import 'package:app_cliente_novanet/screens/payment_screen.dart';
 import 'package:app_cliente_novanet/screens/referidos_screen.dart';
-import 'package:app_cliente_novanet/utils/button.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:app_cliente_novanet/api.dart';
-import 'package:app_cliente_novanet/home/notifications.dart';
-import 'package:app_cliente_novanet/profile/profile.dart';
 import 'package:app_cliente_novanet/screens/payservice_screen.dart';
 import 'package:app_cliente_novanet/screens/referir_screen.dart';
 import 'package:app_cliente_novanet/screens/services_screen.dart';
 import 'package:app_cliente_novanet/screens/webviewtest_screen.dart';
+import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
 import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
+import 'package:app_cliente_novanet/utils/button.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:app_cliente_novanet/utils/media.dart';
 import 'package:app_cliente_novanet/utils/string.dart';
-import 'package:flutter_credit_card/extension.dart';
-import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
+import 'package:app_cliente_novanet/home/notifications.dart';
+import 'package:app_cliente_novanet/profile/profile.dart';
+import 'package:app_cliente_novanet/screens/dialogPagoWidget.dart';
 
 class Home extends StatefulWidget {
   final bool fbprincipal;
   const Home({Key? key, required this.fbprincipal}) : super(key: key);
-
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late ColorNotifire notifire;
-  late String selectedMonth;
   String fcNombreUsuario = '';
   String fcLlaveUnica = '';
-
-  List produtosdelservicioactual = [];
+  List productosDelServicioActual = [];
   List json2 = [];
   List cuotas = [];
-
   bool _isExpanded = false;
   int _currentPage = 0;
-
   late AnimationController _controller;
   late Animation<double> _animation;
-
-  Future<void> _loadData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    //obtención de datos personales
-    String fcNombreUsuarioFull = prefs.getString('fcNombreUsuario') ?? '';
-    String key = prefs.getString('fcLlaveUnica') ?? '';
-
-    List<String> parts = fcNombreUsuarioFull.split(' ');
-    String fcNombreUsuarioFirstWord = parts.isNotEmpty ? parts.first : '';
-
-    //json 4 : productos del cliente
-    String dataAsString = prefs.getString('datalogin[3]') ?? '';
-
-    //json 2 de información
-    String dataAsString2 = prefs.getString('datalogin[1]') ?? '';
-
-    var data2 = jsonDecode(dataAsString2);
-
-    for (var cuota in data2) {
-      cuotas.add(cuota["fnCuotaMensual"] ?? 0.00);
-    }
-    setState(() {
-      produtosdelservicioactual = jsonDecode(dataAsString);
-      json2 = jsonDecode(dataAsString2);
-      fcNombreUsuario = fcNombreUsuarioFirstWord;
-      fcLlaveUnica = key;
-    });
-  }
-
-  getdarkmodepreviousstate() async {
-    final prefs = await SharedPreferences.getInstance();
-    bool? previusstate = prefs.getBool("setIsDark");
-    if (previusstate == null) {
-      notifire.setIsDark = false;
-    } else {
-      notifire.setIsDark = previusstate;
-    }
-  }
-
   late PageController _pageController;
 
   @override
   void initState() {
-    _loadData();
-    selectedMonth = '1';
     super.initState();
+    _loadData();
     _pageController = PageController();
-
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
     )..repeat(reverse: true);
-
-    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -115,20 +65,28 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  void _previousPage() {
-    if (_currentPage > 0) {
-      _currentPage--;
-      _pageController.animateToPage(
-        _currentPage,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+  Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final fcNombreUsuarioFull = prefs.getString('fcNombreUsuario') ?? '';
+    final key = prefs.getString('fcLlaveUnica') ?? '';
+    final dataAsString = prefs.getString('datalogin[3]') ?? '';
+    final dataAsString2 = prefs.getString('datalogin[1]') ?? '';
+    final data2 = jsonDecode(dataAsString2);
+
+    setState(() {
+      fcNombreUsuario = fcNombreUsuarioFull.split(' ').first;
+      fcLlaveUnica = key;
+      productosDelServicioActual = jsonDecode(dataAsString);
+      json2 = data2;
+      cuotas =
+          data2.map<double>((cuota) => cuota["fnCuotaMensual"] ?? 0.0).toList();
+    });
   }
 
-  void _nextPage() {
-    if (_currentPage < cuotas.length - 1) {
-      _currentPage++;
+  void _navigatePage(int direction) {
+    if (_currentPage + direction >= 0 &&
+        _currentPage + direction < cuotas.length) {
+      _currentPage += direction;
       _pageController.animateToPage(
         _currentPage,
         duration: const Duration(milliseconds: 300),
@@ -139,1191 +97,911 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    notifire = Provider.of<ColorNotifire>(context, listen: true);
+    notifire = Provider.of<ColorNotifire>(context);
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         automaticallyImplyLeading: false,
         backgroundColor: notifire.getorangeprimerycolor,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              CustomStrings.hello + ' ' + fcNombreUsuario,
-              style: TextStyle(
-                  color: notifire.getwhite,
-                  fontWeight: FontWeight.w400,
-                  fontSize: 18,
-                  fontFamily: 'Gilroy'),
-            ),
-          ],
+        title: Text(
+          '${CustomStrings.hello} $fcNombreUsuario',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w400,
+            fontSize: 18,
+            fontFamily: 'Gilroy',
+          ),
         ),
         actions: [
-          GestureDetector(
-            onTap: () {
-              _launchUrlManual();
-            },
-            child: Icon(
-              Icons.help_outline,
-              color: notifire.getwhite,
-              size: 24.0,
+          IconButton(
+            icon: Icon(Icons.help_outline, color: notifire.getwhite),
+            onPressed: () => _launchUrlManual(
+                'https://novanetgroup.com/NovanetApp/Manuales/Index.html'),
+          ),
+          IconButton(
+            icon: json2.isNotEmpty && json2[0]['fbNotificaciones']
+                ? ScaleTransition(scale: _animation, child: _notificationIcon())
+                : _notificationIcon(),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const Notificationindex("Notificaciones")),
             ),
           ),
-          const SizedBox(
-            width: 10,
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const Notificationindex("Notificaciones"),
-                ),
-              );
-            },
-            child: json2[0]['fbNotificaciones']
-                ? ScaleTransition(
-                    scale: _animation,
-                    child: Image.asset(
-                      "images/notification.png",
-                      color: notifire.getwhite,
-                      scale: 4,
-                    ),
-                  )
-                : Image.asset(
-                    "images/notification.png",
-                    color: notifire.getwhite,
-                    scale: 4,
-                  ),
-          ),
-          const SizedBox(
-            width: 2,
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      Profile(fbprincipal: widget.fbprincipal),
-                ),
-              );
-            },
-            child: Image.asset(
-              "images/user_outline.png",
-              color: notifire.getwhite,
-              scale: 20,
+          IconButton(
+            icon: Image.asset("images/user_outline.png",
+                color: notifire.getwhite, scale: 20),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => Profile(fbprincipal: widget.fbprincipal)),
             ),
           ),
         ],
       ),
       backgroundColor: notifire.getprimerycolor,
-      body: Column(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildHeader(),
+            _buildServiceSection(),
+            const PagosPage(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _notificationIcon() => Image.asset(
+        "images/notification.png",
+        color: notifire.getwhite,
+        scale: 4,
+      );
+
+  Widget _buildHeader() => Stack(
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                          color: notifire.getprimerycolor,
-                          child: Image.asset("images/backphoto.png")),
-                      Column(
-                        children: [
-                          SizedBox(
-                            height: height / 40,
-                          ),
-                          Center(
-                            child: Container(
-                              height: height / 10,
-                              width: width / 1.2,
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(20),
-                                  topRight: Radius.circular(20),
-                                ),
-                                color: notifire.getorangeprimerycolor,
-                              ),
-                              child: Stack(
-                                children: [
-                                  PageView.builder(
-                                    controller: _pageController,
-                                    onPageChanged: (index) {
-                                      setState(() {
-                                        _currentPage = index;
-                                      });
-                                    },
-                                    itemCount: cuotas.length,
-                                    itemBuilder: (context, index) {
-                                      bool hasAtraso = json2[index]
-                                                  ['fcCuotasEnAtraso'] !=
-                                              '' &&
-                                          json2[index]['fitotal_debe'] != 0.00;
+          Image.asset("images/backphoto.png", fit: BoxFit.cover),
+          Column(
+            children: [
+              SizedBox(height: height / 40),
+              _buildPaymentCard(),
+              _buildIconButtons(),
+            ],
+          ),
+        ],
+      );
 
-                                      // Determina el símbolo y formato de la moneda
-                                      String currencySymbol =
-                                          json2[index]['fiIDMoneda'] == 2
-                                              ? '\$'
-                                              : 'L';
-                                      NumberFormat currencyFormat =
-                                          NumberFormat.currency(
-                                        locale:
-                                            'en', // Usa configuración que emplea '.' como separador decimal
-                                        symbol: currencySymbol,
-                                        decimalDigits: 2,
-                                      );
+  Widget _buildPaymentCard() => Center(
+        child: Container(
+          height: height / 10,
+          width: width / 1.2,
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            color: notifire.getorangeprimerycolor,
+          ),
+          child: Stack(
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                onPageChanged: (index) => setState(() => _currentPage = index),
+                itemCount: cuotas.length,
+                itemBuilder: (_, index) => _buildPaymentInfo(index),
+              ),
+              // Left Arrow
+              if (_currentPage > 0)
+                Positioned(
+                  left: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: _buildNavigationButton(
+                    icon: Icons.arrow_back_ios_new,
+                    onPressed: () => _navigatePage(-1),
+                    isLeft: true,
+                  ),
+                ),
+              // Right Arrow
+              if (_currentPage < cuotas.length - 1)
+                Positioned(
+                  right: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: _buildNavigationButton(
+                    icon: Icons.arrow_forward_ios_rounded,
+                    onPressed: () => _navigatePage(1),
+                    isLeft: false,
+                  ),
+                ),
+              Positioned(
+                bottom: 2, // Adjusted to move dots closer to the bottom edge
+                left: 0,
+                right: 0,
+                child: _buildPageIndicators(),
+              ),
+            ],
+          ),
+        ),
+      );
 
-                                      return Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Center(
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  hasAtraso
-                                                      ? 'Cuota a Pagar Servicio #${json2[index]["fcIDPrestamo"].toString()}'
-                                                      : 'Cuota Mensual Servicio #${json2[index]["fcIDPrestamo"].toString()}',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: height / 50,
-                                                    fontFamily: 'Gilroy Medium',
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Center(
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  hasAtraso
-                                                      ? currencyFormat.format(
-                                                          json2[index]
-                                                              ['fitotal_debe'])
-                                                      : currencyFormat.format(
-                                                          cuotas[index]),
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: height / 35,
-                                                    fontFamily: 'Gilroy Bold',
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          if (hasAtraso)
-                                            Center(
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    '${json2[index]['fcCuotasEnAtraso']}',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: height / 60,
-                                                      fontFamily:
-                                                          'Gilroy Medium',
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            )
-                                          else if (json2[index]
-                                                  ['fdFechaProximoPago'] !=
-                                              null)
-                                            Center(
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    'Próximo Pago: ${DateFormat('dd/MM/yyyy').format(
-                                                      DateTime.parse(
-                                                        json2[index][
-                                                            'fdFechaProximoPago'],
-                                                      ),
-                                                    )}',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: height / 60,
-                                                      fontFamily:
-                                                          'Gilroy Medium',
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                  if (_currentPage > 0)
-                                    Positioned(
-                                      left: 0,
-                                      top: 0,
-                                      bottom: 0,
-                                      child: IconButton(
-                                        icon: const Icon(
-                                            Icons.arrow_back_ios_new,
-                                            color: Colors.white),
-                                        onPressed: _previousPage,
-                                      ),
-                                    ),
-                                  if (_currentPage < cuotas.length - 1)
-                                    Positioned(
-                                      right: 0,
-                                      top: 0,
-                                      bottom: 0,
-                                      child: IconButton(
-                                        icon: const Icon(
-                                            Icons.arrow_forward_ios_rounded,
-                                            color: Colors.white),
-                                        onPressed: _nextPage,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Center(
-                            child: Padding(
-                              padding:
-                                  EdgeInsets.symmetric(horizontal: width / 38),
-                              child: Container(
-                                height: height / 7,
-                                width: width,
-                                decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.circular(10),
-                                  ),
-                                  color: notifire.getwhite,
-                                  boxShadow: <BoxShadow>[
-                                    BoxShadow(
-                                      color: notifire.getdarkscolor
-                                          .withOpacity(0.3),
-                                      blurRadius: 5.0,
-                                      offset: const Offset(0.0, 0.75),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                      height: height / 50,
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        if (widget.fbprincipal) ...[
-                                          _buildIconButton(
-                                            context,
-                                            "images/referir.png",
-                                            CustomStrings.referir,
-                                            () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const referidos_Screen(),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                        _buildIconButton(
-                                          context,
-                                          "images/high-speed.png",
-                                          'Test',
-                                          () {
-                                            if (fcLlaveUnica.isNullOrEmpty ||
-                                                fcLlaveUnica == '') {
-                                              CherryToast.info(
-                                                backgroundColor:
-                                                    notifire.getbackcolor,
-                                                title: Text(
-                                                    'Aún no cuentas con esta opción',
-                                                    style: TextStyle(
-                                                        color: notifire
-                                                            .getdarkscolor),
-                                                    textAlign: TextAlign.start),
-                                                borderRadius: 5,
-                                              ).show(context);
-                                              return;
-                                            }
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const WebviewTest_screen(),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        _buildIconButton(
-                                          context,
-                                          "images/apoyo.png",
-                                          'Comunícate',
-                                          () {
-                                            _showWPDialog(context);
-                                          },
-                                        ),
-                                        _buildIconButton(
-                                          context,
-                                          "images/caja.png",
-                                          CustomStrings.addservice,
-                                          () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    AddServices_Screen(
-                                                  'Servicios',
-                                                  fbprincipal:
-                                                      widget.fbprincipal,
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        _buildIconButton(
-                                          context,
-                                          "images/pagar.png",
-                                          CustomStrings.pay,
-                                          () async {
-                                            if (fcLlaveUnica.isNullOrEmpty ||
-                                                fcLlaveUnica == '') {
-                                              CherryToast.info(
-                                                backgroundColor:
-                                                    notifire.getbackcolor,
-                                                title: Text(
-                                                    'Aún no cuentas con esta opción',
-                                                    style: TextStyle(
-                                                        color: notifire
-                                                            .getdarkscolor),
-                                                    textAlign: TextAlign.start),
-                                                borderRadius: 5,
-                                              ).show(context);
-                                              return;
-                                            }
-                                            if (!await launchUrl(Uri.parse(
-                                                'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica'))) {
-                                              throw Exception(
-                                                  'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica');
-                                            }
-                                            // Navigator.push(
-                                            //   context,
-                                            //   MaterialPageRoute(
-                                            //     builder: (context) =>
-                                            //         PaymentScreen(
-                                            //             keyId: fcLlaveUnica),
-                                            //   ),
-                                            // );
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: height / 30,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: width / 18),
-                    child: Row(
-                      children: [
-                        Text(
-                          CustomStrings.service,
-                          style: TextStyle(
-                              fontFamily: "Gilroy Bold",
-                              color: notifire.getdarkscolor,
-                              fontSize: height / 40),
-                        ),
-                      ],
+  Widget _buildNavigationButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required bool isLeft,
+  }) {
+    return SizedBox(
+      width: 36,
+      height: height / 9,
+      child: IconButton(
+        icon: Icon(
+          icon,
+          color: Colors.white,
+          size: 20, // Slightly smaller for elegance
+        ),
+        onPressed: onPressed,
+        splashRadius: 20, // Smaller splash effect
+        padding: EdgeInsets.zero, // Remove default padding
+      ),
+    );
+  }
+
+  Widget _buildPageIndicators() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        cuotas.length,
+        (index) => AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: _currentPage == index ? 10 : 6,
+          height: 6,
+          decoration: BoxDecoration(
+            color: _currentPage == index
+                ? Colors.white
+                : Colors.white.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentInfo(int index) {
+    final hasAtraso = json2[index]['fcCuotasEnAtraso'] != '' &&
+        json2[index]['fitotal_debe'] != 0.0;
+    final currencySymbol = json2[index]['fiIDMoneda'] == 2 ? '\$' : 'L';
+    final currencyFormat = NumberFormat.currency(
+        locale: 'en', symbol: currencySymbol, decimalDigits: 2);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          hasAtraso
+              ? 'Cuota a Pagar Servicio #${json2[index]["fcIDPrestamo"]}'
+              : 'Cuota Mensual Servicio #${json2[index]["fcIDPrestamo"]}',
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: height / 50,
+              fontFamily: 'Gilroy Medium'),
+        ),
+        Text(
+          hasAtraso
+              ? currencyFormat.format(json2[index]['fitotal_debe'])
+              : currencyFormat.format(cuotas[index]),
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: height / 35,
+              fontFamily: 'Gilroy Bold'),
+        ),
+        if (hasAtraso)
+          Text(
+            '${json2[index]['fcCuotasEnAtraso']}',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: height / 60,
+                fontFamily: 'Gilroy Medium'),
+          )
+        else if (json2[index]['fdFechaProximoPago'] != null)
+          Text(
+            'Próximo Pago: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(json2[index]['fdFechaProximoPago']))}',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: height / 60,
+                fontFamily: 'Gilroy Medium'),
+          ),
+        SizedBox(height: height / 80),
+      ],
+    );
+  }
+
+  Widget _buildIconButtons() => Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: width / 38),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+                vertical: 16), // Dynamic padding instead of fixed height
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: notifire.getwhite,
+              boxShadow: [
+                BoxShadow(
+                  color: notifire.getdarkscolor.withOpacity(0.3),
+                  blurRadius: 5,
+                  offset: const Offset(0, 0.75),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment
+                  .center, // Vertically centers children within Row
+              children: [
+                if (widget.fbprincipal)
+                  _buildIconButton(
+                    "images/referir.png",
+                    CustomStrings.referir,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const referidos_Screen()),
                     ),
                   ),
-                  SizedBox(
-                    height: height / 50,
+                _buildIconButton(
+                  "images/high-speed.png",
+                  'Test',
+                  () => _navigateOrShowToast(const WebviewTest_screen()),
+                ),
+                _buildIconButton(
+                  "images/apoyo.png",
+                  'Comunícate',
+                  () => _showWPDialog(context),
+                ),
+                _buildIconButton(
+                  "images/caja.png",
+                  CustomStrings.addservice,
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AddServices_Screen(
+                        'Servicios',
+                        fbprincipal: widget.fbprincipal,
+                      ),
+                    ),
                   ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: json2.length,
-                    itemBuilder: (context, index) {
-                      List detalles = json.decode(json2[index]["Detalles"]);
+                ),
+                _buildIconButton(
+                  "images/pagar.png",
+                  CustomStrings.pay,
+                  () => _handlePayment(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
 
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: width * 0.05,
-                          vertical: height * 0.01,
-                        ),
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isExpanded = !_isExpanded;
-                            });
-                          },
-                          child: Card(
-                            color: notifire.getbackcolor,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                width: 2,
-                                color: Colors.grey.withOpacity(0.2),
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: ExpansionTile(
-                              initiallyExpanded: false,
-                              title: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: width * 0.02,
-                                  vertical: height * 0.005,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          height: height * 0.07,
-                                          width: height * 0.07,
-                                          decoration: BoxDecoration(
-                                            color: notifire.getprimerycolor,
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                          child: Center(
-                                            child: Icon(
-                                              Icons.wifi,
-                                              color: notifire.getdarkscolor,
-                                              size: height * 0.035,
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(width: width * 0.02),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              SizedBox(height: height * 0.01),
-                                              Text(
-                                                "Estado Actual de Servicio #${json2[index]["fcIDPrestamo"].toString()}",
-                                                style: TextStyle(
-                                                  fontFamily: "Gilroy Bold",
-                                                  color: notifire.getdarkscolor,
-                                                  fontSize: height * 0.015,
-                                                ),
-                                              ),
-                                              SizedBox(height: height * 0.005),
-                                              Text(
-                                                'Fecha Inicio Servicio: ' +
-                                                    DateFormat('dd/MM/yyyy')
-                                                        .format(
-                                                      DateTime.parse(
-                                                        json2[index][
-                                                                "fdFechaCreacionSolicitud"]
-                                                            .toString(),
-                                                      ),
-                                                    ),
-                                                style: TextStyle(
-                                                  fontFamily: "Gilroy Medium",
-                                                  color: notifire.getdarkscolor
-                                                      .withOpacity(0.6),
-                                                  fontSize: height * 0.013,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(width: width * 0.02),
-                                        Column(
-                                          children: [
-                                            SizedBox(height: height * 0.04),
-                                            Text(
-                                              // json2[index]["fcEstadoSolicitud"]
-                                              //     .toString(),
-                                              'Activo',
-                                              style: TextStyle(
-                                                fontFamily: "Gilroy Bold",
-                                                color: Colors.green,
-                                                fontSize: height * 0.02,
-                                              ),
-                                            ),
-                                            SizedBox(height: height * 0.04),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: height * 0.005),
-                                  ],
-                                ),
-                              ),
-                              children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: width * 0.02,
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                _buildDetailRow(
-                                                    "Plazo Seleccionado",
-                                                    json2[index][
-                                                            "fiPlazoSeleccionado"]
-                                                        .toString()),
-                                                const SizedBox(height: 10),
-                                                _buildDetailRow(
-                                                    "Departamento",
-                                                    json2[index]
-                                                            ["fcDepartamento"]
-                                                        .toString()),
-                                                const SizedBox(height: 10),
-                                                _buildDetailRow(
-                                                    "Municipio",
-                                                    json2[index]["fcMunicipio"]
-                                                        .toString()),
-                                                const SizedBox(height: 10),
-                                                _buildDetailRow(
-                                                    "Barrio",
-                                                    json2[index]["fcBarrio"]
-                                                        .toString()),
-                                                const SizedBox(height: 10),
-                                                _buildDetailRow(
-                                                    "Dirección Exacta",
-                                                    json2[index][
-                                                            "fcDireccionDetallada"]
-                                                        .toString()
-                                                        .toUpperCase()),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: width * 0.02),
-                                  child: Text(
-                                    'Productos',
-                                    style: TextStyle(
-                                      fontFamily: "Gilroy Medium",
-                                      color: notifire.getdarkscolor
-                                          .withOpacity(0.6),
-                                      fontSize: height * 0.013,
-                                    ),
-                                  ),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: width * 0.02),
-                                      child: ListView.builder(
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemCount: (detalles.length / 2).ceil(),
-                                        itemBuilder: (context, detallesIndex) {
-                                          int firstIndex = detallesIndex * 2;
-                                          int secondIndex = firstIndex + 1;
+  Widget _buildIconButton(String imagePath, String label, VoidCallback onTap) =>
+      Flexible(
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap: onTap,
+              child: Container(
+                height: height / 15,
+                width: width / 7,
+                decoration: BoxDecoration(
+                  color: notifire.getprimerycolor,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: const [
+                    BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 15,
+                        offset: Offset(0, 0.5),
+                        spreadRadius: 0.12)
+                  ],
+                ),
+                child: Center(
+                    child: Image.asset(imagePath,
+                        color: const Color(0xFFfaa61a), height: height / 20)),
+              ),
+            ),
+            SizedBox(height: height / 60),
+            Text(label,
+                style: TextStyle(
+                    fontFamily: "Gilroy Bold",
+                    color: notifire.getdarkscolor,
+                    fontSize: height / 80)),
+          ],
+        ),
+      );
 
-                                          return Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: height * 0.01),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                // First Column
-                                                Expanded(
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(
-                                                        Icons
-                                                            .arrow_forward_ios_rounded,
-                                                        color: notifire
-                                                            .getdarkscolor,
-                                                        size: 10,
-                                                      ),
-                                                      SizedBox(
-                                                          width: width * 0.02),
-                                                      Expanded(
-                                                        child: Text(
-                                                          detalles[firstIndex]
-                                                              ["fcProducto"],
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                "Gilroy Medium",
-                                                            color: notifire
-                                                                .getdarkscolor
-                                                                .withOpacity(
-                                                                    0.6),
-                                                            fontSize:
-                                                                height * 0.013,
-                                                            letterSpacing: 1.5,
-                                                          ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          softWrap: true,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                SizedBox(width: width * 0.02),
-                                                // Second Column
-                                                Expanded(
-                                                  child: secondIndex <
-                                                          detalles.length
-                                                      ? Row(
-                                                          children: [
-                                                            Icon(
-                                                              Icons
-                                                                  .arrow_forward_ios_rounded,
-                                                              color: notifire
-                                                                  .getdarkscolor,
-                                                              size: 10,
-                                                            ),
-                                                            SizedBox(
-                                                                width: width *
-                                                                    0.02),
-                                                            Expanded(
-                                                              child: Text(
-                                                                detalles[
-                                                                        secondIndex]
-                                                                    [
-                                                                    "fcProducto"],
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontFamily:
-                                                                      "Gilroy Medium",
-                                                                  color: notifire
-                                                                      .getdarkscolor
-                                                                      .withOpacity(
-                                                                          0.6),
-                                                                  fontSize:
-                                                                      height *
-                                                                          0.013,
-                                                                  letterSpacing:
-                                                                      1.5,
-                                                                ),
-                                                                maxLines: 1,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                softWrap: true,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        )
-                                                      : Container(),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+  Widget _buildServiceSection() => Padding(
+        padding: EdgeInsets.symmetric(horizontal: width / 18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: height / 30),
+            Text(CustomStrings.service,
+                style: TextStyle(
+                    fontFamily: "Gilroy Bold",
+                    color: notifire.getdarkscolor,
+                    fontSize: height / 40)),
+            SizedBox(height: height / 50),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: json2.length,
+              itemBuilder: (_, index) => _buildServiceCard(index),
+            ),
+            SizedBox(height: height / 80),
+          ],
+        ),
+      );
+
+ Widget _buildServiceCard(int index) {
+  final detalles = json.decode(json2[index]["Detalles"]);
+  return Padding(
+    padding: EdgeInsets.symmetric(
+      horizontal: width * 0.01,
+      vertical: height * 0.01,
+    ),
+    child: Card(
+      color: notifire.getbackcolor,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(width: 1, color: Colors.grey.withOpacity(0.1)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ExpansionTile(
+        initiallyExpanded: _isExpanded,
+        onExpansionChanged: (expanded) => setState(() => _isExpanded = expanded),
+        tilePadding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: 8),
+        childrenPadding: EdgeInsets.all(width * 0.04),
+        backgroundColor: notifire.getbackcolor.withOpacity(0.95),
+        collapsedBackgroundColor: notifire.getbackcolor,
+        iconColor: notifire.getdarkscolor,
+        collapsedIconColor: notifire.getorangeprimerycolor,
+        collapsedTextColor: notifire.getorangeprimerycolor,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(child: _buildServiceTitle(index)), // Original title content
+            
+          ],
+        ),
+        children: [
+          _buildServiceDetails(index),
+          Divider(color: Colors.grey.withOpacity(0.3), height: 1),
+          _buildProductosSection(detalles),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildServiceTitle(int index) => Padding(
+  padding: EdgeInsets.symmetric(vertical: height * 0.005),
+  child: Row(
+    children: [
+      Container(
+        height: height * 0.07,
+        width: height * 0.07,
+        decoration: BoxDecoration(
+          color: notifire.getprimerycolor.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(Icons.wifi, color: notifire.getdarkscolor, size: height * 0.035),
+      ),
+      SizedBox(width: width * 0.03),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Estado Actual de Servicio #${json2[index]["fcIDPrestamo"]}",
+              style: TextStyle(
+                fontFamily: "Gilroy Bold",
+                color: notifire.getdarkscolor,
+                fontSize: height * 0.018,
+              ),
+            ),
+            SizedBox(height: height * 0.005),
+            Text(
+              'Fecha Inicio Servicio: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(json2[index]["fdFechaCreacionSolicitud"]))}',
+              style: TextStyle(
+                fontFamily: "Gilroy Medium",
+                color: notifire.getdarkscolor.withOpacity(0.7),
+                fontSize: height * 0.014,
+              ),
+            ),
+          ],
+        ),
+      ),
+      SizedBox(width: width * 0.02),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: json2[index]["fiEstadoServicio"] == 1 ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              json2[index]["fiEstadoServicio"] == 1 ? 'Activo' : 'Inactivo',
+              style: TextStyle(
+                fontFamily: "Gilroy Bold",
+                color: json2[index]["fiEstadoServicio"] == 1 ? Colors.green : Colors.red,
+                fontSize: height * 0.016,
+              ),
+            ),
+          ),
+          SizedBox(height: height * 0.005),
+          GestureDetector(
+            onTap: () => _openGoogleMaps(json2[index]["fcGeolocalizacion"]),
+            child: Container(
+              width: height * 0.065, // Square size, medium (e.g., ~32dp on average screens)
+              height: height * 0.045,
+              decoration: BoxDecoration(
+                color: notifire.getorangeprimerycolor,
+                borderRadius: BorderRadius.circular(8), // Rounded borders
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
                   ),
-                  SizedBox(
-                    height: height / 80,
-                  ),
-                  Column(
-                    children: [PagosPage()],
-                  )
                 ],
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.location_on,
+                  color: Colors.white,
+                  size: 18, // Medium icon size
+                ),
               ),
             ),
           ),
         ],
       ),
+    ],
+  ),
+);
+
+  Widget _buildServiceDetails(int index) => Padding(
+        padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDetailRow("Plazo Seleccionado",
+                json2[index]["fiPlazoSeleccionado"].toString()),
+            const SizedBox(height: 10),
+            _buildDetailRow(
+                "Departamento", json2[index]["fcDepartamento"].toString()),
+            const SizedBox(height: 10),
+            _buildDetailRow(
+                "Municipio", json2[index]["fcMunicipio"].toString()),
+            const SizedBox(height: 10),
+            _buildDetailRow("Barrio", json2[index]["fcBarrio"].toString()),
+            const SizedBox(height: 10),
+            _buildDetailRow("Dirección Exacta",
+                json2[index]["fcDireccionDetallada"].toString().toUpperCase()),
+          ],
+        ),
+      );
+
+  Widget _buildDetailRow(String label, String value) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: _buildDetailText(label)),
+          Expanded(child: _buildDetailText(value)),
+        ],
+      );
+
+  Widget _buildDetailText(String text) => Padding(
+        padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+        child: Text(text,
+            style: TextStyle(
+                fontFamily: "Gilroy Medium",
+                color: notifire.getdarkscolor.withOpacity(0.6),
+                fontSize: height * 0.013)),
+      );
+
+  Widget _buildProductosSection(List detalles) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+            child: Text('Productos',
+                style: TextStyle(
+                    fontFamily: "Gilroy Medium",
+                    color: notifire.getdarkscolor.withOpacity(0.6),
+                    fontSize: height * 0.013)),
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: (detalles.length / 2).ceil(),
+            itemBuilder: (_, index) => _buildProductoRow(detalles, index),
+          ),
+        ],
+      );
+
+  Widget _buildProductoRow(List detalles, int index) {
+    final firstIndex = index * 2;
+    final secondIndex = firstIndex + 1;
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          vertical: height * 0.01, horizontal: width * 0.02),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+              child: _buildProductoItem(detalles[firstIndex]["fcProducto"])),
+          SizedBox(width: width * 0.02),
+          Expanded(
+              child: secondIndex < detalles.length
+                  ? _buildProductoItem(detalles[secondIndex]["fcProducto"])
+                  : Container()),
+        ],
+      ),
     );
   }
+
+  Widget _buildProductoItem(String producto) => Row(
+        children: [
+          Icon(Icons.arrow_forward_ios_rounded,
+              color: notifire.getdarkscolor, size: 10),
+          SizedBox(width: width * 0.02),
+          Expanded(
+            child: Text(
+              producto,
+              style: TextStyle(
+                  fontFamily: "Gilroy Medium",
+                  color: notifire.getdarkscolor.withOpacity(0.6),
+                  fontSize: height * 0.013,
+                  letterSpacing: 1.5),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
 
   Future<void> _showWPDialog(BuildContext context) async {
-    return showDialog<void>(
+    await showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  image: const DecorationImage(
-                    image: AssetImage(
-                      'images/fondo.png',
-                    ),
-                    fit: BoxFit.cover,
-                  ),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                margin: const EdgeInsets.all(15.0),
-                padding: const EdgeInsets.all(25),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        if (widget.fbprincipal) {
-                          _showWPDialogNumeroTexto(context, 'SOPORTE');
-                        } else {
-                          _showWPDialogNumero(context, 'SOPORTE');
-                        }
-                      },
-                      child: Container(
-                        height: 40,
-                        width: 180,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Image(
-                              image: AssetImage('images/wp.png'),
-                              height: 20,
-                              width: 20,
-                            ),
-                            SizedBox(width: 1),
-                            Text(
-                              'SOPORTE TÉCNICO ',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontFamily: 'Gilroy Bold',
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        if (widget.fbprincipal) {
-                          _showWPDialogNumeroTexto(context, 'PAGOS');
-                        } else {
-                          _showWPDialogNumero(context, 'PAGOS');
-                        }
-                      },
-                      child: Container(
-                        height: 40,
-                        width: 180,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Image(
-                              image: AssetImage('images/wp.png'),
-                              height: 20,
-                              width: 20,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'SOPORTE PAGOS',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontFamily: 'Gilroy Bold',
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        if (widget.fbprincipal) {
-                          _showWPDialogNumeroTexto(context, 'CONTRATAR');
-                        } else {
-                          _showWPDialogNumero(context, 'CONTRATAR');
-                        }
-                      },
-                      child: Container(
-                        height: 40,
-                        width: 180,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Image(
-                              image: AssetImage('images/wp.png'),
-                              height: 20,
-                              width: 20,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'CONTRATAR',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontFamily: 'Gilroy Bold',
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: SingleChildScrollView(
+          child: Container(
+            decoration: BoxDecoration(
+              color: notifire.getbackcolor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: const EdgeInsets.all(15),
+            padding: const EdgeInsets.all(25),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildWPButton('SOPORTE TÉCNICO', 'SOPORTE'),
+                const SizedBox(height: 15),
+                _buildWPButton('SOPORTE PAGOS', 'PAGOS'),
+                const SizedBox(height: 15),
+                _buildWPButton('CONTRATAR', 'CONTRATAR'),
+                const SizedBox(height: 15),
+                _buildChatButton(),
+                const SizedBox(height: 15),
+                _buildCallButton(), // New button for phone call
+              ],
+            ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildWPButton(String label, String option) => GestureDetector(
+        onTap: () => widget.fbprincipal
+            ? _showWPDialogNumeroTexto(context, option)
+            : _showWPDialogNumero(context, option),
+        child: Container(
+          height: 40,
+          width: 180,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: width * 0.02),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          label,
-                          style: TextStyle(
-                            fontFamily: "Gilroy Medium",
-                            color: notifire.getdarkscolor.withOpacity(0.6),
-                            fontSize: height * 0.013,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              Image.asset('images/wp.png', height: 20, width: 20),
+              const SizedBox(width: 10),
+              Text(label,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Gilroy Bold',
+                      fontSize: 16)),
+            ],
+          ),
+        ),
+      );
+
+  Widget _buildCallButton() => GestureDetector(
+        onTap: () => _makePhoneCall('25406682'),
+        child: Container(
+          height: 40,
+          width: 180,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.phone, color: Colors.white, size: 20), // Phone icon
+              SizedBox(width: 10),
+              Text(
+                'LLAMAR',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Gilroy Bold',
+                    fontSize: 16),
               ),
             ],
           ),
         ),
-        Expanded(
+      );
+
+ 
+  Future<void> _showWPDialogNumeroTexto(
+      BuildContext context, String opcion) async {
+    final textoController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (_) => _buildTextDialog(
+          textoController, opcion, 'Ingrese un comentario', () {
+        if (textoController.text.isEmpty) {
+          _showWarningToast('Necesita Ingresar un comentario');
+          return;
+        }
+        _launchUrl(opcion, textoController.text);
+        Navigator.pop(context);
+      }),
+    );
+  }
+
+  Future<void> _showWPDialogNumero(BuildContext context, String opcion) async {
+    final numeroController = TextEditingController();
+    final textoController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (_) =>
+          _buildNumberTextDialog(numeroController, textoController, opcion, () {
+        final numero = numeroController.text;
+        final texto = textoController.text;
+        if (numero.isEmpty) {
+          _showWarningToast('Ingrese un numero de teléfono');
+          return;
+        }
+        if (numero.length != 8) {
+          _showWarningToast('Son necesarios 8 digitos');
+          return;
+        }
+        if (texto.isEmpty) {
+          _showWarningToast('Necesita Ingresar un comentario');
+          return;
+        }
+        _launchUrlSecundario(opcion, numero, texto);
+        Navigator.pop(context);
+      }),
+    );
+  }
+
+  Widget _buildTextDialog(TextEditingController controller, String opcion,
+          String title, VoidCallback onConfirm) =>
+      Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+              color: notifire.getbackcolor,
+              borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(15),
+          padding: const EdgeInsets.all(25),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: width * 0.02),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          value,
-                          style: TextStyle(
-                            fontFamily: "Gilroy Medium",
-                            color: notifire.getdarkscolor.withOpacity(0.6),
-                            fontSize: height * 0.013,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              Text(title,
+                  style: const TextStyle(
+                      color: Colors.black,
+                      fontFamily: 'Gilroy Bold',
+                      fontSize: 16)),
+              const SizedBox(height: 15),
+              SizedBox(
+                height: 200,
+                child: TextField(
+                  controller: controller,
+                  decoration: _inputDecoration('Comentario'),
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  textAlignVertical: TextAlignVertical.top,
                 ),
+              ),
+              const SizedBox(height: 15),
+              GestureDetector(
+                onTap: () {
+                  final texto = controller.text;
+                  if (texto.isEmpty) {
+                    CherryToast.warning(
+                      backgroundColor: notifire.getbackcolor,
+                      title: Text('Necesita Ingresar un comentario',
+                          style: TextStyle(color: notifire.getdarkscolor),
+                          textAlign: TextAlign.start),
+                      borderRadius: 5,
+                    ).show(context);
+                    return;
+                  }
+
+                  _launchUrl(opcion, texto);
+                  Navigator.of(context).pop();
+                },
+                child: Custombutton.button(
+                    notifire.getorangeprimerycolor, 'Confirmar', width / 2),
               ),
             ],
           ),
         ),
-      ],
-    );
-  }
+      );
 
-  Future<void> _showWPDialogNumeroTexto(BuildContext context, opcion) async {
-    TextEditingController Texto = TextEditingController();
-
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Stack(
-            alignment: Alignment.center,
+  Widget _buildNumberTextDialog(
+          TextEditingController numeroController,
+          TextEditingController textoController,
+          String opcion,
+          VoidCallback onConfirm) =>
+      Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+              color: notifire.getbackcolor,
+              borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(15),
+          padding: const EdgeInsets.all(25),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  image: const DecorationImage(
-                    image: AssetImage('images/fondo.png'),
-                    fit: BoxFit.cover,
-                  ),
-                  borderRadius: BorderRadius.circular(10.0),
+              const Text(
+                  'Ingrese el número de teléfono al cual desea se le contacte',
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontFamily: 'Gilroy Bold',
+                      fontSize: 16)),
+              const SizedBox(height: 15),
+              TextField(
+                controller: numeroController,
+                maxLength: 8,
+                decoration: _inputDecoration('Número de teléfono'),
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 15),
+              SizedBox(
+                height: 200,
+                child: TextField(
+                  controller: textoController,
+                  decoration: _inputDecoration('Comentario'),
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  textAlignVertical: TextAlignVertical.top,
                 ),
-                margin: const EdgeInsets.all(15.0),
-                padding: const EdgeInsets.all(25),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Ingrese un comentario',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: 'Gilroy Bold',
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                 SizedBox(
-                      height: 200, // Alto predeterminado del campo de texto
-                      child: TextField(
-                        controller: Texto,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          hintText: 'Comentario',
-                        ),
-                        keyboardType: TextInputType
-                            .multiline, // Permite entrada multilínea
-                        maxLines:
-                            null, // Sin límite de líneas visibles (scrollable)
-                        textAlignVertical:
-                            TextAlignVertical.top, // Texto alineado arriba
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        final texto = Texto.text;
-                        if (texto.isEmpty) {
-                          CherryToast.warning(
-                            backgroundColor: notifire.getbackcolor,
-                            title: Text('Necesita Ingresar un comentario',
-                                style: TextStyle(color: notifire.getdarkscolor),
-                                textAlign: TextAlign.start),
-                            borderRadius: 5,
-                          ).show(context);
-                          return;
-                        }
-
-                        _launchUrl(opcion, texto);
-                        Navigator.of(context).pop();
-                      },
-                      child: Custombutton.button(notifire.getorangeprimerycolor,
-                          'Confirmar', width / 2),
-                    ),
-                  ],
-                ),
+              ),
+              const SizedBox(height: 15),
+              GestureDetector(
+                onTap: () {
+                  final texto = textoController.text;
+                  final numero = numeroController.text;
+                  if (numero.isEmpty) {
+                    CherryToast.warning(
+                      backgroundColor: notifire.getbackcolor,
+                      title: Text('Ingrese un numero de teléfono',
+                          style: TextStyle(color: notifire.getdarkscolor),
+                          textAlign: TextAlign.start),
+                      borderRadius: 5,
+                    ).show(context);
+                    return;
+                  }
+                  if (numero.length != 8) {
+                    CherryToast.warning(
+                      backgroundColor: notifire.getbackcolor,
+                      title: Text('Son necesarios 8 digitos',
+                          style: TextStyle(color: notifire.getdarkscolor),
+                          textAlign: TextAlign.start),
+                      borderRadius: 5,
+                    ).show(context);
+                    return;
+                  }
+                  if (texto.isEmpty) {
+                    CherryToast.warning(
+                      backgroundColor: notifire.getbackcolor,
+                      title: Text('Necesita Ingresar un comentario',
+                          style: TextStyle(color: notifire.getdarkscolor),
+                          textAlign: TextAlign.start),
+                      borderRadius: 5,
+                    ).show(context);
+                    return;
+                  }
+                  _launchUrlSecundario(opcion, numero, texto);
+                  Navigator.of(context).pop();
+                },
+                child: Custombutton.button(
+                    notifire.getorangeprimerycolor, 'Confirmar', width / 2),
               ),
             ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
 
-  Future<void> _showWPDialogNumero(BuildContext context, opcion) async {
-    TextEditingController NumeroIngresado = TextEditingController();
-    TextEditingController Texto = TextEditingController();
+  InputDecoration _inputDecoration(String hint) => InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        hintText: hint,
+      );
 
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Stack(
-            alignment: Alignment.center,
+  Widget _buildChatButton() => GestureDetector(
+        onTap: () async {
+          final chatSignalRService =
+              ChatSignalRService("https://ptdto.com/ChatOrion/chathub");
+          await chatSignalRService.init();
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) =>
+                      ChatScreen(chatSignalRService: chatSignalRService)));
+        },
+        child: Container(
+          height: 40,
+          width: 180,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  image: const DecorationImage(
-                    image: AssetImage('images/fondo.png'),
-                    fit: BoxFit.cover,
-                  ),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                margin: const EdgeInsets.all(15.0),
-                padding: const EdgeInsets.all(25),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Ingrese el número de teléfono al cual desea se le contacte',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: 'Gilroy Bold',
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    TextField(
-                      controller: NumeroIngresado,
-                      maxLength: 8,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        hintText: 'Número de teléfono',
-                      ),
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    SizedBox(
-                      height: 200, // Alto predeterminado del campo de texto
-                      child: TextField(
-                        controller: Texto,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          hintText: 'Comentario',
-                        ),
-                        keyboardType: TextInputType
-                            .multiline, // Permite entrada multilínea
-                        maxLines:
-                            null, // Sin límite de líneas visibles (scrollable)
-                        textAlignVertical:
-                            TextAlignVertical.top, // Texto alineado arriba
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        final texto = Texto.text;
-                        final numero = NumeroIngresado.text;
-                        if (numero.isEmpty) {
-                          CherryToast.warning(
-                            backgroundColor: notifire.getbackcolor,
-                            title: Text('Ingrese un numero de teléfono',
-                                style: TextStyle(color: notifire.getdarkscolor),
-                                textAlign: TextAlign.start),
-                            borderRadius: 5,
-                          ).show(context);
-                          return;
-                        }
-                        if (numero.length != 8) {
-                          CherryToast.warning(
-                            backgroundColor: notifire.getbackcolor,
-                            title: Text('Son necesarios 8 digitos',
-                                style: TextStyle(color: notifire.getdarkscolor),
-                                textAlign: TextAlign.start),
-                            borderRadius: 5,
-                          ).show(context);
-                          return;
-                        }
-                        if (texto.isEmpty) {
-                          CherryToast.warning(
-                            backgroundColor: notifire.getbackcolor,
-                            title: Text('Necesita Ingresar un comentario',
-                                style: TextStyle(color: notifire.getdarkscolor),
-                                textAlign: TextAlign.start),
-                            borderRadius: 5,
-                          ).show(context);
-                          return;
-                        }
-                        _launchUrlSecundario(opcion, numero, texto);
-                        Navigator.of(context).pop();
-                      },
-                      child: Custombutton.button(notifire.getorangeprimerycolor,
-                          'Confirmar', width / 2),
-                    ),
-                  ],
-                ),
-              ),
+              Image.asset('images/wp.png', height: 20, width: 20),
+              const SizedBox(width: 10),
+              const Text('Prueba',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Gilroy Bold',
+                      fontSize: 16)),
             ],
           ),
-        );
-      },
-    );
+        ),
+      );
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'No se pudo abrir el marcador telefónico',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
+    }
   }
 
-  Future<void> _launchUrl(String opcion, comentario) async {
+  Future<void> _launchUrl(String opcion, String comentario) async {
     final prefs = await SharedPreferences.getInstance();
-    var fcNumeroTelefono = prefs.getString("fcTelefono");
-
-    final Uri apiUrl =
-        Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
-
+    final fcNumeroTelefono = prefs.getString("fcTelefono") ?? '';
+    final uri = Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
     final headers = {
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
-      'pushId': '',
-      'token': '',
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     };
-
-    var requestBody = {
+    final body = jsonEncode({
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
       'grupo': opcion,
       'telefono': '504$fcNumeroTelefono',
@@ -1331,302 +1009,179 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           'Hola tu referencia es %Ticket%, dentro de un momento un agente te contactará.',
       'pushId': '15',
       'token': 'RC15',
-      'variables': {
-        'comentario': '$comentario',
-      },
-    };
+      'variables': {'comentario': comentario},
+    });
 
-    String jsonRequestBody = jsonEncode(requestBody);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Center(
-            child: CircularProgressIndicator(
-                color: notifire.getorangeprimerycolor));
-      },
-    );
-
+    _showLoadingDialog();
     try {
-      final response = await http.post(
-        apiUrl,
-        body: jsonRequestBody,
-        headers: headers,
-      );
-
+      final response = await http.post(uri, body: body, headers: headers);
+      Navigator.pop(context); // Close loading dialog
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-
-        if (kDebugMode) {
-          print(json);
-        }
-
-
-      Navigator.of(context).pop(); // Cerrar el indicador de carga
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            title: Row(
-              children: [
-                Icon(Icons.check_circle_outline,
-                    color: Colors.green, size: 30),
-                const SizedBox(width: 10),
-                const Text('¡Éxito!'),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'El ticket se generó correctamente. Nuestro equipo se pondrá en contacto contigo en breve.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Icon(Icons.verified, color: Colors.green, size: 80),
-              ],
-            ),
-            actions: [
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Cerrar el diálogo de éxito
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: notifire.getorangeprimerycolor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: Text(
-                      'OK',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      );
-
-        // String Url =
-        //     "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
-
-        // Navigator.of(context).pop();
-
-        // if (!await launchUrl(Uri.parse(Url))) {
-        //   throw Exception('Could not launch $Url');
-        // }
+        _showSuccessDialog();
       } else {
-        Navigator.of(context).pop();
         throw Exception('Failed to send message: ${response.statusCode}');
       }
     } catch (e) {
-      Navigator.of(context).pop();
-      if (kDebugMode) {
-        print(e);
-      }
+      Navigator.pop(context);
+      debugPrint(e.toString());
     }
   }
 
   Future<void> _launchUrlSecundario(
-      String opcion, String numerodetelefonoingresado, comentario) async {
+      String opcion, String numero, String comentario) async {
     final prefs = await SharedPreferences.getInstance();
-    var fcNumeroTelefono = prefs.getString("fcTelefono");
-    var fcIdentidad = prefs.getString("fcIdentidad");
-
-    final Uri apiUrl =
-        Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
-
+    final fcIdentidad = prefs.getString("fcIdentidad") ?? '';
+    final uri = Uri.parse('https://srv2.rob.chat/REST_API/Tickets/Nuevo/');
     final headers = {
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
-      'pushId': '',
-      'token': '',
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     };
-
-    var requestBody = {
+    final body = jsonEncode({
       'key': '8cbea7517da189fdcd89ff68dac8e67c',
       'grupo': opcion,
-      'telefono': '504$numerodetelefonoingresado',
+      'telefono': '504$numero',
       'pushId': '15',
       'token': 'RC15',
       'texto':
           'Hola tu referencia es %Ticket%, dentro de un momento un agente te contactará.',
       'variables': {
-        'identidad': '$fcIdentidad',
+        'identidad': fcIdentidad,
         'nombre_completo': fcNombreUsuario,
-        'comentario': '$comentario',
+        'comentario': comentario
       },
-    };
-    if (kDebugMode) {
-      print(requestBody);
-    }
+    });
 
-    String jsonRequestBody = jsonEncode(requestBody);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Center(
-            child: CircularProgressIndicator(
-          color: notifire.getorangeprimerycolor,
-        ));
-      },
-    );
-
+    _showLoadingDialog();
     try {
-      final response = await http.post(
-        apiUrl,
-        body: jsonRequestBody,
-        headers: headers,
-      );
-
+      final response = await http.post(uri, body: body, headers: headers);
+      Navigator.pop(context); // Close loading dialog
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-
-        if (kDebugMode) {
-          print(json);
-        }
-
-           Navigator.of(context).pop(); // Cerrar el indicador de carga
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            title: Row(
-              children: [
-                Icon(Icons.check_circle_outline,
-                    color: Colors.green, size: 30),
-                const SizedBox(width: 10),
-                const Text('¡Éxito!'),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'El ticket se generó correctamente. Nuestro equipo se pondrá en contacto contigo en breve.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Icon(Icons.verified, color: Colors.green, size: 80),
-              ],
-            ),
-            actions: [
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Cerrar el diálogo de éxito
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: notifire.getorangeprimerycolor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: Text(
-                      'OK',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      );
-
-        // String Url =
-        //     "https://api.whatsapp.com/send/?phone=50489081273&text=Buen+dia&type=phone_number&app_absent=0";
-
-        // Navigator.of(context).pop();
-
-        // if (!await launchUrl(Uri.parse(Url))) {
-        //   throw Exception('Could not launch $Url');
-        // }
+        _showSuccessDialog();
       } else {
-        Navigator.of(context).pop();
         throw Exception('Failed to send message: ${response.statusCode}');
       }
     } catch (e) {
-      Navigator.of(context).pop();
-      if (kDebugMode) {
-        print(e);
-      }
+      Navigator.pop(context);
+      debugPrint(e.toString());
     }
   }
 
-  Widget _buildIconButton(BuildContext context, String imagePath, String label,
-      VoidCallback onTap) {
-    return Flexible(
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: onTap,
-            child: Container(
-              height: height / 15,
-              width: width / 7,
-              decoration: BoxDecoration(
-                color: notifire.getprimerycolor,
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(10),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26, // Sombra con el color #faa61a
-                    blurRadius: 15.0,
-                    offset: const Offset(0.0, 0.5),
-                    spreadRadius:
-                        0.12, // Aumenta el radio de dispersión de la sombra
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Image.asset(
-                  imagePath,
-                  color: Color(0xFFfaa61a),
-                  height: height / 20,
-                ),
+  void _showLoadingDialog() => showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => Center(
+            child: CircularProgressIndicator(
+                color: notifire.getorangeprimerycolor)),
+      );
+
+  void _showSuccessDialog() => showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Row(children: const [
+            Icon(Icons.check_circle_outline, color: Colors.green, size: 30),
+            SizedBox(width: 10),
+            Text('¡Éxito!')
+          ]),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text(
+                  'El ticket se generó correctamente. Nuestro equipo se pondrá en contacto contigo en breve.',
+                  textAlign: TextAlign.center),
+              SizedBox(height: 20),
+              Icon(Icons.verified, color: Colors.green, size: 80),
+            ],
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: notifire.getorangeprimerycolor,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10))),
+                child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Text('OK',
+                        style: TextStyle(fontSize: 16, color: Colors.white))),
               ),
             ),
-          ),
-          SizedBox(
-            height: height / 60,
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: "Gilroy Bold",
-              color: notifire.getdarkscolor,
-              fontSize: height / 80,
-            ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+
+  void _showWarningToast(String message) => CherryToast.warning(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(message,
+            style: TextStyle(color: notifire.getdarkscolor),
+            textAlign: TextAlign.start),
+        borderRadius: 5,
+      ).show(context);
+
+  void _navigateOrShowToast(Widget page) {
+    if (fcLlaveUnica.isEmpty) {
+      _showWarningToast('Aún no cuentas con esta opción');
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+    }
   }
 
-  Future<void> _launchUrlManual() async {
-    if (!await launchUrl(
-        Uri.parse('https://novanetgroup.com/NovanetApp/Manuales/Index.html'))) {
-      throw Exception(
-          'Could not launch https://novanetgroup.com/NovanetApp/Manuales/Index.html');
+  void _handlePayment() {
+    if (fcLlaveUnica.isEmpty) {
+      _showWarningToast('Aún no cuentas con esta opción');
+    } else {
+      DialogPago(context, notifire, fcLlaveUnica);
+    }
+  }
+
+  Future<void> _launchUrlManual(String url) async {
+    if (!await launchUrl(Uri.parse(url))) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  Future<void> _openGoogleMaps(String geolocalizacion) async {
+    if (geolocalizacion == null || geolocalizacion.isEmpty) {
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'No hay geolocalización disponible',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
+      return;
+    }
+
+    // Assuming fcGeolocalizacion is in "lat,lng" format
+    final coords = geolocalizacion.split(',');
+    if (coords.length != 2) {
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'Formato de geolocalización inválido',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
+      return;
+    }
+
+    final lat = coords[0].trim();
+    final lng = coords[1].trim();
+    final googleMapsUri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+
+    if (await launchUrl(googleMapsUri)) {
+      await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
+    } else {
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'No se pudo abrir Google Maps',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
     }
   }
 }

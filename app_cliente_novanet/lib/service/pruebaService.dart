@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, camel_case_types, sized_box_for_whitespace, non_constant_identifier_names, file_names
 
 import 'dart:convert';
+import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/home/home.dart';
@@ -60,6 +61,9 @@ Future<void> fetchLogin(
         prefs.setString("datalogin[2]", jsonEncode(data[2]));
         prefs.setString("datalogin[3]", jsonEncode(data[3]));
         prefs.setString("datalogin[4]", jsonEncode(data[4]));
+
+
+       
 
         Navigator.pushReplacement(
           context,

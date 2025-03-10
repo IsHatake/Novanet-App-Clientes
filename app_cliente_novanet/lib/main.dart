@@ -1,4 +1,5 @@
 import 'package:app_cliente_novanet/service/notificaciones_Service.dart';
+import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
 import 'package:app_cliente_novanet/service/signalR_Service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,7 +36,7 @@ void main() async {
           create: (_) => ColorNotifire(),
         ),
       ],
-      child: const MaterialApp(
+      child:  const MaterialApp(
         home: Splashscreen(),
         debugShowCheckedModeBanner: false,
       ),

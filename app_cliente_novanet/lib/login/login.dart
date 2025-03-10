@@ -1,6 +1,7 @@
 // ignore_for_file: unused_element
 
 import 'package:app_cliente_novanet/screens/qr_scanner_screen.dart';
+import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
 import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/colornotifire.dart';
 
 class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+
+  const Login({Key? key,}) : super(key: key);
 
   @override
   State<Login> createState() => _LoginState();
@@ -36,13 +38,19 @@ class _LoginState extends State<Login> {
   bool _isBiometricSupported = false;
   bool _isPrincipal = true;
 
+
   @override
   void initState() {
     super.initState();
+
     loadCache();
     checkBiometrics();
    // _checkFirstVisit();
+    
   }
+
+
+
 
   Future<void> loadCache() async {
     final prefs = await SharedPreferences.getInstance();
@@ -66,134 +74,7 @@ class _LoginState extends State<Login> {
       _isBiometricSupported = canCheckBiometrics;
     });
   }
-
-  Future<void> _checkFirstVisit() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bool isFirstVisit = prefs.getBool('isFirstVisitLogin') ?? true;
-
-    await _showExplanationDialog();
-    if (isFirstVisit) {
-      await prefs.setBool('isFirstVisitLogin', false);
-    }
-  }
-
-  Future<void> _showExplanationDialog() async {
-    Widget dialogContent;
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
-      dialogContent = CupertinoAlertDialog(
-        title: const Text('Inicio de Sesión'),
-        content: Column(
-          children: [
-            ClipOval(
-              child: Image.asset(
-                'images/informacionnecesaria.gif',
-                height: 200,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: const [
-                Icon(
-                  Icons.fingerprint,
-                  color: Colors.green,
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Al iniciar sesión por primera vez podras tocar el ícono de huella dactilar para iniciar sesión rápidamente con tu huella registrada.',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: const [
-                Icon(
-                  Icons.qr_code,
-                  color: Colors.orange,
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Toca la opcion de Usuario Familiar para escanear un código QR y crear un usuario Familiar.',
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child: const Text('Entendido'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    } else {
-      dialogContent = AlertDialog(
-        title: const Text('Inicio de Sesión'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipOval(
-              child: Image.asset(
-                'images/informacionnecesaria.gif',
-                height: 200,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: const [
-                Icon(
-                  Icons.fingerprint,
-                  color: Colors.green,
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Al iniciar sesión por primera vez podras tocar el ícono de huella dactilar para iniciar sesión rápidamente con tu huella registrada.',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: const [
-                Icon(
-                  Icons.qr_code,
-                  color: Colors.orange,
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Toca la opcion de Usuario Familiar para escanear un código QR y crear un usuario Familiar.',
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Entendido'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    }
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return dialogContent;
-      },
-    );
-  }
+  
 
   @override
   Widget build(BuildContext context) {
