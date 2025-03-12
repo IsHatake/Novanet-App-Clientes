@@ -497,7 +497,7 @@ Widget _buildServiceTitle(int index) => Padding(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Estado Actual de Servicio #${json2[index]["fcIDPrestamo"]}",
+              "${json2[index]["fcBarrio"].toString().capitalizeFirst!} #${json2[index]["fcIDPrestamo"]}",
               style: TextStyle(
                 fontFamily: "Gilroy Bold",
                 color: notifire.getdarkscolor,
