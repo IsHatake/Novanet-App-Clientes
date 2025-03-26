@@ -18,7 +18,6 @@ import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
 import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/button.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
-import 'package:app_cliente_novanet/utils/media.dart';
 import 'package:app_cliente_novanet/utils/string.dart';
 import 'package:app_cliente_novanet/home/notifications.dart';
 import 'package:app_cliente_novanet/profile/profile.dart';
@@ -27,6 +26,7 @@ import 'package:app_cliente_novanet/screens/dialogPagoWidget.dart';
 class Home extends StatefulWidget {
   final bool fbprincipal;
   const Home({Key? key, required this.fbprincipal}) : super(key: key);
+
   @override
   State<Home> createState() => _HomeState();
 }
@@ -37,7 +37,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   String fcLlaveUnica = '';
   List productosDelServicioActual = [];
   List json2 = [];
-  List cuotas = [];
+  List<double> cuotas = [];
   bool _isExpanded = false;
   int _currentPage = 0;
   late AnimationController _controller;
@@ -66,27 +66,39 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   Future<void> _loadData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final fcNombreUsuarioFull = prefs.getString('fcNombreUsuario') ?? '';
-    final key = prefs.getString('fcLlaveUnica') ?? '';
-    final dataAsString = prefs.getString('datalogin[3]') ?? '';
-    final dataAsString2 = prefs.getString('datalogin[1]') ?? '';
-    final data2 = jsonDecode(dataAsString2);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final fcNombreUsuarioFull = prefs.getString('fcNombreUsuario') ?? '';
+      final key = prefs.getString('fcLlaveUnica') ?? '';
+      final dataAsString = prefs.getString('datalogin[3]') ?? '[]';
+      final dataAsString2 = prefs.getString('datalogin[1]') ?? '[]';
 
-    setState(() {
-      fcNombreUsuario = fcNombreUsuarioFull.split(' ').first;
-      fcLlaveUnica = key;
-      productosDelServicioActual = jsonDecode(dataAsString);
-      json2 = data2;
-      cuotas =
-          data2.map<double>((cuota) => cuota["fnCuotaMensual"] ?? 0.0).toList();
-    });
+      final data2 = jsonDecode(dataAsString2) as List<dynamic>;
+      setState(() {
+        fcNombreUsuario = fcNombreUsuarioFull.split(' ').first;
+        fcLlaveUnica = key;
+        productosDelServicioActual = jsonDecode(dataAsString);
+        json2 = data2;
+        cuotas = json2.isNotEmpty
+            ? data2
+                .map<double>((cuota) => (cuota["fnCuotaMensual"] ?? 0.0) as double)
+                .toList()
+            : [];
+      });
+    } catch (e) {
+      CherryToast.error(
+        title: const Text('Error al cargar datos'),
+      ).show(context);
+      debugPrint('Error in _loadData: $e');
+    }
   }
 
   void _navigatePage(int direction) {
     if (_currentPage + direction >= 0 &&
         _currentPage + direction < cuotas.length) {
-      _currentPage += direction;
+      setState(() {
+        _currentPage += direction;
+      });
       _pageController.animateToPage(
         _currentPage,
         duration: const Duration(milliseconds: 300),
@@ -98,6 +110,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     notifire = Provider.of<ColorNotifire>(context);
+    final height = MediaQuery.of(context).size.height;
+    final width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -119,7 +134,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 'https://novanetgroup.com/NovanetApp/Manuales/Index.html'),
           ),
           IconButton(
-            icon: json2.isNotEmpty && json2[0]['fbNotificaciones']
+            icon: json2.isNotEmpty && json2[0]['fbNotificaciones'] == true
                 ? ScaleTransition(scale: _animation, child: _notificationIcon())
                 : _notificationIcon(),
             onPressed: () => Navigator.push(
@@ -143,8 +158,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildHeader(),
-            _buildServiceSection(),
+            _buildHeader(height, width),
+            _buildServiceSection(height, width),
             const PagosPage(),
           ],
         ),
@@ -158,20 +173,20 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         scale: 4,
       );
 
-  Widget _buildHeader() => Stack(
+  Widget _buildHeader(double height, double width) => Stack(
         children: [
           Image.asset("images/backphoto.png", fit: BoxFit.cover),
           Column(
             children: [
               SizedBox(height: height / 40),
-              _buildPaymentCard(),
-              _buildIconButtons(),
+              _buildPaymentCard(height, width),
+              _buildIconButtons(height, width),
             ],
           ),
         ],
       );
 
-  Widget _buildPaymentCard() => Center(
+  Widget _buildPaymentCard(double height, double width) => Center(
         child: Container(
           height: height / 10,
           width: width / 1.2,
@@ -185,9 +200,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 controller: _pageController,
                 onPageChanged: (index) => setState(() => _currentPage = index),
                 itemCount: cuotas.length,
-                itemBuilder: (_, index) => _buildPaymentInfo(index),
+                itemBuilder: (_, index) => _buildPaymentInfo(index, height),
               ),
-              // Left Arrow
               if (_currentPage > 0)
                 Positioned(
                   left: 8,
@@ -199,7 +213,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     isLeft: true,
                   ),
                 ),
-              // Right Arrow
               if (_currentPage < cuotas.length - 1)
                 Positioned(
                   right: 8,
@@ -212,7 +225,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   ),
                 ),
               Positioned(
-                bottom: 2, // Adjusted to move dots closer to the bottom edge
+                bottom: 2,
                 left: 0,
                 right: 0,
                 child: _buildPageIndicators(),
@@ -229,16 +242,15 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }) {
     return SizedBox(
       width: 36,
-      height: height / 9,
       child: IconButton(
         icon: Icon(
           icon,
           color: Colors.white,
-          size: 20, // Slightly smaller for elegance
+          size: 20,
         ),
         onPressed: onPressed,
-        splashRadius: 20, // Smaller splash effect
-        padding: EdgeInsets.zero, // Remove default padding
+        splashRadius: 20,
+        padding: EdgeInsets.zero,
       ),
     );
   }
@@ -264,7 +276,10 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildPaymentInfo(int index) {
+  Widget _buildPaymentInfo(int index, double height) {
+    if (json2.isEmpty || index >= json2.length) {
+      return const Center(child: Text('No hay datos disponibles'));
+    }
     final hasAtraso = json2[index]['fcCuotasEnAtraso'] != '' &&
         json2[index]['fitotal_debe'] != 0.0;
     final currencySymbol = json2[index]['fiIDMoneda'] == 2 ? '\$' : 'L';
@@ -313,12 +328,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildIconButtons() => Center(
+  Widget _buildIconButtons(double height, double width) => Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: width / 38),
           child: Container(
-            padding: const EdgeInsets.symmetric(
-                vertical: 16), // Dynamic padding instead of fixed height
+            padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: notifire.getwhite,
@@ -332,8 +346,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment
-                  .center, // Vertically centers children within Row
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (widget.fbprincipal)
                   _buildIconButton(
@@ -344,16 +357,22 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       MaterialPageRoute(
                           builder: (_) => const referidos_Screen()),
                     ),
+                    height,
+                    width,
                   ),
                 _buildIconButton(
                   "images/high-speed.png",
                   'Test',
                   () => _navigateOrShowToast(const WebviewTest_screen()),
+                  height,
+                  width,
                 ),
                 _buildIconButton(
                   "images/apoyo.png",
                   'Comunícate',
                   () => _showWPDialog(context),
+                  height,
+                  width,
                 ),
                 _buildIconButton(
                   "images/caja.png",
@@ -367,11 +386,15 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       ),
                     ),
                   ),
+                  height,
+                  width,
                 ),
                 _buildIconButton(
                   "images/pagar.png",
                   CustomStrings.pay,
                   () => _handlePayment(),
+                  height,
+                  width,
                 ),
               ],
             ),
@@ -379,7 +402,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         ),
       );
 
-  Widget _buildIconButton(String imagePath, String label, VoidCallback onTap) =>
+  Widget _buildIconButton(String imagePath, String label, VoidCallback onTap,
+          double height, double width) =>
       Flexible(
         child: Column(
           children: [
@@ -414,7 +438,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         ),
       );
 
-  Widget _buildServiceSection() => Padding(
+  Widget _buildServiceSection(double height, double width) => Padding(
         padding: EdgeInsets.symmetric(horizontal: width / 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -430,156 +454,168 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: json2.length,
-              itemBuilder: (_, index) => _buildServiceCard(index),
+              itemBuilder: (_, index) =>
+                  _buildServiceCard(index, height, width),
             ),
             SizedBox(height: height / 80),
           ],
         ),
       );
 
- Widget _buildServiceCard(int index) {
-  final detalles = json.decode(json2[index]["Detalles"]);
-  return Padding(
-    padding: EdgeInsets.symmetric(
-      horizontal: width * 0.01,
-      vertical: height * 0.01,
-    ),
-    child: Card(
-      color: notifire.getbackcolor,
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(width: 1, color: Colors.grey.withOpacity(0.1)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ExpansionTile(
-        initiallyExpanded: _isExpanded,
-        onExpansionChanged: (expanded) => setState(() => _isExpanded = expanded),
-        tilePadding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: 8),
-        childrenPadding: EdgeInsets.all(width * 0.04),
-        backgroundColor: notifire.getbackcolor.withOpacity(0.95),
-        collapsedBackgroundColor: notifire.getbackcolor,
-        iconColor: notifire.getdarkscolor,
-        collapsedIconColor: notifire.getorangeprimerycolor,
-        collapsedTextColor: notifire.getorangeprimerycolor,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(child: _buildServiceTitle(index)), // Original title content
-            
-          ],
-        ),
-        children: [
-          _buildServiceDetails(index),
-          Divider(color: Colors.grey.withOpacity(0.3), height: 1),
-          _buildProductosSection(detalles),
-        ],
-      ),
-    ),
-  );
-}
+  Widget _buildServiceCard(int index, double height, double width) {
+    List detalles;
+    try {
+      detalles = json.decode(json2[index]["Detalles"]) as List<dynamic>;
+    } catch (e) {
+      detalles = [];
+      debugPrint('Error decoding Detalles: $e');
+    }
 
-Widget _buildServiceTitle(int index) => Padding(
-  padding: EdgeInsets.symmetric(vertical: height * 0.005),
-  child: Row(
-    children: [
-      Container(
-        height: height * 0.07,
-        width: height * 0.07,
-        decoration: BoxDecoration(
-          color: notifire.getprimerycolor.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(Icons.wifi, color: notifire.getdarkscolor, size: height * 0.035),
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: width * 0.01,
+        vertical: height * 0.01,
       ),
-      SizedBox(width: width * 0.03),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: Card(
+        key: ValueKey(index),
+        color: notifire.getbackcolor,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1, color: Colors.grey.withOpacity(0.1)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: ExpansionTile(
+          initiallyExpanded: _isExpanded,
+          onExpansionChanged: (expanded) => setState(() => _isExpanded = expanded),
+          tilePadding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: 8),
+          childrenPadding: EdgeInsets.all(width * 0.04),
+          backgroundColor: notifire.getbackcolor.withOpacity(0.95),
+          collapsedBackgroundColor: notifire.getbackcolor,
+          iconColor: notifire.getdarkscolor,
+          collapsedIconColor: notifire.getorangeprimerycolor,
+          collapsedTextColor: notifire.getorangeprimerycolor,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: _buildServiceTitle(index, height, width)),
+            ],
+          ),
           children: [
-            Text(
-              "${json2[index]["fcBarrio"].toString().capitalizeFirst!} #${json2[index]["fcIDPrestamo"]}",
-              style: TextStyle(
-                fontFamily: "Gilroy Bold",
-                color: notifire.getdarkscolor,
-                fontSize: height * 0.018,
-              ),
-            ),
-            SizedBox(height: height * 0.005),
-            Text(
-              'Fecha Inicio Servicio: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(json2[index]["fdFechaCreacionSolicitud"]))}',
-              style: TextStyle(
-                fontFamily: "Gilroy Medium",
-                color: notifire.getdarkscolor.withOpacity(0.7),
-                fontSize: height * 0.014,
-              ),
-            ),
+            _buildServiceDetails(index, width),
+            Divider(color: Colors.grey.withOpacity(0.3), height: 1),
+            _buildProductosSection(detalles, height, width),
           ],
         ),
       ),
-      SizedBox(width: width * 0.02),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: json2[index]["fiEstadoServicio"] == 1 ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              json2[index]["fiEstadoServicio"] == 1 ? 'Activo' : 'Inactivo',
-              style: TextStyle(
-                fontFamily: "Gilroy Bold",
-                color: json2[index]["fiEstadoServicio"] == 1 ? Colors.green : Colors.red,
-                fontSize: height * 0.016,
-              ),
-            ),
-          ),
-          SizedBox(height: height * 0.005),
-          GestureDetector(
-            onTap: () => _openGoogleMaps(json2[index]["fcGeolocalizacion"]),
-            child: Container(
-              width: height * 0.065, // Square size, medium (e.g., ~32dp on average screens)
-              height: height * 0.045,
+    );
+  }
+
+  Widget _buildServiceTitle(int index, double height, double width) => Padding(
+        padding: EdgeInsets.symmetric(vertical: height * 0.005),
+        child: Row(
+          children: [
+            Container(
+              height: height * 0.07,
+              width: height * 0.07,
               decoration: BoxDecoration(
-                color: notifire.getorangeprimerycolor,
-                borderRadius: BorderRadius.circular(8), // Rounded borders
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                color: notifire.getprimerycolor.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.wifi,
+                  color: notifire.getdarkscolor, size: height * 0.035),
+            ),
+            SizedBox(width: width * 0.03),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${json2[index]["fcBarrio"].toString().capitalizeFirst!} #${json2[index]["fcIDPrestamo"]}",
+                    style: TextStyle(
+                      fontFamily: "Gilroy Bold",
+                      color: notifire.getdarkscolor,
+                      fontSize: height * 0.018,
+                    ),
+                  ),
+                  SizedBox(height: height * 0.005),
+                  Text(
+                    'Fecha Inicio Servicio: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(json2[index]["fdFechaCreacionSolicitud"]))}',
+                    style: TextStyle(
+                      fontFamily: "Gilroy Medium",
+                      color: notifire.getdarkscolor.withOpacity(0.7),
+                      fontSize: height * 0.014,
+                    ),
                   ),
                 ],
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.location_on,
-                  color: Colors.white,
-                  size: 18, // Medium icon size
-                ),
-              ),
             ),
-          ),
-        ],
-      ),
-    ],
-  ),
-);
+            SizedBox(width: width * 0.02),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: json2[index]["fiEstadoServicio"] == 1
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    json2[index]["fiEstadoServicio"] == 1 ? 'Activo' : 'Inactivo',
+                    style: TextStyle(
+                      fontFamily: "Gilroy Bold",
+                      color: json2[index]["fiEstadoServicio"] == 1
+                          ? Colors.green
+                          : Colors.red,
+                      fontSize: height * 0.016,
+                    ),
+                  ),
+                ),
+                SizedBox(height: height * 0.005),
+                GestureDetector(
+                  onTap: () => _openGoogleMaps(json2[index]["fcGeolocalizacion"]),
+                  child: Container(
+                    width: height * 0.065,
+                    height: height * 0.045,
+                    decoration: BoxDecoration(
+                      color: notifire.getorangeprimerycolor,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.location_on,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
 
-  Widget _buildServiceDetails(int index) => Padding(
+  Widget _buildServiceDetails(int index, double width) => Padding(
         padding: EdgeInsets.symmetric(horizontal: width * 0.02),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow("Plazo Seleccionado",
-                json2[index]["fiPlazoSeleccionado"].toString()),
+            _buildDetailRow(
+                "Plazo Seleccionado", json2[index]["fiPlazoSeleccionado"].toString()),
             const SizedBox(height: 10),
             _buildDetailRow(
                 "Departamento", json2[index]["fcDepartamento"].toString()),
             const SizedBox(height: 10),
-            _buildDetailRow(
-                "Municipio", json2[index]["fcMunicipio"].toString()),
+            _buildDetailRow("Municipio", json2[index]["fcMunicipio"].toString()),
             const SizedBox(height: 10),
             _buildDetailRow("Barrio", json2[index]["fcBarrio"].toString()),
             const SizedBox(height: 10),
@@ -598,15 +634,16 @@ Widget _buildServiceTitle(int index) => Padding(
       );
 
   Widget _buildDetailText(String text) => Padding(
-        padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+        padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.02),
         child: Text(text,
             style: TextStyle(
                 fontFamily: "Gilroy Medium",
                 color: notifire.getdarkscolor.withOpacity(0.6),
-                fontSize: height * 0.013)),
+                fontSize: MediaQuery.of(context).size.height * 0.013)),
       );
 
-  Widget _buildProductosSection(List detalles) => Column(
+  Widget _buildProductosSection(List detalles, double height, double width) =>
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -621,12 +658,13 @@ Widget _buildServiceTitle(int index) => Padding(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: (detalles.length / 2).ceil(),
-            itemBuilder: (_, index) => _buildProductoRow(detalles, index),
+            itemBuilder: (_, index) =>
+                _buildProductoRow(detalles, index, height, width),
           ),
         ],
       );
 
-  Widget _buildProductoRow(List detalles, int index) {
+  Widget _buildProductoRow(List detalles, int index, double height, double width) {
     final firstIndex = index * 2;
     final secondIndex = firstIndex + 1;
     return Padding(
@@ -636,11 +674,11 @@ Widget _buildServiceTitle(int index) => Padding(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-              child: _buildProductoItem(detalles[firstIndex]["fcProducto"])),
+              child: _buildProductoItem(detalles[firstIndex]["fcProducto"] ?? '')),
           SizedBox(width: width * 0.02),
           Expanded(
               child: secondIndex < detalles.length
-                  ? _buildProductoItem(detalles[secondIndex]["fcProducto"])
+                  ? _buildProductoItem(detalles[secondIndex]["fcProducto"] ?? '')
                   : Container()),
         ],
       ),
@@ -651,14 +689,14 @@ Widget _buildServiceTitle(int index) => Padding(
         children: [
           Icon(Icons.arrow_forward_ios_rounded,
               color: notifire.getdarkscolor, size: 10),
-          SizedBox(width: width * 0.02),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.02),
           Expanded(
             child: Text(
               producto,
               style: TextStyle(
                   fontFamily: "Gilroy Medium",
                   color: notifire.getdarkscolor.withOpacity(0.6),
-                  fontSize: height * 0.013,
+                  fontSize: MediaQuery.of(context).size.height * 0.013,
                   letterSpacing: 1.5),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -689,9 +727,7 @@ Widget _buildServiceTitle(int index) => Padding(
                 const SizedBox(height: 15),
                 _buildWPButton('CONTRATAR', 'CONTRATAR'),
                 const SizedBox(height: 15),
-                _buildChatButton(),
-                const SizedBox(height: 15),
-                _buildCallButton(), // New button for phone call
+                _buildCallButton(),
               ],
             ),
           ),
@@ -727,7 +763,7 @@ Widget _buildServiceTitle(int index) => Padding(
       );
 
   Widget _buildCallButton() => GestureDetector(
-        onTap: () => _makePhoneCall('25406682'),
+        onTap: () => _makePhoneCall('+50425406682'), // Prefijo internacional agregado
         child: Container(
           height: 40,
           width: 180,
@@ -738,7 +774,7 @@ Widget _buildServiceTitle(int index) => Padding(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
-              Icon(Icons.phone, color: Colors.white, size: 20), // Phone icon
+              Icon(Icons.phone, color: Colors.white, size: 20),
               SizedBox(width: 10),
               Text(
                 'LLAMAR',
@@ -752,16 +788,14 @@ Widget _buildServiceTitle(int index) => Padding(
         ),
       );
 
- 
-  Future<void> _showWPDialogNumeroTexto(
-      BuildContext context, String opcion) async {
+  Future<void> _showWPDialogNumeroTexto(BuildContext context, String opcion) async {
     final textoController = TextEditingController();
     await showDialog(
       context: context,
       builder: (_) => _buildTextDialog(
           textoController, opcion, 'Ingrese un comentario', () {
         if (textoController.text.isEmpty) {
-          _showWarningToast('Necesita Ingresar un comentario');
+          _showWarningToast('Necesita ingresar un comentario');
           return;
         }
         _launchUrl(opcion, textoController.text);
@@ -775,20 +809,20 @@ Widget _buildServiceTitle(int index) => Padding(
     final textoController = TextEditingController();
     await showDialog(
       context: context,
-      builder: (_) =>
-          _buildNumberTextDialog(numeroController, textoController, opcion, () {
+      builder: (_) => _buildNumberTextDialog(
+          numeroController, textoController, opcion, () {
         final numero = numeroController.text;
         final texto = textoController.text;
         if (numero.isEmpty) {
-          _showWarningToast('Ingrese un numero de teléfono');
+          _showWarningToast('Ingrese un número de teléfono');
           return;
         }
         if (numero.length != 8) {
-          _showWarningToast('Son necesarios 8 digitos');
+          _showWarningToast('Son necesarios 8 dígitos');
           return;
         }
         if (texto.isEmpty) {
-          _showWarningToast('Necesita Ingresar un comentario');
+          _showWarningToast('Necesita ingresar un comentario');
           return;
         }
         _launchUrlSecundario(opcion, numero, texto);
@@ -828,24 +862,9 @@ Widget _buildServiceTitle(int index) => Padding(
               ),
               const SizedBox(height: 15),
               GestureDetector(
-                onTap: () {
-                  final texto = controller.text;
-                  if (texto.isEmpty) {
-                    CherryToast.warning(
-                      backgroundColor: notifire.getbackcolor,
-                      title: Text('Necesita Ingresar un comentario',
-                          style: TextStyle(color: notifire.getdarkscolor),
-                          textAlign: TextAlign.start),
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
-                  }
-
-                  _launchUrl(opcion, texto);
-                  Navigator.of(context).pop();
-                },
+                onTap: onConfirm,
                 child: Custombutton.button(
-                    notifire.getorangeprimerycolor, 'Confirmar', width / 2),
+                    notifire.getorangeprimerycolor, 'Confirmar', MediaQuery.of(context).size.width / 2),
               ),
             ],
           ),
@@ -894,44 +913,9 @@ Widget _buildServiceTitle(int index) => Padding(
               ),
               const SizedBox(height: 15),
               GestureDetector(
-                onTap: () {
-                  final texto = textoController.text;
-                  final numero = numeroController.text;
-                  if (numero.isEmpty) {
-                    CherryToast.warning(
-                      backgroundColor: notifire.getbackcolor,
-                      title: Text('Ingrese un numero de teléfono',
-                          style: TextStyle(color: notifire.getdarkscolor),
-                          textAlign: TextAlign.start),
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
-                  }
-                  if (numero.length != 8) {
-                    CherryToast.warning(
-                      backgroundColor: notifire.getbackcolor,
-                      title: Text('Son necesarios 8 digitos',
-                          style: TextStyle(color: notifire.getdarkscolor),
-                          textAlign: TextAlign.start),
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
-                  }
-                  if (texto.isEmpty) {
-                    CherryToast.warning(
-                      backgroundColor: notifire.getbackcolor,
-                      title: Text('Necesita Ingresar un comentario',
-                          style: TextStyle(color: notifire.getdarkscolor),
-                          textAlign: TextAlign.start),
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
-                  }
-                  _launchUrlSecundario(opcion, numero, texto);
-                  Navigator.of(context).pop();
-                },
+                onTap: onConfirm,
                 child: Custombutton.button(
-                    notifire.getorangeprimerycolor, 'Confirmar', width / 2),
+                    notifire.getorangeprimerycolor, 'Confirmar', MediaQuery.of(context).size.width / 2),
               ),
             ],
           ),
@@ -943,39 +927,6 @@ Widget _buildServiceTitle(int index) => Padding(
         fillColor: Colors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         hintText: hint,
-      );
-
-  Widget _buildChatButton() => GestureDetector(
-        onTap: () async {
-          final chatSignalRService =
-              ChatSignalRService("https://ptdto.com/ChatOrion/chathub");
-          await chatSignalRService.init();
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) =>
-                      ChatScreen(chatSignalRService: chatSignalRService)));
-        },
-        child: Container(
-          height: 40,
-          width: 180,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('images/wp.png', height: 20, width: 20),
-              const SizedBox(width: 10),
-              const Text('Prueba',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Gilroy Bold',
-                      fontSize: 16)),
-            ],
-          ),
-        ),
       );
 
   Future<void> _makePhoneCall(String phoneNumber) async {
@@ -1015,15 +966,28 @@ Widget _buildServiceTitle(int index) => Padding(
     _showLoadingDialog();
     try {
       final response = await http.post(uri, body: body, headers: headers);
-      Navigator.pop(context); // Close loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
       if (response.statusCode == 200) {
         _showSuccessDialog();
       } else {
-        throw Exception('Failed to send message: ${response.statusCode}');
+        CherryToast.error(
+          backgroundColor: notifire.getbackcolor,
+          title: Text(
+            'Error al enviar el mensaje: ${response.statusCode}',
+            style: TextStyle(color: notifire.getdarkscolor),
+          ),
+        ).show(context);
       }
     } catch (e) {
-      Navigator.pop(context);
-      debugPrint(e.toString());
+      Navigator.of(context, rootNavigator: true).pop();
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'Error de conexión: $e',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
+      debugPrint('Error in _launchUrl: $e');
     }
   }
 
@@ -1054,15 +1018,28 @@ Widget _buildServiceTitle(int index) => Padding(
     _showLoadingDialog();
     try {
       final response = await http.post(uri, body: body, headers: headers);
-      Navigator.pop(context); // Close loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
       if (response.statusCode == 200) {
         _showSuccessDialog();
       } else {
-        throw Exception('Failed to send message: ${response.statusCode}');
+        CherryToast.error(
+          backgroundColor: notifire.getbackcolor,
+          title: Text(
+            'Error al enviar el mensaje: ${response.statusCode}',
+            style: TextStyle(color: notifire.getdarkscolor),
+          ),
+        ).show(context);
       }
     } catch (e) {
-      Navigator.pop(context);
-      debugPrint(e.toString());
+      Navigator.of(context, rootNavigator: true).pop();
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'Error de conexión: $e',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
+      debugPrint('Error in _launchUrlSecundario: $e');
     }
   }
 
@@ -1138,12 +1115,21 @@ Widget _buildServiceTitle(int index) => Padding(
   }
 
   Future<void> _launchUrlManual(String url) async {
-    if (!await launchUrl(Uri.parse(url))) {
-      throw Exception('Could not launch $url');
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'No se pudo abrir el enlace: $url',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
     }
   }
 
-  Future<void> _openGoogleMaps(String geolocalizacion) async {
+  Future<void> _openGoogleMaps(String? geolocalizacion) async {
     if (geolocalizacion == null || geolocalizacion.isEmpty) {
       CherryToast.error(
         backgroundColor: notifire.getbackcolor,
@@ -1155,7 +1141,6 @@ Widget _buildServiceTitle(int index) => Padding(
       return;
     }
 
-    // Assuming fcGeolocalizacion is in "lat,lng" format
     final coords = geolocalizacion.split(',');
     if (coords.length != 2) {
       CherryToast.error(
@@ -1170,9 +1155,10 @@ Widget _buildServiceTitle(int index) => Padding(
 
     final lat = coords[0].trim();
     final lng = coords[1].trim();
-    final googleMapsUri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    final googleMapsUri =
+        Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
 
-    if (await launchUrl(googleMapsUri)) {
+    if (await canLaunchUrl(googleMapsUri)) {
       await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
     } else {
       CherryToast.error(

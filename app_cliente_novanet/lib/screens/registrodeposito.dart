@@ -95,7 +95,7 @@ class _RegistroDepositoScreenState extends State<RegistroDepositoScreen> {
   
   Future<void> sendDatos() async {
     try {
-      final Uri url = Uri.parse('$apiUrl/Servicio/SubirComprobanteDeposito');
+      final Uri url = Uri.parse('${apiUrl}Servicio/SubirComprobanteDeposito');
       String diaHora = '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
       String hora = '${DateTime.now().hour}-${DateTime.now().minute}';
 
@@ -125,6 +125,8 @@ class _RegistroDepositoScreenState extends State<RegistroDepositoScreen> {
       );
       
       if (response.statusCode == 200) {
+        Navigator.pop(context);
+
         CherryToast.success(
           backgroundColor: widget.notifire.getbackcolor,
           title: Text('Deposito subido correctamente',
