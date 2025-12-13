@@ -54,13 +54,15 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
       final file = await File('${tempDir.path}/qr_code.png').create();
       await file.writeAsBytes(pngBytes);
 
-      await Share.shareFiles([file.path],
-          text: 'Descarga la Aplicación de Novanet\n'
-              'PLAY STORE https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet \n'
-              'APP STORE  https://apps.apple.com/us/app/novanet/id6736670238 \n'
-              '\n'
-              'CREA TU USUARIO FAMILIAR AQUI \n'
-              'https://novanetgroup.com/NovanetApp/formulario_usuario_secundario.html?id=$fcIdentidad');
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'Descarga la Aplicación de Novanet\n'
+            'PLAY STORE https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet \n'
+            'APP STORE  https://apps.apple.com/us/app/novanet/id6736670238 \n'
+            '\n'
+            'CREA TU USUARIO FAMILIAR AQUI \n'
+            'https://novanetgroup.com/NovanetApp/formulario_usuario_secundario.html?id=$fcIdentidad',
+      );
     } catch (e) {
     }
   }
@@ -113,7 +115,8 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
           ElevatedButton.icon(
             onPressed: _captureAndSharePng,
             icon: const Icon(Icons.share, color: Colors.white),
-            label: const Text('Compartir QR y Links de Descarga'),
+            label: const Text('Compartir QR y Links de Descarga',
+                style: TextStyle(color: Colors.white)),
             style: ElevatedButton.styleFrom(
               backgroundColor: notifire.getorangeprimerycolor,
             ),
@@ -163,7 +166,7 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      '1. Abre la aplicación de Novanet.\n'
+                      '1. Descarga y abre la aplicación de Novanet.\n'
                       '2. Selecciona la opción de QR Usuario Familiar en el Inicio de Sesión.\n'
                       '3. Escanea el código QR mostrado arriba.\n'
                       '4. Llena el Formulario.\n'

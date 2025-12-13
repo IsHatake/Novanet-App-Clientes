@@ -101,36 +101,36 @@ class _LandingPageState extends State<LandingPage> {
                   ),
                 ),
                 const Spacer(),
-                SizedBox(
-                  width: width * 0.8,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const Registerclient(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Formulario Precalificado',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.transparent,
-                      backgroundColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ),
+                // SizedBox(
+                //   width: width * 0.8,
+                //   child: ElevatedButton(
+                //     onPressed: () {
+                //       Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //           builder: (context) => const Registerclient(),
+                //         ),
+                //       );
+                //     },
+                //     child: const Text(
+                //       'Formulario Precalificado',
+                //       style: TextStyle(
+                //         color: Colors.white,
+                //         fontWeight: FontWeight.bold,
+                //         fontSize: 18,
+                //       ),
+                //     ),
+                //     style: ElevatedButton.styleFrom(
+                //       foregroundColor: Colors.transparent,
+                //       backgroundColor: Colors.transparent,
+                //       padding: const EdgeInsets.symmetric(vertical: 16),
+                //       shape: RoundedRectangleBorder(
+                //         side: const BorderSide(color: Colors.white),
+                //         borderRadius: BorderRadius.circular(10),
+                //       ),
+                //     ),
+                //   ),
+                // ),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: width * 0.8,

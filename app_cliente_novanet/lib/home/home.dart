@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:ui';
+import 'package:app_cliente_novanet/screens/publicidad_productos_widget.dart';
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -22,6 +25,8 @@ import 'package:app_cliente_novanet/utils/string.dart';
 import 'package:app_cliente_novanet/home/notifications.dart';
 import 'package:app_cliente_novanet/profile/profile.dart';
 import 'package:app_cliente_novanet/screens/dialogPagoWidget.dart';
+
+import '../utils/media.dart';
 
 class Home extends StatefulWidget {
   final bool fbprincipal;
@@ -81,7 +86,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         json2 = data2;
         cuotas = json2.isNotEmpty
             ? data2
-                .map<double>((cuota) => (cuota["fnCuotaMensual"] ?? 0.0) as double)
+                .map<double>(
+                    (cuota) => (cuota["fnCuotaMensual"] ?? 0.0) as double)
                 .toList()
             : [];
       });
@@ -175,65 +181,110 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   Widget _buildHeader(double height, double width) => Stack(
         children: [
-          Image.asset("images/backphoto.png", fit: BoxFit.cover),
+          Image.asset("images/backphoto.png",
+              fit: BoxFit.cover,
+              color: notifire.getdarkscolor.withOpacity(0.5)),
           Column(
             children: [
               SizedBox(height: height / 40),
-              _buildPaymentCard(height, width),
+              _buildPaymentCard(
+                  height,
+                  width,
+                  _pageController,
+                  cuotas,
+                  _currentPage,
+                  (fn) => setState(() => _currentPage = fn),
+                  _navigatePage),
               _buildIconButtons(height, width),
             ],
           ),
         ],
       );
 
-  Widget _buildPaymentCard(double height, double width) => Center(
-        child: Container(
-          height: height / 10,
-          width: width / 1.2,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            color: notifire.getorangeprimerycolor,
-          ),
-          child: Stack(
-            children: [
-              PageView.builder(
-                controller: _pageController,
-                onPageChanged: (index) => setState(() => _currentPage = index),
-                itemCount: cuotas.length,
-                itemBuilder: (_, index) => _buildPaymentInfo(index, height),
-              ),
-              if (_currentPage > 0)
-                Positioned(
-                  left: 8,
-                  top: 0,
-                  bottom: 0,
-                  child: _buildNavigationButton(
-                    icon: Icons.arrow_back_ios_new,
-                    onPressed: () => _navigatePage(-1),
-                    isLeft: true,
-                  ),
-                ),
-              if (_currentPage < cuotas.length - 1)
-                Positioned(
-                  right: 8,
-                  top: 0,
-                  bottom: 0,
-                  child: _buildNavigationButton(
-                    icon: Icons.arrow_forward_ios_rounded,
-                    onPressed: () => _navigatePage(1),
-                    isLeft: false,
-                  ),
-                ),
-              Positioned(
-                bottom: 2,
-                left: 0,
-                right: 0,
-                child: _buildPageIndicators(),
-              ),
+  Widget _buildPaymentCard(
+      double height,
+      double width,
+      PageController _pageController,
+      List cuotas,
+      int _currentPage,
+      Function(int) setState,
+      Function(int) _navigatePage) {
+    return Center(
+      child: Container(
+        height: height / 8, // Slightly taller for better content visibility
+        width: width / 1.15, // Slightly narrower for a sleek look
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24)), // Softer, fully rounded corners
+          gradient: LinearGradient(
+            colors: [
+              notifire.getorangeprimerycolor, // Coral start
+              Color.fromARGB(255, 240, 120, 72), // Orange end
             ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              offset: Offset(4, 4),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+            BoxShadow(
+              color: Colors.white.withOpacity(0.2),
+              offset: Offset(-4, -4),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+          ], // Neumorphic shadow effect
         ),
-      );
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(index); // Actualiza el estado al deslizar
+              },
+              itemCount: cuotas.length,
+              itemBuilder: (_, index) => _buildPaymentInfo(index, height),
+              physics:
+                  const BouncingScrollPhysics(), // Smooth, elastic scrolling
+            ),
+            if (_currentPage > 0)
+              Positioned(
+                left: 12,
+                top: 0,
+                bottom: 0,
+                child: _buildNavigationButton(
+                  icon: Icons.arrow_back_ios_new,
+                  onPressed: () => _navigatePage(-1),
+                  isLeft: true,
+                ),
+              ),
+            if (_currentPage < cuotas.length - 1)
+              Positioned(
+                right: 12,
+                top: 0,
+                bottom: 0,
+                child: _buildNavigationButton(
+                  icon: Icons.arrow_forward_ios_rounded,
+                  onPressed: () => _navigatePage(1),
+                  isLeft: false,
+                ),
+              ),
+            Positioned(
+              bottom: 8,
+              left: 0,
+              right: 0,
+              child: _buildPageIndicators(cuotas.length, _currentPage),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildNavigationButton({
     required IconData icon,
@@ -255,21 +306,21 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildPageIndicators() {
+  Widget _buildPageIndicators(int itemCount, int currentPage) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
-        cuotas.length,
+        itemCount,
         (index) => AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: _currentPage == index ? 10 : 6,
-          height: 6,
+          duration: Duration(milliseconds: 300),
+          margin: EdgeInsets.symmetric(horizontal: 4),
+          height: 8,
+          width: currentPage == index ? 24 : 8,
           decoration: BoxDecoration(
-            color: _currentPage == index
+            color: currentPage == index
                 ? Colors.white
                 : Colors.white.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -383,6 +434,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       builder: (_) => AddServices_Screen(
                         'Servicios',
                         fbprincipal: widget.fbprincipal,
+                        productoBuscado: '',
                       ),
                     ),
                   ),
@@ -402,7 +454,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         ),
       );
 
-  Widget _buildIconButton(String imagePath, String label, VoidCallback onTap,
+  Widget _buildIconButton(dynamic iconOrImage, String label, VoidCallback onTap,
           double height, double width) =>
       Flexible(
         child: Column(
@@ -417,15 +469,28 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: const [
                     BoxShadow(
-                        color: Colors.black26,
+                        color: Color.fromARGB(43, 0, 0, 0),
                         blurRadius: 15,
                         offset: Offset(0, 0.5),
                         spreadRadius: 0.12)
                   ],
                 ),
                 child: Center(
-                    child: Image.asset(imagePath,
-                        color: const Color(0xFFfaa61a), height: height / 20)),
+                  child: iconOrImage is IconData
+                      ? Icon(iconOrImage,
+                          color: notifire.isDark
+                              ? const Color.fromARGB(190, 255, 255, 255)
+                              : const Color(0xFFfaa61a),
+                          size: height / 20)
+                      : Image.asset(
+                          iconOrImage,
+                          color: notifire.isDark
+                              ? const Color.fromARGB(190, 255, 255, 255)
+                              : const Color(0xFFfaa61a),
+                          height: height / 20,
+                          width: height / 20,
+                        ),
+                ),
               ),
             ),
             SizedBox(height: height / 60),
@@ -443,13 +508,18 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            
+            PublicidadProductosWidget(
+              titleColor: notifire.getdarkscolor,
+              cardSize: 120,
+              spacing: 12,
+            ),
             SizedBox(height: height / 30),
             Text(CustomStrings.service,
                 style: TextStyle(
                     fontFamily: "Gilroy Bold",
                     color: notifire.getdarkscolor,
                     fontSize: height / 40)),
-            SizedBox(height: height / 50),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -472,89 +542,100 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: width * 0.01,
-        vertical: height * 0.01,
-      ),
+      padding: const EdgeInsets.symmetric(),
       child: Card(
         key: ValueKey(index),
         color: notifire.getbackcolor,
         elevation: 2,
         shape: RoundedRectangleBorder(
-          side: BorderSide(width: 1, color: Colors.grey.withOpacity(0.1)),
           borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.withOpacity(0.15), width: 1),
         ),
-        child: ExpansionTile(
-          initiallyExpanded: _isExpanded,
-          onExpansionChanged: (expanded) => setState(() => _isExpanded = expanded),
-          tilePadding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: 8),
-          childrenPadding: EdgeInsets.all(width * 0.04),
-          backgroundColor: notifire.getbackcolor.withOpacity(0.95),
-          collapsedBackgroundColor: notifire.getbackcolor,
-          iconColor: notifire.getdarkscolor,
-          collapsedIconColor: notifire.getorangeprimerycolor,
-          collapsedTextColor: notifire.getorangeprimerycolor,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            dividerColor:
+                Colors.transparent, // Quita las barras de ExpansionTile
+          ),
+          child: ExpansionTile(
+            initiallyExpanded: _isExpanded,
+            onExpansionChanged: (expanded) =>
+                setState(() => _isExpanded = expanded),
+            tilePadding:
+                EdgeInsets.symmetric(horizontal: width * 0.04, vertical: 8),
+            childrenPadding: EdgeInsets.all(width * 0.04),
+            iconColor: notifire.getdarkscolor,
+            collapsedIconColor: notifire.getorangeprimerycolor,
+            collapsedTextColor: notifire.getorangeprimerycolor,
+            collapsedShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: _buildServiceTitle(index, height, width)),
+              ],
+            ),
             children: [
-              Expanded(child: _buildServiceTitle(index, height, width)),
+              _buildServiceDetails(index, width),
+              // Divider eliminado para quitar la barra
+              _buildProductosSection(detalles, height, width),
             ],
           ),
-          children: [
-            _buildServiceDetails(index, width),
-            Divider(color: Colors.grey.withOpacity(0.3), height: 1),
-            _buildProductosSection(detalles, height, width),
-          ],
         ),
       ),
     );
   }
 
   Widget _buildServiceTitle(int index, double height, double width) => Padding(
-        padding: EdgeInsets.symmetric(vertical: height * 0.005),
+        padding: EdgeInsets.symmetric(vertical: height * 0.003),
         child: Row(
           children: [
             Container(
-              height: height * 0.07,
-              width: height * 0.07,
+              height: height * 0.05, // Reducido
+              width: height * 0.05, // Reducido
               decoration: BoxDecoration(
                 color: notifire.getprimerycolor.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius:
+                    BorderRadius.circular(8), // Bordes redondeados más suaves
               ),
               child: Icon(Icons.wifi,
-                  color: notifire.getdarkscolor, size: height * 0.035),
+                  color: notifire.getdarkscolor,
+                  size: height * 0.025), // Tamaño reducido
             ),
-            SizedBox(width: width * 0.03),
+            SizedBox(width: width * 0.02), // Espaciado reducido
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "${json2[index]["fcBarrio"].toString().capitalizeFirst!} #${json2[index]["fcIDPrestamo"]}",
+                    "${json2[index]["fcBarrio"].toString().capitalizeFirst!} \n#${json2[index]["fcIDPrestamo"]}",
                     style: TextStyle(
                       fontFamily: "Gilroy Bold",
                       color: notifire.getdarkscolor,
-                      fontSize: height * 0.018,
+                      fontSize: height * 0.016, // Tamaño de fuente reducido
                     ),
+                    maxLines: null,
+                    overflow: TextOverflow.visible,
                   ),
-                  SizedBox(height: height * 0.005),
+                  SizedBox(height: height * 0.004), // Espaciado reducido
                   Text(
-                    'Fecha Inicio Servicio: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(json2[index]["fdFechaCreacionSolicitud"]))}',
+                    'Inicio: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(json2[index]["fdFechaCreacionSolicitud"]))}',
                     style: TextStyle(
                       fontFamily: "Gilroy Medium",
                       color: notifire.getdarkscolor.withOpacity(0.7),
-                      fontSize: height * 0.014,
+                      fontSize: height * 0.012, // Tamaño de fuente reducido
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(width: width * 0.02),
+            SizedBox(width: width * 0.015), // Espaciado reducido
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: json2[index]["fiEstadoServicio"] == 1
                         ? Colors.green.withOpacity(0.1)
@@ -562,7 +643,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    json2[index]["fiEstadoServicio"] == 1 ? 'Activo' : 'Inactivo',
+                    json2[index]["fiEstadoServicio"] == 1
+                        ? 'Activo'
+                        : 'Inactivo',
                     style: TextStyle(
                       fontFamily: "Gilroy Bold",
                       color: json2[index]["fiEstadoServicio"] == 1
@@ -574,7 +657,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 ),
                 SizedBox(height: height * 0.005),
                 GestureDetector(
-                  onTap: () => _openGoogleMaps(json2[index]["fcGeolocalizacion"]),
+                  onTap: () =>
+                      _openGoogleMaps(json2[index]["fcGeolocalizacion"]),
                   child: Container(
                     width: height * 0.065,
                     height: height * 0.045,
@@ -605,20 +689,21 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       );
 
   Widget _buildServiceDetails(int index, double width) => Padding(
-        padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+        padding: EdgeInsets.symmetric(horizontal: width * 0.015), // Reducido
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow(
-                "Plazo Seleccionado", json2[index]["fiPlazoSeleccionado"].toString()),
-            const SizedBox(height: 10),
+            _buildDetailRow("Plazo Seleccionado",
+                json2[index]["fiPlazoSeleccionado"].toString()),
+            SizedBox(height: 8), // Reducido
             _buildDetailRow(
                 "Departamento", json2[index]["fcDepartamento"].toString()),
-            const SizedBox(height: 10),
-            _buildDetailRow("Municipio", json2[index]["fcMunicipio"].toString()),
-            const SizedBox(height: 10),
+            SizedBox(height: 8), // Reducido
+            _buildDetailRow(
+                "Municipio", json2[index]["fcMunicipio"].toString()),
+            SizedBox(height: 8), // Reducido
             _buildDetailRow("Barrio", json2[index]["fcBarrio"].toString()),
-            const SizedBox(height: 10),
+            SizedBox(height: 8), // Reducido
             _buildDetailRow("Dirección Exacta",
                 json2[index]["fcDireccionDetallada"].toString().toUpperCase()),
           ],
@@ -628,18 +713,31 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Widget _buildDetailRow(String label, String value) => Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: _buildDetailText(label)),
-          Expanded(child: _buildDetailText(value)),
-        ],
-      );
-
-  Widget _buildDetailText(String text) => Padding(
-        padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.02),
-        child: Text(text,
-            style: TextStyle(
+          Expanded(
+            child: Text(
+              "$label: ",
+              style: TextStyle(
                 fontFamily: "Gilroy Medium",
                 color: notifire.getdarkscolor.withOpacity(0.6),
-                fontSize: MediaQuery.of(context).size.height * 0.013)),
+                fontSize: MediaQuery.of(context).size.height *
+                    0.012, // Tamaño reducido
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontFamily: "Gilroy Medium",
+                color: notifire.getdarkscolor,
+                fontSize: MediaQuery.of(context).size.height *
+                    0.012, // Tamaño reducido
+              ),
+              overflow: TextOverflow.visible,
+              maxLines: null,
+            ),
+          ),
+        ],
       );
 
   Widget _buildProductosSection(List detalles, double height, double width) =>
@@ -647,38 +745,44 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+            padding:
+                EdgeInsets.symmetric(horizontal: width * 0.015), // Reducido
             child: Text('Productos',
                 style: TextStyle(
                     fontFamily: "Gilroy Medium",
                     color: notifire.getdarkscolor.withOpacity(0.6),
-                    fontSize: height * 0.013)),
+                    fontSize: height * 0.012)), // Tamaño reducido
           ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: (detalles.length / 2).ceil(),
-            itemBuilder: (_, index) =>
-                _buildProductoRow(detalles, index, height, width),
+          SizedBox(height: height * 0.008), // Espaciado reducido
+          Wrap(
+            spacing: width * 0.015,
+            runSpacing: height * 0.008,
+            children: List.generate(
+              (detalles.length / 2).ceil(),
+              (index) => _buildProductoRow(detalles, index, height, width),
+            ),
           ),
         ],
       );
 
-  Widget _buildProductoRow(List detalles, int index, double height, double width) {
+  Widget _buildProductoRow(
+      List detalles, int index, double height, double width) {
     final firstIndex = index * 2;
     final secondIndex = firstIndex + 1;
     return Padding(
       padding: EdgeInsets.symmetric(
-          vertical: height * 0.01, horizontal: width * 0.02),
+          vertical: height * 0.008, horizontal: width * 0.015), // Reducido
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-              child: _buildProductoItem(detalles[firstIndex]["fcProducto"] ?? '')),
-          SizedBox(width: width * 0.02),
+              child:
+                  _buildProductoItem(detalles[firstIndex]["fcProducto"] ?? '')),
+          SizedBox(width: width * 0.015), // Espaciado reducido
           Expanded(
               child: secondIndex < detalles.length
-                  ? _buildProductoItem(detalles[secondIndex]["fcProducto"] ?? '')
+                  ? _buildProductoItem(
+                      detalles[secondIndex]["fcProducto"] ?? '')
                   : Container()),
         ],
       ),
@@ -688,16 +792,20 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Widget _buildProductoItem(String producto) => Row(
         children: [
           Icon(Icons.arrow_forward_ios_rounded,
-              color: notifire.getdarkscolor, size: 10),
-          SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+              color: notifire.getdarkscolor.withOpacity(0.6),
+              size: 9), // Tamaño reducido
+          SizedBox(
+              width: MediaQuery.of(context).size.width *
+                  0.015), // Espaciado reducido
           Expanded(
             child: Text(
               producto,
               style: TextStyle(
                   fontFamily: "Gilroy Medium",
                   color: notifire.getdarkscolor.withOpacity(0.6),
-                  fontSize: MediaQuery.of(context).size.height * 0.013,
-                  letterSpacing: 1.5),
+                  fontSize: MediaQuery.of(context).size.height *
+                      0.012, // Tamaño reducido
+                  letterSpacing: 1.2),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -714,20 +822,58 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           child: Container(
             decoration: BoxDecoration(
               color: notifire.getbackcolor,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: notifire.getdarkscolor.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             margin: const EdgeInsets.all(15),
-            padding: const EdgeInsets.all(25),
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Opciones de Contacto',
+                      style: TextStyle(
+                        fontFamily: 'Gilroy Bold',
+                        fontSize: 18,
+                        color: notifire.getdarkscolor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 _buildWPButton('SOPORTE TÉCNICO', 'SOPORTE'),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 _buildWPButton('SOPORTE PAGOS', 'PAGOS'),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 _buildWPButton('CONTRATAR', 'CONTRATAR'),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 _buildCallButton(),
+                // const SizedBox(height: 12),
+                // _buildChatButton()
+                Align(
+                  alignment: Alignment.center,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        color: notifire.getorangeprimerycolor,
+                        fontFamily: 'Gilroy Medium',
+                        fontSize: height * 0.016,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -741,17 +887,23 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             ? _showWPDialogNumeroTexto(context, option)
             : _showWPDialogNumero(context, option),
         child: Container(
-          height: 40,
-          width: 180,
+          height: 48,
           decoration: BoxDecoration(
             color: Colors.black,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('images/wp.png', height: 20, width: 20),
-              const SizedBox(width: 10),
+              Image.asset('images/wp.png', height: 24, width: 24),
+              const SizedBox(width: 12),
               Text(label,
                   style: const TextStyle(
                       color: Colors.white,
@@ -763,19 +915,26 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       );
 
   Widget _buildCallButton() => GestureDetector(
-        onTap: () => _makePhoneCall('+50425406682'), // Prefijo internacional agregado
+        onTap: () =>
+            _makePhoneCall('+50425046682'), // Prefijo internacional agregado
         child: Container(
-          height: 40,
-          width: 180,
+          height: 48,
           decoration: BoxDecoration(
             color: Colors.black,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
-              Icon(Icons.phone, color: Colors.white, size: 20),
-              SizedBox(width: 10),
+              Icon(Icons.phone, color: Colors.white, size: 24),
+              SizedBox(width: 12),
               Text(
                 'LLAMAR',
                 style: TextStyle(
@@ -788,7 +947,56 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         ),
       );
 
-  Future<void> _showWPDialogNumeroTexto(BuildContext context, String opcion) async {
+  Widget _buildChatButton() => GestureDetector(
+        onTap: () async {
+          // Inicializamos SignalR después de un login exitoso
+          ChatSignalRService chatSignalRService =
+              ChatSignalRService("https://ptdto.com/ChatOrion/chathub");
+          //ChatSignalRService chatSignalRService = ChatSignalRService("http://172.20.2.214:5035/chathub");
+
+          // Llamamos al método de inicialización de SignalR
+          await chatSignalRService.init();
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  ChatScreen(chatSignalRService: chatSignalRService),
+            ),
+          );
+        },
+        child: Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.build_circle_outlined, color: Colors.white, size: 24),
+              SizedBox(width: 12),
+              Text(
+                'CHAT SOPORTE',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Gilroy Bold',
+                    fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Future<void> _showWPDialogNumeroTexto(
+      BuildContext context, String opcion) async {
     final textoController = TextEditingController();
     await showDialog(
       context: context,
@@ -809,8 +1017,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     final textoController = TextEditingController();
     await showDialog(
       context: context,
-      builder: (_) => _buildNumberTextDialog(
-          numeroController, textoController, opcion, () {
+      builder: (_) =>
+          _buildNumberTextDialog(numeroController, textoController, opcion, () {
         final numero = numeroController.text;
         final texto = textoController.text;
         if (numero.isEmpty) {
@@ -863,8 +1071,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               const SizedBox(height: 15),
               GestureDetector(
                 onTap: onConfirm,
-                child: Custombutton.button(
-                    notifire.getorangeprimerycolor, 'Confirmar', MediaQuery.of(context).size.width / 2),
+                child: Custombutton.button(notifire.getorangeprimerycolor,
+                    'Confirmar', MediaQuery.of(context).size.width / 2),
               ),
             ],
           ),
@@ -914,8 +1122,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               const SizedBox(height: 15),
               GestureDetector(
                 onTap: onConfirm,
-                child: Custombutton.button(
-                    notifire.getorangeprimerycolor, 'Confirmar', MediaQuery.of(context).size.width / 2),
+                child: Custombutton.button(notifire.getorangeprimerycolor,
+                    'Confirmar', MediaQuery.of(context).size.width / 2),
               ),
             ],
           ),
@@ -931,7 +1139,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(phoneUri)) {
+    if (await launchUrl(phoneUri)) {
       await launchUrl(phoneUri);
     } else {
       CherryToast.error(
@@ -1116,7 +1324,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   Future<void> _launchUrlManual(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
+    if (await launchUrl(uri)) {
       await launchUrl(uri);
     } else {
       CherryToast.error(
@@ -1158,7 +1366,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     final googleMapsUri =
         Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
 
-    if (await canLaunchUrl(googleMapsUri)) {
+    if (await launchUrl(googleMapsUri)) {
       await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
     } else {
       CherryToast.error(

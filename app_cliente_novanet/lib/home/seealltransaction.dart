@@ -1,3 +1,4 @@
+
 // ignore_for_file: non_constant_identifier_names
 
 import 'dart:convert';
@@ -7,6 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:cherry_toast/cherry_toast.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../api.dart';
 import '../utils/colornotifire.dart';
 import '../utils/media.dart';
@@ -49,10 +52,18 @@ class _SeealltransactionState extends State<Seealltransaction> {
       } else {
         if (kDebugMode) print('Error en la solicitud: ${response.statusCode}');
         setState(() => _isLoading = false);
+        CherryToast.error(
+          title: const Text("Error"),
+          description: Text("No se pudieron cargar las transacciones: ${response.statusCode}"),
+        ).show(context);
       }
     } catch (e) {
       if (kDebugMode) print('Excepción en la solicitud: $e');
       setState(() => _isLoading = false);
+      CherryToast.error(
+        title: const Text("Error"),
+        description: Text("Error al cargar transacciones: $e"),
+      ).show(context);
     }
   }
 
@@ -65,6 +76,43 @@ class _SeealltransactionState extends State<Seealltransaction> {
   }
 
   int get _totalPages => (listadodepagos.length / _itemsPerPage).ceil();
+
+  
+  // Función para visualizar la factura
+  Future<void> _viewInvoice(String transactionId) async {
+    // Suponiendo que la factura está disponible en una URL
+    final url = 'https://ptdto.com/dt/fac.aspx?$transactionId';
+    try {
+      // Intenta abrir en WebView
+      _launchUrlManual(url);
+    } catch (e) {
+      // Si falla, intenta abrir en el navegador
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        CherryToast.error(
+          title: Text("Error"),
+          description: Text("No se pudo abrir la factura"),
+        ).show(context);
+      }
+    }
+  }
+
+   Future<void> _launchUrlManual(String url) async {
+    final uri = Uri.parse(url);
+    if (await launchUrl(uri)) {
+      
+    } else {
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'No se pudo abrir el enlace: $url',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +273,7 @@ class _SeealltransactionState extends State<Seealltransaction> {
                   child: Center(
                     child: Image.asset(
                       "images/logos.png",
-                      height: height * 0.03
+                      height: height * 0.03,
                     ),
                   ),
                 ),
@@ -239,7 +287,7 @@ class _SeealltransactionState extends State<Seealltransaction> {
                         children: [
                           Expanded(
                             child: Text(
-                              '${item['fiIDTransaccion']} - ${item['fcOperacion']}',
+                              '${item['fiIDTransaccion'] ?? ''} - ${item['fcOperacion'] ?? ''}',
                               style: TextStyle(
                                 fontFamily: "Gilroy Bold",
                                 color: notifire.getdarkscolor,
@@ -274,7 +322,7 @@ class _SeealltransactionState extends State<Seealltransaction> {
                       ),
                       SizedBox(height: height * 0.005),
                       Text(
-                        DateFormat('dd/MM/yyyy').format(DateTime.parse(item['fdFechaTransaccion'])),
+                        DateFormat('dd/MM/yyyy').format(DateTime.parse(item['fdFechaTransaccion'] ?? DateTime.now().toIso8601String())),
                         style: TextStyle(
                           fontFamily: "Gilroy Medium",
                           color: notifire.getdarkscolor.withOpacity(0.7),
@@ -283,6 +331,15 @@ class _SeealltransactionState extends State<Seealltransaction> {
                       ),
                     ],
                   ),
+                ),
+                SizedBox(width: width * 0.02),
+                IconButton(
+                  icon: Icon(
+                    Icons.receipt_long,
+                    color: notifire.getorangeprimerycolor,
+                    size: height * 0.03,
+                  ),
+                  onPressed: () => _viewInvoice(item['fiIDTransaccion'].toString()),
                 ),
               ],
             ),

@@ -2,6 +2,8 @@
 
 import 'dart:convert';
 import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
+import 'package:app_cliente_novanet/utils/normaltextfild.dart';
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/home/home.dart';
@@ -9,84 +11,154 @@ import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:http/http.dart' as http;
 import 'package:app_cliente_novanet/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 Future<void> fetchLogin(
   BuildContext context,
   String fcUsuarioAcceso,
   String fcPassword,
   bool fbprincipal,
-  backgroundColor,
-  color,
+  Color backgroundColor,
+  Color color,
 ) async {
+  // Mostrar dialog de animación "Iniciando sesión" relacionado con internet (ondas WiFi)
+  showDialog(
+  context: context,
+  barrierDismissible: false,
+  builder: (BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SpinKitWave(
+                color: Colors.white,
+                size: 60.0,
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Iniciando sesión...',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  },
+);
+
+
   try {
     final prefs = await SharedPreferences.getInstance();
+
+    // Guardar usuario y contraseña en caché
     prefs.setString("UsuarioCache", fcUsuarioAcceso);
     prefs.setString("ContraseniaCache", fcPassword);
 
     final response = await http.get(Uri.parse(
-        '${apiUrl}Login/LoginApp?fcUsuarioAcceso=$fcUsuarioAcceso&fcPassword=$fcPassword&fbprincipal=$fbprincipal'));
+      '${apiUrl}Login/LoginApp?fcUsuarioAcceso=$fcUsuarioAcceso&fcPassword=$fcPassword&fbprincipal=$fbprincipal',
+    ));
+
+    // Cerrar el dialog de animación
+    Navigator.of(context).pop();
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final decoded = jsonDecode(response.body);
 
-      if (data[0].isNotEmpty ||
-          data[1].isNotEmpty ||
-          data[2].isNotEmpty ||
-          data[3].isNotEmpty ||
-          data[4].isNotEmpty) {
-        DNIData(context, data[1][0]["fcIdentidad"]);
-        prefs.setString("fiIDUnico", data[0][0]["fiIDUnico"].toString());
-        prefs.setString(
-            "fcUsuarioAcceso", data[0][0]["fcUsuarioAcceso"].toString());
-        prefs.setString(
-            "fcNombreUsuario", data[0][0]["fcNombreUsuario"].toString());
-        prefs.setString("fcTelefono", data[0][0]["fcTelefono"].toString());
-        prefs.setString("fiIDCliente", data[0][0]["fiIDCliente"].toString());
-        prefs.setString(
-            "fiIDCuentaFamiliar", data[0][0]["fiIDCuentaFamiliar"].toString());
+      if (decoded is List) {
+        // Validación: asegurarnos que data tenga al menos 5 elementos
+        final List<dynamic> data = decoded;
 
-        prefs.setString("fcIdentidad", data[1][0]["fcIdentidad"].toString());
-        prefs.setString(
-            "fcURLFotoPersonalizda", data[0][0]["NombreArchivo"].toString());
-        if (data[5].length != 0) {
-          prefs.setString("fcLlaveUnica", data[5][0]["fcLlaveUnica"] ?? '');
+        final bool isLoginValido = List.generate(
+          5,
+          (index) => index < data.length && data[index].isNotEmpty,
+        ).any((e) => e);
+
+        if (isLoginValido) {
+          final loginData = (data.length > 0 && data[0].isNotEmpty) ? data[0][0] : {};
+          final identidadData = (data.length > 1 && data[1].isNotEmpty) ? data[1][0] : {};
+          final llaveUnica = (data.length > 5 && data[5].isNotEmpty)
+              ? data[5][0]["fcLlaveUnica"] ?? ''
+              : '';
+
+          DNIData(context, identidadData["fcIdentidad"] ?? '');
+
+          prefs.setString("fiIDUnico", loginData["fiIDUnico"]?.toString() ?? '');
+          prefs.setString("fcUsuarioAcceso", loginData["fcUsuarioAcceso"]?.toString() ?? '');
+          prefs.setString("fcNombreUsuario", loginData["fcNombreUsuario"]?.toString() ?? '');
+          prefs.setString("fcTelefono", loginData["fcTelefono"]?.toString() ?? '');
+          prefs.setString("fiIDCliente", loginData["fiIDCliente"]?.toString() ?? '');
+          prefs.setString("fiIDCuentaFamiliar", loginData["fiIDCuentaFamiliar"]?.toString() ?? '');
+          prefs.setString("fcIdentidad", identidadData["fcIdentidad"]?.toString() ?? '');
+          prefs.setString("fcURLFotoPersonalizda", loginData["NombreArchivo"]?.toString() ?? '');
+          prefs.setString("fcLlaveUnica", llaveUnica);
+
+          // Guardar los arreglos existentes (0 a 4)
+          for (int i = 0; i <= 4; i++) {
+            if (i < data.length) {
+              prefs.setString("datalogin[$i]", jsonEncode(data[i]));
+            }
+          }
+
+          // Navegar al Home
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Home(fbprincipal: fbprincipal),
+            ),
+          );
+        } else {
+          // Credenciales inválidas
+          CherryToast.warning(
+            backgroundColor: backgroundColor,
+            title: Text(
+              'Usuario o Contraseña Incorrectos',
+              style: TextStyle(color: color),
+              textAlign: TextAlign.start,
+            ),
+            borderRadius: 5,
+          ).show(context);
         }
-        else{
-          prefs.setString("fcLlaveUnica", '');
-
-        }
-
-        prefs.setString("datalogin[0]", jsonEncode(data[0]));
-        prefs.setString("datalogin[1]", jsonEncode(data[1]));
-        prefs.setString("datalogin[2]", jsonEncode(data[2]));
-        prefs.setString("datalogin[3]", jsonEncode(data[3]));
-        prefs.setString("datalogin[4]", jsonEncode(data[4]));
-
-
-       
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Home(fbprincipal: fbprincipal),
-          ),
-        );
       } else {
+        // El backend no devolvió una lista
         CherryToast.warning(
           backgroundColor: backgroundColor,
           title: Text(
-            'Usuario o Contraseña Incorrectos',
+            'Respuesta inesperada del servidor',
             style: TextStyle(color: color),
             textAlign: TextAlign.start,
           ),
           borderRadius: 5,
         ).show(context);
       }
+    } else {
+      // Status code no 200
+      CherryToast.warning(
+        backgroundColor: backgroundColor,
+        title: Text(
+          'Error de conexión: ${response.statusCode}',
+          style: TextStyle(color: color),
+          textAlign: TextAlign.start,
+        ),
+        borderRadius: 5,
+      ).show(context);
     }
   } catch (e) {
-    if (kDebugMode) {
-      print(e);
-    }
+    // Cerrar el dialog en caso de error
+    Navigator.of(context).pop();
+    if (kDebugMode) print(e);
     CherryToast.warning(
       backgroundColor: backgroundColor,
       title: Text(
@@ -96,8 +168,9 @@ Future<void> fetchLogin(
       ),
       borderRadius: 5,
     ).show(context);
-  } finally {}
+  }
 }
+
 
 
 

@@ -1,12 +1,16 @@
 import 'dart:convert';
-import 'package:app_cliente_novanet/utils/colornotifire.dart';
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
+
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import 'package:app_cliente_novanet/utils/colornotifire.dart';
 
 class PagosPage extends StatefulWidget {
-const PagosPage({
+  const PagosPage({
     Key? key,
   }) : super(key: key);
 
@@ -20,7 +24,7 @@ class _PagosPageState extends State<PagosPage> {
   String selectedMonth = '1';
   late ColorNotifire notifire;
   int currentPage = 1;
-  final int itemsPerPage = 5; // Number of items per page
+  final int itemsPerPage = 5;
 
   @override
   void initState() {
@@ -57,7 +61,7 @@ class _PagosPageState extends State<PagosPage> {
 
     setState(() {
       listadodepagos = filteredList;
-      currentPage = 1; // Reset to first page on filter change
+      currentPage = 1;
     });
   }
 
@@ -91,6 +95,42 @@ class _PagosPageState extends State<PagosPage> {
       endIndex > listadodepagos.length ? listadodepagos.length : endIndex,
     );
   }
+
+  // Función para visualizar la factura
+  Future<void> _viewInvoice(String transactionId) async {
+    // Suponiendo que la factura está disponible en una URL
+    final url = 'https://ptdto.com/dt/fac.aspx?$transactionId';
+    try {
+      // Intenta abrir en WebView
+      _launchUrlManual(url);
+    } catch (e) {
+      // Si falla, intenta abrir en el navegador
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        CherryToast.error(
+          title: Text("Error"),
+          description: Text("No se pudo abrir la factura"),
+        ).show(context);
+      }
+    }
+  }
+
+    Future<void> _launchUrlManual(String url) async {
+    final uri = Uri.parse(url);
+    if (await launchUrl(uri)) {
+
+    } else {
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'No se pudo abrir el enlace: $url',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
+    }
+  }
+
 
   Widget _buildFilters(double width, double height) => Padding(
         padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.015),
@@ -281,6 +321,15 @@ class _PagosPageState extends State<PagosPage> {
                     ],
                   ),
                 ),
+                SizedBox(width: width * 0.02),
+                IconButton(
+                  icon: Icon(
+                    Icons.receipt_long,
+                    color: notifire.getorangeprimerycolor,
+                    size: height * 0.03,
+                  ),
+                  onPressed: () => _viewInvoice(item['fiIDTransaccion'].toString()),
+                ),
               ],
             ),
           ),
@@ -316,3 +365,5 @@ class _PagosPageState extends State<PagosPage> {
         ),
       );
 }
+
+
