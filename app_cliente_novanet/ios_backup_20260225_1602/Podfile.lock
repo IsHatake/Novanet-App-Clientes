@@ -1,0 +1,118 @@
+PODS:
+  - Flutter (1.0.0)
+  - flutter_barcode_scanner (2.0.0):
+    - Flutter
+  - flutter_image_compress_common (1.0.0):
+    - Flutter
+    - Mantle
+    - SDWebImage
+    - SDWebImageWebPCoder
+  - flutter_local_notifications (0.0.1):
+    - Flutter
+  - image_picker_ios (0.0.1):
+    - Flutter
+  - libwebp (1.5.0):
+    - libwebp/demux (= 1.5.0)
+    - libwebp/mux (= 1.5.0)
+    - libwebp/sharpyuv (= 1.5.0)
+    - libwebp/webp (= 1.5.0)
+  - libwebp/demux (1.5.0):
+    - libwebp/webp
+  - libwebp/mux (1.5.0):
+    - libwebp/demux
+  - libwebp/sharpyuv (1.5.0)
+  - libwebp/webp (1.5.0):
+    - libwebp/sharpyuv
+  - local_auth_darwin (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - Mantle (2.2.0):
+    - Mantle/extobjc (= 2.2.0)
+  - Mantle/extobjc (2.2.0)
+  - MTBBarcodeScanner (5.0.11)
+  - permission_handler_apple (9.3.0):
+    - Flutter
+  - qr_code_scanner (0.2.0):
+    - Flutter
+    - MTBBarcodeScanner
+  - SDWebImage (5.21.6):
+    - SDWebImage/Core (= 5.21.6)
+  - SDWebImage/Core (5.21.6)
+  - SDWebImageWebPCoder (0.15.0):
+    - libwebp (~> 1.0)
+    - SDWebImage/Core (~> 5.17)
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - url_launcher_ios (0.0.1):
+    - Flutter
+  - webview_flutter_wkwebview (0.0.1):
+    - Flutter
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - flutter_barcode_scanner (from `.symlinks/plugins/flutter_barcode_scanner/ios`)
+  - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
+  - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - local_auth_darwin (from `.symlinks/plugins/local_auth_darwin/darwin`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - qr_code_scanner (from `.symlinks/plugins/qr_code_scanner/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
+  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
+
+SPEC REPOS:
+  trunk:
+    - libwebp
+    - Mantle
+    - MTBBarcodeScanner
+    - SDWebImage
+    - SDWebImageWebPCoder
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  flutter_barcode_scanner:
+    :path: ".symlinks/plugins/flutter_barcode_scanner/ios"
+  flutter_image_compress_common:
+    :path: ".symlinks/plugins/flutter_image_compress_common/ios"
+  flutter_local_notifications:
+    :path: ".symlinks/plugins/flutter_local_notifications/ios"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
+  local_auth_darwin:
+    :path: ".symlinks/plugins/local_auth_darwin/darwin"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  qr_code_scanner:
+    :path: ".symlinks/plugins/qr_code_scanner/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  url_launcher_ios:
+    :path: ".symlinks/plugins/url_launcher_ios/ios"
+  webview_flutter_wkwebview:
+    :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
+
+SPEC CHECKSUMS:
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_barcode_scanner: c5aa9f51c150a6242fa392386bd52b64bb27fcb5
+  flutter_image_compress_common: 1697a328fd72bfb335507c6bca1a65fa5ad87df1
+  flutter_local_notifications: ad39620c743ea4c15127860f4b5641649a988100
+  image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
+  libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
+  local_auth_darwin: 553ce4f9b16d3fdfeafce9cf042e7c9f77c1c391
+  Mantle: c5aa8794a29a022dfbbfc9799af95f477a69b62d
+  MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
+  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  qr_code_scanner: d77f94ecc9abf96d9b9b8fc04ef13f611e5a147a
+  SDWebImage: 1bb6a1b84b6fe87b972a102bdc77dd589df33477
+  SDWebImageWebPCoder: 0e06e365080397465cc73a7a9b472d8a3bd0f377
+  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
+  url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
+  webview_flutter_wkwebview: 44d4dee7d7056d5ad185d25b38404436d56c547c
+
+PODFILE CHECKSUM: 7c8f39d5aaf9ba540699cc74efa1d10cae0de589
+
+COCOAPODS: 1.16.2
