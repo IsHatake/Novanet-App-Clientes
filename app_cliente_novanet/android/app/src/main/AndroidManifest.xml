@@ -9,10 +9,15 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" /> -->
+
    <application
         android:label="Novanet"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"
         tools:replace="android:label">
         <activity
             android:name=".MainActivity"
@@ -35,14 +40,28 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
-            <!-- <intent-filter android:autoVerify="true">
+
+            <meta-data android:name="android.allow_multiple_resumed_activities" android:value="true" />
+            <!-- <intent-filter android:autoVerify="true">  
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" />
                 <data android:host="orion.novanetgroup.com" />
             </intent-filter> -->
+
+               <meta-data
+                android:name="android.enableOnBackInvokedCallback"
+                android:value="true" />
         </activity>
+
+        <service
+            android:name="id.flutter.flutter_background_service.BackgroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice|dataSync"
+            tools:replace="android:exported,android:foregroundServiceType" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

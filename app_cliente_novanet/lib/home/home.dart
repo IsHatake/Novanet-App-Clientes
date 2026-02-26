@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:ui';
+import 'package:app_cliente_novanet/screens/monitoreo_camarasscreen.dart';
 import 'package:app_cliente_novanet/screens/publicidad_productos_widget.dart';
 import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +37,7 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
+class _HomeState extends State<Home> with TickerProviderStateMixin {
   late ColorNotifire notifire;
   String fcNombreUsuario = '';
   String fcLlaveUnica = '';
@@ -45,28 +46,69 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   List<double> cuotas = [];
   bool _isExpanded = false;
   int _currentPage = 0;
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  //late AnimationController _controller;
+  //late Animation<double> _animation;
   late PageController _pageController;
+
+  late AnimationController _shakeController;
+  late Animation<Offset> _shakeAnimation;
+
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
 
   @override
   void initState() {
     super.initState();
     _loadData();
     _pageController = PageController();
-    _controller = AnimationController(
+    // _controller = AnimationController(
+    //   vsync: this,
+    //   duration: const Duration(seconds: 1),
+    // )..repeat(reverse: true);
+    // _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
+    //   CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    // );
+
+
+    // 1. Shake principal (temblor constante como timbrando)
+    _shakeController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat(reverse: true);
-    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      duration: const Duration(milliseconds: 400), // Rápido para efecto de vibración
+    )..repeat(reverse: true); // Repetir siempre que haya notificaciones
+
+    _shakeAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0.06, 0.03), // Temblor horizontal + un poco vertical
+    ).animate(
+      CurvedAnimation(parent: _shakeController, curve: Curves.elasticInOut),
     );
+
+    // 2. Pulse sutil (brillo leve que complementa)
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400), // Más lento para no competir con shake
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.12).animate( // Pulsación ligera
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    // Solo activar animaciones si hay notificaciones
+    final hasNotifications = json2.isNotEmpty && json2[0]['fbNotificaciones'] == true;
+    if (hasNotifications) {
+      _shakeController.repeat(reverse: true);
+      _pulseController.repeat(reverse: true);
+    }
   }
 
   @override
   void dispose() {
+    _pulseController.dispose();
+    _shakeController.dispose();
+
     _pageController.dispose();
-    _controller.dispose();
+    //_controller.dispose();
     super.dispose();
   }
 
@@ -118,6 +160,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     notifire = Provider.of<ColorNotifire>(context);
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
+    final bool hasNotifications = json2.isNotEmpty && json2[0]['fbNotificaciones'] == true;
 
     return Scaffold(
       appBar: AppBar(
@@ -134,21 +177,78 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           ),
         ),
         actions: [
+
+
+
+          Builder(
+            builder: (context) {
+              return FutureBuilder<bool>(
+                future: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  final String? acceso = prefs.getString('fbAccesoCamaras');
+                  return acceso == 'true';
+                }(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final bool mostrar = snapshot.data ?? false;
+
+                  return mostrar
+                      ? IconButton(
+                          icon: Icon(Icons.camera_outdoor_sharp,
+                              color: notifire.getwhite),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CamarasWebView_screen(),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink();
+                },
+              );
+            },
+          ),
+
           IconButton(
             icon: Icon(Icons.help_outline, color: notifire.getwhite),
             onPressed: () => _launchUrlManual(
                 'https://novanetgroup.com/NovanetApp/Manuales/Index.html'),
           ),
           IconButton(
-            icon: json2.isNotEmpty && json2[0]['fbNotificaciones'] == true
-                ? ScaleTransition(scale: _animation, child: _notificationIcon())
-                : _notificationIcon(),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => const Notificationindex("Notificaciones")),
+      icon: AnimatedBuilder(
+        animation: Listenable.merge([_shakeAnimation, _pulseAnimation]),
+        builder: (context, child) {
+          return Transform.translate(
+            offset: hasNotifications ? _shakeAnimation.value * 8 : Offset.zero, // Shake principal
+            child: ScaleTransition(
+              scale: hasNotifications ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: hasNotifications
+                      ? [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.4 * _pulseAnimation.value),
+                            blurRadius: 10 * _pulseAnimation.value,
+                            spreadRadius: 2 * _pulseAnimation.value,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: _notificationIcon(),
+              ),
             ),
-          ),
+          );
+        },
+      ),
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const Notificationindex("Notificaciones")),
+      ),
+    ),
           IconButton(
             icon: Image.asset("images/user_outline.png",
                 color: notifire.getwhite, scale: 20),
@@ -173,11 +273,18 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _notificationIcon() => Image.asset(
+Widget _notificationIcon() {
+    return ColorFiltered(
+      colorFilter: ColorFilter.mode(
+        notifire.isDark? Colors.white : Colors.redAccent, // Glow rojo
+        BlendMode.srcIn,
+      ),
+      child: Image.asset(
         "images/notification.png",
-        color: notifire.getwhite,
         scale: 4,
-      );
+      ),
+    );
+  }
 
   Widget _buildHeader(double height, double width) => Stack(
         children: [
@@ -418,6 +525,13 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   height,
                   width,
                 ),
+                //  _buildIconButton(
+                //   "images/high-speed.png",
+                //   'Test',
+                //   () => _navigateOrShowToast( HikvisionStreamWidget(rtspUrl: 'rtsp://716f898c7b71.entrypoint.cloud.wowza.com:1935/app-8F9K44lJ/304679fe_stream2',)),
+                //   height,
+                //   width,
+                // ),
                 _buildIconButton(
                   "images/apoyo.png",
                   'Comunícate',

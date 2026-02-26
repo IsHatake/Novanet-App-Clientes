@@ -19,7 +19,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    compileSdkVersion 35
+    compileSdkVersion 36
     namespace "com.prestaditonovanet.novanet"
 
     compileOptions {
@@ -40,8 +40,8 @@ android {
         applicationId "com.prestaditonovanet.novanet"
         minSdkVersion 21
         targetSdkVersion 35
-        versionCode 26
-        versionName "2.0.6"
+        versionCode 28
+        versionName "2.0.8"
     }
 
     signingConfigs {

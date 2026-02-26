@@ -99,6 +99,8 @@ Future<void> fetchLogin(
           prefs.setString("fcUsuarioAcceso", loginData["fcUsuarioAcceso"]?.toString() ?? '');
           prefs.setString("fcNombreUsuario", loginData["fcNombreUsuario"]?.toString() ?? '');
           prefs.setString("fcTelefono", loginData["fcTelefono"]?.toString() ?? '');
+          prefs.setString("fbAccesoCamaras", loginData["fbAccesoCamaras"]?.toString() ?? '');
+          
           prefs.setString("fiIDCliente", loginData["fiIDCliente"]?.toString() ?? '');
           prefs.setString("fiIDCuentaFamiliar", loginData["fiIDCuentaFamiliar"]?.toString() ?? '');
           prefs.setString("fcIdentidad", identidadData["fcIdentidad"]?.toString() ?? '');
