@@ -13,7 +13,6 @@ class WebviewTest_screen extends StatefulWidget {
   @override
   _WebviewTest_screenState createState() => _WebviewTest_screenState();
 }
-
 String url = 'https://www.fast.com/es/';
 
 class _WebviewTest_screenState extends State<WebviewTest_screen> {

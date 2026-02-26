@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/screens/landingpage.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
@@ -9,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 class Splashscreen extends StatefulWidget {
+    
   const Splashscreen({Key? key}) : super(key: key);
 
   @override

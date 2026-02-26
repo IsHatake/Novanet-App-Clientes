@@ -293,7 +293,7 @@ class _ProfileState extends State<Profile> with RouteAware {
                           );
                         },
                         child: settingtype("images/codigo-qr.png",
-                            'Creación de Usuario Secundario'),
+                            'Comparte con Familiar'),
                       ),
                     if (widget.fbprincipal)
                       SizedBox(

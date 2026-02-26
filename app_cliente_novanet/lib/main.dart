@@ -1,4 +1,6 @@
+import 'package:app_cliente_novanet/service/background_signalr_service.dart';
 import 'package:app_cliente_novanet/service/notificaciones_Service.dart';
+import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
 import 'package:app_cliente_novanet/service/signalR_Service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +8,8 @@ import 'package:app_cliente_novanet/splashscreen.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+final signalR = SignalRService("https://tudominio.com/notificacionesHub");
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,8 +29,11 @@ void main() async {
   final notificationService = NotificationService();
   await notificationService.init();
 
-  final signalRService = SignalRService("https://api.novanetgroup.com/notificaciones");
-  await signalRService.init();
+  // final signalRService = SignalRService("https://api.novanetgroup.com/notificaciones");
+  // await signalRService.init();
+
+
+  await signalR.initialize(); 
 
   runApp(
     MultiProvider(
@@ -35,7 +42,7 @@ void main() async {
           create: (_) => ColorNotifire(),
         ),
       ],
-      child: const MaterialApp(
+      child:  const MaterialApp(
         home: Splashscreen(),
         debugShowCheckedModeBanner: false,
       ),

@@ -1,6 +1,5 @@
-// ignore_for_file: unused_field, unused_element
+// ignore_for_file: unused_field, unused_element, unused_local_variable, body_might_complete_normally_catch_error
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/login/login.dart';
 import 'package:app_cliente_novanet/screens/registerclient.dart';
@@ -28,16 +27,14 @@ class _LandingPageState extends State<LandingPage> {
       if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
         InAppUpdate.performImmediateUpdate().catchError((e) {
           // Manejar el error de la actualización, por ejemplo, mostrar un mensaje
-          print("Error durante la actualización: $e");
         });
       }
     } catch (e) {
       // Manejar cualquier error al verificar la actualización
-      print("Error al verificar actualizaciones: $e");
     }
   }
-  bool _showRegisterButton = false;
-  bool _showLoginButton = false;
+  final bool _showRegisterButton = false;
+  final bool _showLoginButton = false;
   Future<void> _checkFirstVisit() async {
     final prefs = await SharedPreferences.getInstance();
     final bool isFirstVisit = prefs.getBool('isFirstVisitLanding') ?? true;
@@ -104,36 +101,36 @@ class _LandingPageState extends State<LandingPage> {
                   ),
                 ),
                 const Spacer(),
-                SizedBox(
-                  width: width * 0.8,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const Registerclient(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Formulario Precalificado',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.transparent,
-                      backgroundColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ),
+                // SizedBox(
+                //   width: width * 0.8,
+                //   child: ElevatedButton(
+                //     onPressed: () {
+                //       Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //           builder: (context) => const Registerclient(),
+                //         ),
+                //       );
+                //     },
+                //     child: const Text(
+                //       'Formulario Precalificado',
+                //       style: TextStyle(
+                //         color: Colors.white,
+                //         fontWeight: FontWeight.bold,
+                //         fontSize: 18,
+                //       ),
+                //     ),
+                //     style: ElevatedButton.styleFrom(
+                //       foregroundColor: Colors.transparent,
+                //       backgroundColor: Colors.transparent,
+                //       padding: const EdgeInsets.symmetric(vertical: 16),
+                //       shape: RoundedRectangleBorder(
+                //         side: const BorderSide(color: Colors.white),
+                //         borderRadius: BorderRadius.circular(10),
+                //       ),
+                //     ),
+                //   ),
+                // ),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: width * 0.8,

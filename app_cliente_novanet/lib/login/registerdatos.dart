@@ -7,11 +7,12 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/button.dart';
 import '../utils/colornotifire.dart';
+import '../utils/media.dart';
 import '../utils/string.dart';
 import '../utils/textfeilds.dart';
 
 class Registerdatos extends StatefulWidget {
-  final int fiIDEquifax;
+  final int fiIDEquifax;  
   const Registerdatos({
     Key? key,
     required this.fiIDEquifax,
@@ -25,378 +26,251 @@ class _RegisterdatosState extends State<Registerdatos> {
   late ColorNotifire notifire;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-  final TextEditingController _nombreCompletoController =
-      TextEditingController();
+  final TextEditingController _nombreCompletoController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _contraseniaController = TextEditingController();
-  final TextEditingController _contraseniaconfirmarController =
-      TextEditingController();
-
-  getdarkmodepreviousstate() async {
-    final prefs = await SharedPreferences.getInstance();
-    bool? previusstate = prefs.getBool("setIsDark");
-    if (previusstate == null) {
-      notifire.setIsDark = false;
-    } else {
-      notifire.setIsDark = previusstate;
-    }
-  }
-Future<void> validacionCampos() async {
-  String nombreCompleto = _nombreCompletoController.text;
-  String contrasenia = _contraseniaController.text;
-  String contraseniaConfirmar = _contraseniaconfirmarController.text;
-  String email = _emailController.text;
-  String errorMessage = '';
-
-  if (contrasenia.isEmpty ||
-      contraseniaConfirmar.isEmpty ||
-      nombreCompleto.isEmpty ||
-      email.isEmpty) {
-    CherryToast.warning(
-      backgroundColor: notifire.getbackcolor,
-      title: Text('Complete los campos vacíos por favor',
-          style: TextStyle(color: notifire.getdarkscolor),
-          textAlign: TextAlign.start),
-      borderRadius: 5,
-    ).show(context);
-    return;
-  }
-
-  if (contrasenia != contraseniaConfirmar) {
-    setState(() {
-      errorMessage = 'Las contraseñas no coinciden';
-    });
-    CherryToast.warning(
-      backgroundColor: notifire.getbackcolor,
-      title: Text(
-        errorMessage,
-        style: TextStyle(color: notifire.getdarkscolor),
-        textAlign: TextAlign.start,
-      ),
-      borderRadius: 5,
-    ).show(context);
-    return;
-  }
-
-  if (contrasenia.length < 8) {
-    setState(() {
-      errorMessage = 'La contraseña debe tener al menos 8 caracteres';
-    });
-    CherryToast.warning(
-      backgroundColor: notifire.getbackcolor,
-      title: Text(
-        errorMessage,
-        style: TextStyle(color: notifire.getdarkscolor),
-        textAlign: TextAlign.start,
-      ),
-      borderRadius: 5,
-    ).show(context);
-    return;
-  }
-
-  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-    setState(() {
-      errorMessage = 'Ingrese un correo electrónico válido';
-    });
-    CherryToast.warning(
-      backgroundColor: notifire.getbackcolor,
-      title: Text(
-        errorMessage,
-        style: TextStyle(color: notifire.getdarkscolor),
-        textAlign: TextAlign.start,
-      ),
-      borderRadius: 5,
-    ).show(context);
-    return;
-  }
-
-  // Validaciones adicionales de contraseña pueden ir aquí
-
-     sendUsuarioCreacion(context, nombreCompleto,email,contrasenia, widget.fiIDEquifax,
-        notifire.getbackcolor, notifire.getdarkscolor, false, false);
-}
-
+  final TextEditingController _contraseniaconfirmarController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
   }
 
+  Future<void> _validacionCampos() async {
+    String nombreCompleto = _nombreCompletoController.text.trim();
+    String contrasenia = _contraseniaController.text.trim();
+    String contraseniaConfirmar = _contraseniaconfirmarController.text.trim();
+    String email = _emailController.text.trim();
+
+    if (contrasenia.isEmpty || contraseniaConfirmar.isEmpty || nombreCompleto.isEmpty || email.isEmpty) {
+      _showToast('Complete todos los campos por favor', isWarning: true);
+      return;
+    }
+
+    if (contrasenia != contraseniaConfirmar) {
+      _showToast('Las contraseñas no coinciden', isWarning: true);
+      return;
+    }
+
+    if (contrasenia.length < 8) {
+      _showToast('La contraseña debe tener al menos 8 caracteres', isWarning: true);
+      return;
+    }
+
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      _showToast('Ingrese un correo electrónico válido', isWarning: true);
+      return;
+    }
+
+    sendUsuarioCreacion(
+      context,
+      nombreCompleto,
+      email,
+      contrasenia,
+      widget.fiIDEquifax,
+      notifire.getbackcolor,
+      notifire.getdarkscolor,
+      false,
+      false,
+    );
+  }
+
+  void _showToast(String message, {bool isWarning = false}) {
+    CherryToast.warning(
+      backgroundColor: notifire.getbackcolor,
+      title: Text(
+        message,
+        style: TextStyle(color: notifire.getdarkscolor),
+        textAlign: TextAlign.start,
+      ),
+      borderRadius: 5,
+    
+    ).show(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-    notifire = Provider.of<ColorNotifire>(context, listen: true);
+    notifire = Provider.of<ColorNotifire>(context);
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: true,
+        elevation: 2,
+        shadowColor: Colors.black26,
         centerTitle: true,
-        elevation: 0,
         backgroundColor: notifire.getprimerycolor,
         title: Text(
-          'Registrar Usuario Secundario',
+          'Registrar Usuario Familiar',
           style: TextStyle(
-            color: notifire.getdarkscolor,
             fontFamily: 'Gilroy Bold',
-            fontSize: height / 35,
+            color: notifire.getdarkscolor,
+            fontSize: height * 0.026,
           ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: notifire.getdarkscolor),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       backgroundColor: notifire.getprimerycolor,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Stack(
-              children: [
-                Container(
-                  height: height * 0.9,
-                  width: width,
-                  color: Colors.transparent,
-                  child: Image.asset(
-                    "images/background.png",
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Column(
-                  children: [
-                    SizedBox(
-                      height: height / 20,
-                    ),
-                    Stack(
-                      children: [
-                        Center(
-                          child: Container(
-                            height: height / 1.22,
-                            width: width / 1.1,
-                            decoration: BoxDecoration(
-                              color: notifire.gettabwhitecolor,
-                              borderRadius: BorderRadius.circular(40),
-                            ),
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 200),
-                              reverseDuration:
-                                  const Duration(milliseconds: 200),
-                              switchInCurve: Curves.decelerate,
-                              switchOutCurve: Curves.decelerate,
-                              child: SingleChildScrollView(
-                                child: _buildInputsContent(height, width),
-                              ),
-                            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [notifire.getprimerycolor, notifire.getprimerycolor.withOpacity(0.8)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.02),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(height: height * 0.02),
+              Image.asset(
+                "images/logos.png",
+                height: height * 0.1,
+                color: notifire.getorangeprimerycolor,
+              ),
+              SizedBox(height: height * 0.03),
+              Card(
+                elevation: 5,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                color: notifire.getbackcolor,
+                child: Padding(
+                  padding: EdgeInsets.all(width * 0.05),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTextField(
+                        label: CustomStrings.fullname,
+                        hint: CustomStrings.fullnamehere,
+                        icon: Icons.person,
+                        controller: _nombreCompletoController,
+                      ),
+                      SizedBox(height: height * 0.03),
+                      _buildTextField(
+                        label: CustomStrings.email,
+                        hint: CustomStrings.emailhint,
+                        icon: Icons.email,
+                        controller: _emailController,
+                      ),
+                      SizedBox(height: height * 0.03),
+                      _buildTextField(
+                        label: CustomStrings.password,
+                        hint: CustomStrings.createpassword,
+                        icon: Icons.lock,
+                        controller: _contraseniaController,
+                        isPassword: true,
+                        isVisible: _isPasswordVisible,
+                        toggleVisibility: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                      ),
+                      SizedBox(height: height * 0.03),
+                      _buildTextField(
+                        label: CustomStrings.confirmpassword,
+                        hint: CustomStrings.retypepassword,
+                        icon: Icons.lock,
+                        controller: _contraseniaconfirmarController,
+                        isPassword: true,
+                        isVisible: _isConfirmPasswordVisible,
+                        toggleVisibility: () => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
+                      ),
+                      SizedBox(height: height * 0.04),
+                      Center(
+                        child: GestureDetector(
+                          onTap: _validacionCampos,
+                          child: Custombutton.button(
+                            notifire.getorangeprimerycolor,
+                            CustomStrings.registeraccount,
+                            width * 0.8,
+                           
                           ),
                         ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: height / 40,
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    SizedBox(
-                      height: height / 60,
-                    ),
-                    Center(
-                      child: Image.asset(
-                        "images/logos.png",
-                        height: height / 8,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ],
+              ),
+              SizedBox(height: height * 0.03),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildInputsContent(double height, double width) {
+  Widget _buildTextField({
+    required String label,
+    required String hint,
+    required IconData icon,
+    required TextEditingController controller,
+    bool isPassword = false,
+    bool isVisible = false,
+    VoidCallback? toggleVisibility,
+  }) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: height / 15,
-        ),
-        _buildTextRow(CustomStrings.fullname, height, width),
-        SizedBox(
-          height: height / 70,
-        ),
-        Registrar.textField(
-          notifire.getdarkscolor,
-          notifire.getdarkgreycolor,
-          notifire.getorangeprimerycolor,
-          "images/user.png",
-          CustomStrings.fullnamehere,
-          notifire.getdarkwhitecolor,
-          _nombreCompletoController,
-          false,
-        ),
-        SizedBox(
-          height: height / 70,
-        ),
-        _buildTextRow(CustomStrings.email, height, width),
-        SizedBox(
-          height: height / 70,
-        ),
-        Registrar.textField(
-          notifire.getdarkscolor,
-          notifire.getdarkgreycolor,
-          notifire.getorangeprimerycolor,
-          "images/email.png",
-          CustomStrings.emailhint,
-          notifire.getdarkwhitecolor,
-          _emailController,
-          false,
-        ),
-        SizedBox(
-          height: height / 35,
-        ),
-        _buildTextRow(CustomStrings.password, height, width),
-        SizedBox(
-          height: height / 70,
-        ),
-        passwordTextField(
-          notifire.getdarkscolor,
-          notifire.getdarkgreycolor,
-          notifire.getorangeprimerycolor,
-          "images/password.png",
-          CustomStrings.createpassword,
-          _contraseniaController,
-          _isPasswordVisible,
-          height,
-          width,
-        ),
-        SizedBox(
-          height: height / 35,
-        ),
-        _buildTextRow(CustomStrings.confirmpassword, height, width),
-        SizedBox(
-          height: height / 70,
-        ),
-        passwordTextField(
-          notifire.getdarkscolor,
-          notifire.getdarkgreycolor,
-          notifire.getorangeprimerycolor,
-          "images/password.png",
-          CustomStrings.retypepassword,
-          _contraseniaconfirmarController,
-          _isConfirmPasswordVisible,
-          height,
-          width,
-        ),
-        SizedBox(
-          height: height / 35,
-        ),
-        GestureDetector(
-          onTap: () {
-            validacionCampos();
-          },
-          child: Custombutton.button(
-            notifire.getorangeprimerycolor,
-            CustomStrings.registeraccount,
-            width / 2,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTextRow(String text, double height, double width) {
-    return Row(
-      children: [
-        SizedBox(
-          width: width / 18,
-        ),
         Text(
-          text,
+          label,
           style: TextStyle(
-            color: notifire.getdarkscolor,
-            fontSize: height / 50,
+            fontFamily: 'Gilroy Medium',
+            color: notifire.getdarkscolor.withOpacity(0.8),
+            fontSize: height * 0.018,
+          ),
+        ),
+        SizedBox(height: height * 0.01),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: controller,
+            obscureText: isPassword && !isVisible,
+            style: TextStyle(
+              fontFamily: 'Gilroy Medium',
+              color: notifire.getdarkscolor,
+              fontSize: height * 0.018,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(
+                color: notifire.getdarkgreycolor,
+                fontSize: height * 0.016,
+              ),
+              prefixIcon: Icon(icon, color: notifire.getorangeprimerycolor, size: height * 0.025),
+              suffixIcon: isPassword
+                  ? IconButton(
+                      icon: Icon(
+                        isVisible ? Icons.visibility : Icons.visibility_off,
+                        color: notifire.getorangeprimerycolor,
+                        size: height * 0.025,
+                      ),
+                      onPressed: toggleVisibility,
+                    )
+                  : null,
+              filled: true,
+              fillColor: notifire.getwhite,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: notifire.getorangeprimerycolor, width: 1.5),
+              ),
+              contentPadding: EdgeInsets.symmetric(vertical: height * 0.02, horizontal: width * 0.04),
+            ),
           ),
         ),
       ],
-    );
-  }
-
-  Widget passwordTextField(
-    Color textclr,
-    Color hintclr,
-    Color borderclr,
-    String img,
-    String hinttext,
-    TextEditingController controller,
-    bool isPasswordVisible,
-    double height,
-    double width,
-  ) {
-    bool obscureText = !isPasswordVisible;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: width / 18),
-      child: Container(
-        color: Colors.transparent,
-        height: height / 15,
-        child: TextField(
-          controller: controller,
-          autofocus: false,
-          obscureText: obscureText,
-          style: TextStyle(
-            fontSize: height / 50,
-            color: textclr,
-          ),
-          decoration: InputDecoration(
-            hintText: hinttext,
-            filled: true,
-            fillColor: notifire.getwhite,
-            suffixIcon: GestureDetector(
-              onTap: () {
-                setState(() {
-                  if (controller == _contraseniaController) {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  } else {
-                    _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                  }
-                });
-              },
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: height / 50,
-                  horizontal: height / 70,
-                ),
-                child: Image.asset(
-                  isPasswordVisible ? "images/show.png" : "images/oculto.png",
-                  color: notifire.getorangeprimerycolor,
-                  height: height / 50,
-                ),
-              ),
-            ),
-            prefixIcon: Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: height / 100,
-                horizontal: height / 70,
-              ),
-              child: Image.asset(
-                img,
-                height: height / 30,
-              ),
-            ),
-            hintStyle: TextStyle(
-              color: hintclr,
-              fontSize: height / 60,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: borderclr),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey.withOpacity(0.4)),
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

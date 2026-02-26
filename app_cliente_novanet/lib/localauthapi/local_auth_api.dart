@@ -18,12 +18,11 @@ class LocalAuth {
           localizedReason: 'Por favor autentícate para iniciar sesión',
           options: const AuthenticationOptions(
               useErrorDialogs: true, stickyAuth: true),
-          authMessages: const [
+          authMessages: [
             AndroidAuthMessages(
               signInTitle: 'Iniciar Sesión',
               cancelButton: 'No Gracias',
             ),
-  
           ]);
     } catch (e) {
       // Handle exceptions here if needed

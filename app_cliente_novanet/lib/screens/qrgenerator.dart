@@ -1,6 +1,4 @@
-// ignore_for_file: deprecated_member_use, avoid_print, non_constant_identifier_names
-
-import 'dart:io';
+// ignore_for_file: non_constant_identifier_names, deprecated_member_use, empty_catches
 
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:flutter/material.dart';
@@ -62,6 +60,22 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
   //   }
   // }
 
+    Future<void> _captureAndSharePng() async {
+      try {
+        RenderRepaintBoundary boundary =
+            _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+        ByteData? byteData =
+            await image.toByteData(format: ui.ImageByteFormat.png);
+        Uint8List pngBytes = byteData!.buffer.asUint8List();
+  
+        // Aquí puedes implementar la lógica para compartir el PNG, por ejemplo, usando share_plus
+        // Share.shareFiles([file.path], text: 'Descarga la Aplicación de Novanet\n'
+        //                                           'https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet');
+      } catch (e) {
+        print(e.toString());
+      }
+    }
   @override
   Widget build(BuildContext context) {
     notifire = Provider.of<ColorNotifire>(context, listen: true);
@@ -72,7 +86,7 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Creación de Usuario Secundario',
+          'Comparte con Familiar',
           style: TextStyle(
             fontSize: 15,
             fontFamily: 'Gilroy Bold',
@@ -103,60 +117,77 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
         //   ),
         // ],
       ),
-      body: Center(
-        child: RepaintBoundary(
-          key: _globalKey,
-          child: Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('images/logos.png', height: 100),
-                const SizedBox(height: 20),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: notifire.getorangeprimerycolor),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Escanéame',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: notifire.getorangeprimerycolor,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      QrCode(fcIdentidad: fcIdentidad),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Instrucciones:',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: notifire.getorangeprimerycolor,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  '1. Abre la aplicación de Novanet.\n'
-                  '2. Selecciona la opcion de QR Usuario Secundario en el Inicio de Sesión.\n'
-                  '3. Escanea el código QR mostrado arriba.\n'
-                  '4. Llena el Formulario.\n'
-                  '5. Ingresa el Token enviado al correo ingresado.\n',
-                  style: TextStyle(fontSize: 15  , color: Colors.black87),
-                ),
-              ],
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Botón de compartir fuera del contenedor blanco
+          ElevatedButton.icon(
+            onPressed: _captureAndSharePng,
+            icon: const Icon(Icons.share, color: Colors.white),
+            label: const Text('Compartir QR y Links de Descarga',
+                style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: notifire.getorangeprimerycolor,
             ),
           ),
-        ),
+          const SizedBox(height: 20),
+          Center(
+            child: RepaintBoundary(
+              key: _globalKey,
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset('images/logos.png', height: 100),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border:
+                            Border.all(color: notifire.getorangeprimerycolor),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Escanéame',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: notifire.getorangeprimerycolor,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          QrCode(fcIdentidad: fcIdentidad),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Instrucciones:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: notifire.getorangeprimerycolor,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      '1. Descarga y abre la aplicación de Novanet.\n'
+                      '2. Selecciona la opción de QR Usuario Familiar en el Inicio de Sesión.\n'
+                      '3. Escanea el código QR mostrado arriba.\n'
+                      '4. Llena el Formulario.\n'
+                      '5. Ingresa el Token enviado al correo ingresado.\n',
+                      style: TextStyle(fontSize: 15, color: Colors.black87),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -170,7 +201,8 @@ class QrCode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return QrImageView(
-      data: 'https://novanetgroup.com/NovanetApp/formulario_usuario_secundario.html?id=$fcIdentidad',
+      data:
+          'https://novanetgroup.com/NovanetApp/formulario_usuario_secundario.html?id=$fcIdentidad',
       version: QrVersions.auto,
       size: 200.0,
     );

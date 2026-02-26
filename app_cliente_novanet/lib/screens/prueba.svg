@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <!-- Fondo blanco -->
+  <rect width="240" height="240" fill="white" />
+
+  <!-- Semicírculo negro (izquierda) -->
+  <path d="M120,120 m0,-90 a90,90 0 0,0 -90,90 a90,90 0 0,0 90,90" fill="none" stroke="black" stroke-width="18" />
+
+  <!-- Semicírculo naranja (derecha) -->
+  <path d="M120,120 m0,-90 a90,90 0 0,1 90,90 a90,90 0 0,1 -90,90" fill="none" stroke="#FFA500" stroke-width="18" />
+
+  <!-- Letra N negra (izquierda) -->
+  <path d="M65 160 V90 L100 130 L100 90 H115 V160 L80 120 V160 Z" fill="black" />
+
+  <!-- Letra N naranja (derecha) -->
+  <path d="M175 80 V150 L140 110 L140 150 H125 V80 L160 120 V80 Z" fill="#FFA500" />
+
+  <rect width="240" height="240" fill="white" />
+  
+  <!-- Círculo negro (mitad izquierda) -->
+  <path d="M120 120 m 0 -100 a 100 100 0 1 0 0 200" fill="none" stroke="black" stroke-width="20" />
+  
+  <!-- Círculo naranja (mitad derecha) -->
+  <path d="M120 120 m 0 -100 a 100 100 0 0 1 0 200" fill="none" stroke="#FFA500" stroke-width="20" />
+
+  <!-- Letra N negra -->
+  <path d="M70 170 V80 L120 130 V80 H140 V170 L90 120 V170 Z" fill="black" />
+
+  <!-- Letra N naranja -->
+  <path d="M170 70 V160 L120 110 V160 H100 V70 L150 120 V70 Z" fill="#FFA500" />
+</svg>
+
