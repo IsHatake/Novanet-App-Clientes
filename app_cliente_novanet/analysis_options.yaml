@@ -13,6 +13,7 @@ analyzer:
     file_names: ignore
     prefer_final_fields: ignore ignore
     unnecessary_string_interpolations: ignore
+    unused_import: ignore
 include: package:flutter_lints/flutter.yaml
 
 linter:
