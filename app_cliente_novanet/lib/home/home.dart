@@ -160,7 +160,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     notifire = Provider.of<ColorNotifire>(context);
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
-    final bool hasNotifications = json2.isNotEmpty && json2[0]['fbNotificaciones'] == true;
+    final bool hasNotifications = json2.isNotEmpty && json2[0]['fbNotificaciones'] ? true : false;
 
     return Scaffold(
       appBar: AppBar(
@@ -222,23 +222,23 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         animation: Listenable.merge([_shakeAnimation, _pulseAnimation]),
         builder: (context, child) {
           return Transform.translate(
-            offset: hasNotifications ? _shakeAnimation.value * 8 : Offset.zero, // Shake principal
+            offset: hasNotifications == true ?  _shakeAnimation.value * 8 : Offset.zero, // Shake principal
             child: ScaleTransition(
-              scale: hasNotifications ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+              scale: hasNotifications == true ?  _pulseAnimation : const AlwaysStoppedAnimation(1.0),
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: hasNotifications
                       ? [
                           BoxShadow(
-                            color: Colors.red.withOpacity(0.4 * _pulseAnimation.value),
+                            color: hasNotifications == true ? Colors.red.withOpacity(0.4 * _pulseAnimation.value) : Colors.transparent,
                             blurRadius: 10 * _pulseAnimation.value,
                             spreadRadius: 2 * _pulseAnimation.value,
                           ),
                         ]
                       : null,
                 ),
-                child: _notificationIcon(),
+                child: _notificationIcon(hasNotifications),
               ),
             ),
           );
@@ -273,10 +273,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     );
   }
 
-Widget _notificationIcon() {
+Widget _notificationIcon(hasNotifications) {
     return ColorFiltered(
       colorFilter: ColorFilter.mode(
-        notifire.isDark? Colors.white : Colors.redAccent, // Glow rojo
+       hasNotifications == true ? notifire.isDark ? notifire.getdarkscolor : Colors.redAccent  : notifire.getprimerycolor , // Glow rojo
         BlendMode.srcIn,
       ),
       child: Image.asset(

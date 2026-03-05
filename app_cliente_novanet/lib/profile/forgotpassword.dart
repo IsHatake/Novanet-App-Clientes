@@ -183,7 +183,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     "images/email.png",
                     CustomStrings.emailhint,
                     notifire.getdarkwhitecolor,
-                    emaiController),
+                    emaiController,
+                    null),
                 SizedBox(
                   height: height / 2.8,
                 ),

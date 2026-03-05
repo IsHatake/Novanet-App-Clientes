@@ -9,7 +9,7 @@ import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-final signalR = SignalRService("https://tudominio.com/notificacionesHub");
+final signalR = SignalRService("https://api.novanetgroup.com/notificaciones");
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

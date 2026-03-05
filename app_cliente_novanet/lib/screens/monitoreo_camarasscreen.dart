@@ -149,26 +149,23 @@ class _CamarasWebView_screenState extends State<CamarasWebView_screen> {
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title:  Text(
           'Monitoreo de Cámaras',
           style: TextStyle(
             fontSize: 20,
-            color: Colors.white,
+            color: notifire.getdarkscolor,
             fontFamily: 'Gilroy Bold',
             fontWeight: FontWeight.w400,
           ),
         ),
-        backgroundColor: notifire.getorangeprimerycolor,
+        backgroundColor: notifire.getbackcolor,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
           child: Container(
             height: 40,
             width: 40,
             margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white),
-            ),
+            
             child: const Icon(Icons.arrow_back, color: Colors.white),
           ),
         ),
