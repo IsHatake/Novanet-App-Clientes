@@ -77,17 +77,17 @@ class _referidos_ScreenState extends State<referidos_Screen> {
         elevation: 2,
         shadowColor: Colors.black26,
         centerTitle: true,
-        backgroundColor: notifire.getorangeprimerycolor,
+        backgroundColor: notifire.getprimerycolor,
         title: Text(
           'Referidos',
           style: TextStyle(
             fontFamily: "Gilroy Bold",
-            color: notifire.getwhite,
+            color: notifire.getdarkscolor,
             fontSize: height * 0.025,
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: notifire.getwhite),
+          icon: Icon(Icons.arrow_back, color: notifire.getdarkscolor),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
@@ -96,7 +96,7 @@ class _referidos_ScreenState extends State<referidos_Screen> {
             child: DropdownButtonHideUnderline(
               child: DropdownButton<int>(
                 value: _itemsPerPage,
-                icon: Icon(Icons.arrow_drop_down, color: notifire.getwhite),
+                icon: Icon(Icons.arrow_drop_down, color: notifire.getdarkscolor),
                 dropdownColor: notifire.getbackcolor,
                 onChanged: (int? newValue) {
                   setState(() {
@@ -119,7 +119,7 @@ class _referidos_ScreenState extends State<referidos_Screen> {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.person_add_alt, color: notifire.getwhite, size: height * 0.03),
+            icon: Icon(Icons.person_add_alt, color: notifire.getdarkscolor, size: height * 0.03),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReferirScreen())),
           ),
         ],

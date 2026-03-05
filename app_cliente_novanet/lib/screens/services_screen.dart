@@ -285,10 +285,10 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
-        backgroundColor: notifire.getorangeprimerycolor,
-        title: Text(widget.title, style: TextStyle(fontSize: height * 0.025, fontFamily: 'Gilroy Bold', color: Colors.white)),
+        backgroundColor: notifire.getbackcolor,
+        title: Text(widget.title, style: TextStyle(fontSize: height * 0.025, fontFamily: 'Gilroy Bold', color: notifire.getdarkscolor, fontWeight: FontWeight.w400)),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: notifire.getwhite, size: height * 0.03),
+          icon: Icon(Icons.arrow_back, color: notifire.getdarkscolor, size: height * 0.03),
           onPressed: () => Navigator.pop(context),
         ),
         actions: widget.fbprincipal
@@ -296,7 +296,7 @@ class _AddServices_ScreenState extends State<AddServices_Screen> {
                 Stack(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.shopping_cart, color: Colors.white),
+                      icon: Icon(Icons.shopping_cart, color: notifire.getdarkscolor, size: height * 0.035),
                       onPressed: () => setState(() => mostrandoCarrito = !mostrandoCarrito),
                     ),
                     if (productosSolicitar.isNotEmpty)

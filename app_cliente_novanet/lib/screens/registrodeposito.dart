@@ -354,7 +354,7 @@ Future<void> _pickImage() async {
     final double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: widget.notifire.getbackcolor,
+      backgroundColor: widget.notifire.getprimerycolor,
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
@@ -363,21 +363,19 @@ Future<void> _pickImage() async {
           style: TextStyle(
             fontSize: 20,
             fontFamily: 'Gilroy Bold',
-            color: widget.notifire.getwhite,
+            color: widget.notifire.getdarkscolor,
+            fontWeight: FontWeight.w400,
           ),
         ),
-        backgroundColor: widget.notifire.getorangeprimerycolor,
+        backgroundColor: widget.notifire.getbackcolor,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
           child: Container(
             height: 40,
             width: 40,
             margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: widget.notifire.getwhite),
-            ),
-            child: Icon(Icons.arrow_back, color: widget.notifire.getwhite),
+         
+            child: Icon(Icons.arrow_back, color: widget.notifire.getdarkscolor),
           ),
         ),
       ),

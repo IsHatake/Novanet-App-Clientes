@@ -90,11 +90,11 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
           style: TextStyle(
             fontSize: 15,
             fontFamily: 'Gilroy Bold',
-            color: notifire.getwhite,
+            color: notifire.getdarkscolor,
             fontWeight: FontWeight.w400,
           ),
         ),
-        backgroundColor: notifire.getorangeprimerycolor,
+        backgroundColor: notifire.getbackcolor,
         leading: GestureDetector(
           onTap: () {
             Navigator.pop(context);
@@ -104,10 +104,9 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
             width: 40,
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
               border: Border.all(color: notifire.getwhite),
             ),
-            child: Icon(Icons.arrow_back, color: notifire.getwhite),
+            child: Icon(Icons.arrow_back, color: notifire.getdarkscolor),
           ),
         ),
         // actions: [

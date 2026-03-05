@@ -172,6 +172,8 @@ class _QrCodeScannerState extends State<QrCodeScanner>
             ),
           ),
           bottom: TabBar(
+            labelColor: notifire.getwhite,
+            unselectedLabelColor: notifire.getwhite.withOpacity(0.7),
             controller: _tabController,
             indicatorColor: Colors.black,
             tabs: const [
