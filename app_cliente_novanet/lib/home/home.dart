@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:app_cliente_novanet/screens/monitoreo_camarasscreen.dart';
 import 'package:app_cliente_novanet/screens/publicidad_productos_widget.dart';
+import 'package:app_cliente_novanet/screens/qrgenerator.dart';
+import 'package:app_cliente_novanet/screens/users_screen.dart';
 import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +22,7 @@ import 'package:app_cliente_novanet/screens/referir_screen.dart';
 import 'package:app_cliente_novanet/screens/services_screen.dart';
 import 'package:app_cliente_novanet/screens/webviewtest_screen.dart';
 import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
-import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
+//import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/button.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:app_cliente_novanet/utils/string.dart';
@@ -212,6 +215,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             },
           ),
 
+          if (widget.fbprincipal)
+          IconButton(
+            icon: Icon(Icons.family_restroom_rounded, color: notifire.getwhite),
+            onPressed: () => {
+              dialogUsuariosFamiliares(context)
+            }
+          ),
+
           IconButton(
             icon: Icon(Icons.help_outline, color: notifire.getwhite),
             onPressed: () => _launchUrlManual(
@@ -257,6 +268,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               MaterialPageRoute(
                   builder: (_) => Profile(fbprincipal: widget.fbprincipal)),
             ),
+          ),
+          const SizedBox(
+            width: 10,
           ),
         ],
       ),
@@ -1028,6 +1042,196 @@ Widget _notificationIcon(hasNotifications) {
         ),
       );
 
+
+Future<void> dialogUsuariosFamiliares(BuildContext context) async {
+  // Obtener el tamaño de la pantalla para hacerlo responsivo
+  final screenSize = MediaQuery.of(context).size;
+  final screenHeight = screenSize.height;
+  final screenWidth = screenSize.width;
+  
+  // Determinar si es dispositivo móvil o tablet/escritorio
+  final bool isMobile = screenWidth < 600;
+  final bool isTablet = screenWidth >= 600 && screenWidth < 1200;
+  
+  await showDialog(
+    context: context,
+    builder: (_) => Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : screenWidth * 0.2,
+        vertical: 24,
+      ),
+      child: SingleChildScrollView(
+        child: Container(
+          width: isMobile ? double.infinity : (isTablet ? 500 : 600),
+          decoration: BoxDecoration(
+            color: notifire.getbackcolor,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: notifire.getdarkscolor.withOpacity(0.15),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          margin: const EdgeInsets.all(15),
+          padding: EdgeInsets.all(isMobile ? 20 : 25),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Título con icono decorativo opcional
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Espacio vacío para equilibrar el icono de cierre (opcional)
+                  const SizedBox(width: 24),
+                  
+                  Text(
+                    'Usuarios Familiares',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Gilroy Bold',
+                      fontSize: isMobile ? 18 : (isTablet ? 22 : 24),
+                      color: notifire.getdarkscolor,
+                    ),
+                  ),
+                  
+                  // Botón de cierre rápido (opcional pero recomendado para UX)
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: notifire.getdarkscolor.withOpacity(0.5),
+                      size: isMobile ? 20 : 24,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 20),
+              
+              // Botones con altura responsiva
+              buildButtonUsuarios(
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QrCodeGenerator(),
+                  ),
+                ), 
+                'Comparte con Familiar', 
+                Icon(
+                  Icons.qr_code, 
+                  color: Colors.white, 
+                  size: isMobile ? 24 : 28,
+                ),
+                isMobile: isMobile,
+                screenHeight: screenHeight,
+              ),
+              
+              const SizedBox(height: 16),
+              
+              buildButtonUsuarios(
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => usuarios_Screen(
+                      fbprincipal: widget.fbprincipal,
+                    ),
+                  ),
+                ), 
+                'Ver Usuarios Familiares', 
+                Icon(
+                  Icons.people_alt_outlined, 
+                  color: Colors.white, 
+                  size: isMobile ? 24 : 28,
+                ),
+                isMobile: isMobile,
+                screenHeight: screenHeight,
+              ),
+              
+              const SizedBox(height: 20),
+              
+              // Botón Cancelar mejorado
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 20 : 30,
+                      vertical: isMobile ? 12 : 15,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(
+                      color: notifire.getorangeprimerycolor,
+                      fontFamily: 'Gilroy Medium',
+                      fontSize: isMobile ? 14 : (screenHeight * 0.018),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+// Función auxiliar mejorada para los botones
+Widget buildButtonUsuarios(
+  VoidCallback onPressed,
+  String text,
+  Icon icon, {
+  required bool isMobile,
+  required double screenHeight,
+}) {
+  return ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: notifire.getorangeprimerycolor,
+      foregroundColor: Colors.white,
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 16 : 24,
+        vertical: isMobile ? 14 : screenHeight * 0.018,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 2,
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        icon,
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Gilroy SemiBold',
+              fontSize: isMobile ? 14 : 16,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        // Espacio para equilibrar el icono (opcional)
+        const SizedBox(width: 24),
+      ],
+    ),
+  );
+}
+
   Widget _buildCallButton() => GestureDetector(
         onTap: () =>
             _makePhoneCall('+50425046682'), // Prefijo internacional agregado
@@ -1061,6 +1265,7 @@ Widget _notificationIcon(hasNotifications) {
         ),
       );
 
+      
   Widget _buildChatButton() => GestureDetector(
         onTap: () async {
           // Inicializamos SignalR después de un login exitoso
@@ -1490,6 +1695,22 @@ Widget _notificationIcon(hasNotifications) {
           style: TextStyle(color: notifire.getdarkscolor),
         ),
       ).show(context);
+    }
+  }
+
+  Future<void> _launchTest() async {
+    if (!await launchUrl(
+        Uri.parse('https://www.fast.com/es/'))) {
+      throw Exception(
+          'Could not launch https://www.fast.com/es/');
+    }
+  }
+
+  Future<void> _launchPago(fcLlaveUnica) async {
+    if (!await launchUrl(
+        Uri.parse('https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica'))) {
+      throw Exception(
+          'Could not launch https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica');
     }
   }
 }

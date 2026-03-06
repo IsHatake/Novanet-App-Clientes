@@ -54,14 +54,14 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
       final file = await File('${tempDir.path}/qr_code.png').create();
       await file.writeAsBytes(pngBytes);
 
-      await Share.shareXFiles(
+
+        final String shareText = 'Descarga la Aplicación de Novanet\n'
+                'Play Store : https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet\n\n'
+                'App Store : https://apps.apple.com/hn/app/novanet/id6736670238\n\n'
+                'O escanea este QR para registrarte como usuario familiar.';
+              await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'Descarga la Aplicación de Novanet\n'
-            'PLAY STORE https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet \n'
-            'APP STORE  https://apps.apple.com/us/app/novanet/id6736670238 \n'
-            '\n'
-            'CREA TU USUARIO FAMILIAR AQUI \n'
-            'https://novanetgroup.com/NovanetApp/formulario_usuario_secundario.html?id=$fcIdentidad',
+        text: shareText,
       );
     } catch (e) {
     }
@@ -167,8 +167,8 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
                     const Text(
                       '1. Descarga y abre la aplicación de Novanet.\n'
                       '2. Selecciona la opción de QR Usuario Familiar en el Inicio de Sesión.\n'
-                      '3. Escanea el código QR mostrado arriba.\n'
-                      '4. Llena el Formulario.\n'
+                      '3. El usuario familiar debe escanear el código QR mostrado arriba.\n'
+                      '4. Llena el Formulario con los datos solicitados.\n'
                       '5. Ingresa el Token enviado al correo ingresado.\n',
                       style: TextStyle(fontSize: 15, color: Colors.black87),
                     ),
