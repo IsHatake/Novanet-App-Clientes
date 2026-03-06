@@ -220,8 +220,8 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
                     const Text(
                       '1. Descarga y abre la aplicación de Novanet.\n'
                       '2. Selecciona la opción de QR Usuario Familiar en el Inicio de Sesión.\n'
-                      '3. Escanea el código QR mostrado arriba.\n'
-                      '4. Llena el Formulario.\n'
+                      '3. El usuario familiar debe escanear el código QR mostrado arriba.\n'
+                      '4. Llena el Formulario con los datos solicitados.\n'
                       '5. Ingresa el Token enviado al correo ingresado.\n',
                       style: TextStyle(fontSize: 15, color: Colors.black87),
                     ),

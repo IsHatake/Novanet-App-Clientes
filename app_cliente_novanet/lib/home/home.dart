@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:app_cliente_novanet/screens/monitoreo_camarasscreen.dart';
 import 'package:app_cliente_novanet/screens/publicidad_productos_widget.dart';
+import 'package:app_cliente_novanet/screens/qrgenerator.dart';
+import 'package:app_cliente_novanet/screens/users_screen.dart';
 import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -210,6 +213,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 },
               );
             },
+          ),
+
+          if (widget.fbprincipal)
+          IconButton(
+            icon: Icon(Icons.family_restroom_rounded, color: notifire.getwhite),
+            onPressed: () => {
+              dialogUsuariosFamiliares(context)
+            }
           ),
 
           IconButton(
@@ -1031,6 +1042,85 @@ Widget _notificationIcon(hasNotifications) {
         ),
       );
 
+
+Future<void> dialogUsuariosFamiliares(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: SingleChildScrollView(
+          child: Container(
+            decoration: BoxDecoration(
+              color: notifire.getbackcolor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: notifire.getdarkscolor.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            margin: const EdgeInsets.all(15),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Opciones de Usuario Familiar',
+                      style: TextStyle(
+                        fontFamily: 'Gilroy Bold',
+                        fontSize: 18,
+                        color: notifire.getdarkscolor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                buildButtonUsuarios(() => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        QrCodeGenerator(),
+                  ),
+                ), 'Comparte con Familiar', Icon(Icons.qr_code, color: Colors.white, size: 24)),
+                const SizedBox(height: 16),
+                
+                buildButtonUsuarios(() => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        usuarios_Screen(fbprincipal: widget.fbprincipal),
+                  ),
+                ), 'Ver Usuarios Familiares', Icon(Icons.people_alt_outlined, color: Colors.white, size: 24)),
+                 const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.center,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        color: notifire.getorangeprimerycolor,
+                        fontFamily: 'Gilroy Medium',
+                        fontSize: height * 0.016,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCallButton() => GestureDetector(
         onTap: () =>
             _makePhoneCall('+50425046682'), // Prefijo internacional agregado
@@ -1054,6 +1144,38 @@ Widget _notificationIcon(hasNotifications) {
               SizedBox(width: 12),
               Text(
                 'LLAMAR',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Gilroy Bold',
+                    fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      Widget buildButtonUsuarios(Function() function, String text, Icon icon) => GestureDetector(
+        onTap: () => function(),
+        child: Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children:  [
+              icon,
+              SizedBox(width: 12),
+              Text(
+                text,
                 style: TextStyle(
                     color: Colors.white,
                     fontFamily: 'Gilroy Bold',
