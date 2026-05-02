@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/api.dart';
 import 'package:app_cliente_novanet/profile/confirmPinPass.dart';
@@ -182,7 +183,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     "images/email.png",
                     CustomStrings.emailhint,
                     notifire.getdarkwhitecolor,
-                    emaiController),
+                    emaiController,
+                    null),
                 SizedBox(
                   height: height / 2.8,
                 ),

@@ -1,6 +1,13 @@
 import 'dart:convert';
+import 'dart:ui';
+import 'package:app_cliente_novanet/screens/monitoreo_camarasscreen.dart';
+import 'package:app_cliente_novanet/screens/publicidad_productos_widget.dart';
+import 'package:app_cliente_novanet/screens/qrgenerator.dart';
+import 'package:app_cliente_novanet/screens/users_screen.dart';
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -15,78 +22,134 @@ import 'package:app_cliente_novanet/screens/referir_screen.dart';
 import 'package:app_cliente_novanet/screens/services_screen.dart';
 import 'package:app_cliente_novanet/screens/webviewtest_screen.dart';
 import 'package:app_cliente_novanet/service/signalRChat_Service.dart';
-import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
+//import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/button.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
-import 'package:app_cliente_novanet/utils/media.dart';
 import 'package:app_cliente_novanet/utils/string.dart';
 import 'package:app_cliente_novanet/home/notifications.dart';
 import 'package:app_cliente_novanet/profile/profile.dart';
 import 'package:app_cliente_novanet/screens/dialogPagoWidget.dart';
 
+import '../utils/media.dart';
+
 class Home extends StatefulWidget {
   final bool fbprincipal;
   const Home({Key? key, required this.fbprincipal}) : super(key: key);
+
   @override
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
+class _HomeState extends State<Home> with TickerProviderStateMixin {
   late ColorNotifire notifire;
   String fcNombreUsuario = '';
   String fcLlaveUnica = '';
   List productosDelServicioActual = [];
   List json2 = [];
-  List cuotas = [];
+  List<double> cuotas = [];
   bool _isExpanded = false;
   int _currentPage = 0;
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  //late AnimationController _controller;
+  //late Animation<double> _animation;
   late PageController _pageController;
+
+  late AnimationController _shakeController;
+  late Animation<Offset> _shakeAnimation;
+
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
 
   @override
   void initState() {
     super.initState();
     _loadData();
     _pageController = PageController();
-    _controller = AnimationController(
+    // _controller = AnimationController(
+    //   vsync: this,
+    //   duration: const Duration(seconds: 1),
+    // )..repeat(reverse: true);
+    // _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
+    //   CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    // );
+
+
+    // 1. Shake principal (temblor constante como timbrando)
+    _shakeController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat(reverse: true);
-    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      duration: const Duration(milliseconds: 400), // Rápido para efecto de vibración
+    )..repeat(reverse: true); // Repetir siempre que haya notificaciones
+
+    _shakeAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0.06, 0.03), // Temblor horizontal + un poco vertical
+    ).animate(
+      CurvedAnimation(parent: _shakeController, curve: Curves.elasticInOut),
     );
+
+    // 2. Pulse sutil (brillo leve que complementa)
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400), // Más lento para no competir con shake
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.12).animate( // Pulsación ligera
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    // Solo activar animaciones si hay notificaciones
+    final hasNotifications = json2.isNotEmpty && json2[0]['fbNotificaciones'] == true;
+    if (hasNotifications) {
+      _shakeController.repeat(reverse: true);
+      _pulseController.repeat(reverse: true);
+    }
   }
 
   @override
   void dispose() {
+    _pulseController.dispose();
+    _shakeController.dispose();
+
     _pageController.dispose();
-    _controller.dispose();
+    //_controller.dispose();
     super.dispose();
   }
 
   Future<void> _loadData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final fcNombreUsuarioFull = prefs.getString('fcNombreUsuario') ?? '';
-    final key = prefs.getString('fcLlaveUnica') ?? '';
-    final dataAsString = prefs.getString('datalogin[3]') ?? '';
-    final dataAsString2 = prefs.getString('datalogin[1]') ?? '';
-    final data2 = jsonDecode(dataAsString2);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final fcNombreUsuarioFull = prefs.getString('fcNombreUsuario') ?? '';
+      final key = prefs.getString('fcLlaveUnica') ?? '';
+      final dataAsString = prefs.getString('datalogin[3]') ?? '[]';
+      final dataAsString2 = prefs.getString('datalogin[1]') ?? '[]';
 
-    setState(() {
-      fcNombreUsuario = fcNombreUsuarioFull.split(' ').first;
-      fcLlaveUnica = key;
-      productosDelServicioActual = jsonDecode(dataAsString);
-      json2 = data2;
-      cuotas =
-          data2.map<double>((cuota) => cuota["fnCuotaMensual"] ?? 0.0).toList();
-    });
+      final data2 = jsonDecode(dataAsString2) as List<dynamic>;
+      setState(() {
+        fcNombreUsuario = fcNombreUsuarioFull.split(' ').first;
+        fcLlaveUnica = key;
+        productosDelServicioActual = jsonDecode(dataAsString);
+        json2 = data2;
+        cuotas = json2.isNotEmpty
+            ? data2
+                .map<double>(
+                    (cuota) => (cuota["fnCuotaMensual"] ?? 0.0) as double)
+                .toList()
+            : [];
+      });
+    } catch (e) {
+      CherryToast.error(
+        title: const Text('Error al cargar datos'),
+      ).show(context);
+      debugPrint('Error in _loadData: $e');
+    }
   }
 
   void _navigatePage(int direction) {
     if (_currentPage + direction >= 0 &&
         _currentPage + direction < cuotas.length) {
-      _currentPage += direction;
+      setState(() {
+        _currentPage += direction;
+      });
       _pageController.animateToPage(
         _currentPage,
         duration: const Duration(milliseconds: 300),
@@ -98,6 +161,10 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     notifire = Provider.of<ColorNotifire>(context);
+    final height = MediaQuery.of(context).size.height;
+    final width = MediaQuery.of(context).size.width;
+    final bool hasNotifications = json2.isNotEmpty && json2[0]['fbNotificaciones'] ? true : false;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -113,21 +180,86 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           ),
         ),
         actions: [
+
+
+
+          Builder(
+            builder: (context) {
+              return FutureBuilder<bool>(
+                future: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  final String? acceso = prefs.getString('fbAccesoCamaras');
+                  return acceso == 'true';
+                }(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final bool mostrar = snapshot.data ?? false;
+
+                  return mostrar
+                      ? IconButton(
+                          icon: Icon(Icons.camera_outdoor_sharp,
+                              color: notifire.getwhite),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CamarasWebView_screen(),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink();
+                },
+              );
+            },
+          ),
+
+          if (widget.fbprincipal)
+          IconButton(
+            icon: Icon(Icons.family_restroom_rounded, color: notifire.getwhite),
+            onPressed: () => {
+              dialogUsuariosFamiliares(context)
+            }
+          ),
+
           IconButton(
             icon: Icon(Icons.help_outline, color: notifire.getwhite),
             onPressed: () => _launchUrlManual(
                 'https://novanetgroup.com/NovanetApp/Manuales/Index.html'),
           ),
           IconButton(
-            icon: json2.isNotEmpty && json2[0]['fbNotificaciones']
-                ? ScaleTransition(scale: _animation, child: _notificationIcon())
-                : _notificationIcon(),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => const Notificationindex("Notificaciones")),
+      icon: AnimatedBuilder(
+        animation: Listenable.merge([_shakeAnimation, _pulseAnimation]),
+        builder: (context, child) {
+          return Transform.translate(
+            offset: hasNotifications == true ?  _shakeAnimation.value * 8 : Offset.zero, // Shake principal
+            child: ScaleTransition(
+              scale: hasNotifications == true ?  _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: hasNotifications
+                      ? [
+                          BoxShadow(
+                            color: hasNotifications == true ? Colors.red.withOpacity(0.4 * _pulseAnimation.value) : Colors.transparent,
+                            blurRadius: 10 * _pulseAnimation.value,
+                            spreadRadius: 2 * _pulseAnimation.value,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: _notificationIcon(hasNotifications),
+              ),
             ),
-          ),
+          );
+        },
+      ),
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const Notificationindex("Notificaciones")),
+      ),
+    ),
           IconButton(
             icon: Image.asset("images/user_outline.png",
                 color: notifire.getwhite, scale: 20),
@@ -137,14 +269,17 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   builder: (_) => Profile(fbprincipal: widget.fbprincipal)),
             ),
           ),
+          const SizedBox(
+            width: 10,
+          ),
         ],
       ),
       backgroundColor: notifire.getprimerycolor,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildHeader(),
-            _buildServiceSection(),
+            _buildHeader(height, width),
+            _buildServiceSection(height, width),
             const PagosPage(),
           ],
         ),
@@ -152,75 +287,125 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _notificationIcon() => Image.asset(
+Widget _notificationIcon(hasNotifications) {
+    return ColorFiltered(
+      colorFilter: ColorFilter.mode(
+       hasNotifications == true ? notifire.isDark ? notifire.getdarkscolor : Colors.redAccent  : notifire.getprimerycolor , // Glow rojo
+        BlendMode.srcIn,
+      ),
+      child: Image.asset(
         "images/notification.png",
-        color: notifire.getwhite,
         scale: 4,
-      );
+      ),
+    );
+  }
 
-  Widget _buildHeader() => Stack(
+  Widget _buildHeader(double height, double width) => Stack(
         children: [
-          Image.asset("images/backphoto.png", fit: BoxFit.cover),
+          Image.asset("images/backphoto.png",
+              fit: BoxFit.cover,
+              color: notifire.getdarkscolor.withOpacity(0.5)),
           Column(
             children: [
               SizedBox(height: height / 40),
-              _buildPaymentCard(),
-              _buildIconButtons(),
+              _buildPaymentCard(
+                  height,
+                  width,
+                  _pageController,
+                  cuotas,
+                  _currentPage,
+                  (fn) => setState(() => _currentPage = fn),
+                  _navigatePage),
+              _buildIconButtons(height, width),
             ],
           ),
         ],
       );
 
-  Widget _buildPaymentCard() => Center(
-        child: Container(
-          height: height / 10,
-          width: width / 1.2,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            color: notifire.getorangeprimerycolor,
-          ),
-          child: Stack(
-            children: [
-              PageView.builder(
-                controller: _pageController,
-                onPageChanged: (index) => setState(() => _currentPage = index),
-                itemCount: cuotas.length,
-                itemBuilder: (_, index) => _buildPaymentInfo(index),
-              ),
-              // Left Arrow
-              if (_currentPage > 0)
-                Positioned(
-                  left: 8,
-                  top: 0,
-                  bottom: 0,
-                  child: _buildNavigationButton(
-                    icon: Icons.arrow_back_ios_new,
-                    onPressed: () => _navigatePage(-1),
-                    isLeft: true,
-                  ),
-                ),
-              // Right Arrow
-              if (_currentPage < cuotas.length - 1)
-                Positioned(
-                  right: 8,
-                  top: 0,
-                  bottom: 0,
-                  child: _buildNavigationButton(
-                    icon: Icons.arrow_forward_ios_rounded,
-                    onPressed: () => _navigatePage(1),
-                    isLeft: false,
-                  ),
-                ),
-              Positioned(
-                bottom: 2, // Adjusted to move dots closer to the bottom edge
-                left: 0,
-                right: 0,
-                child: _buildPageIndicators(),
-              ),
+  Widget _buildPaymentCard(
+      double height,
+      double width,
+      PageController _pageController,
+      List cuotas,
+      int _currentPage,
+      Function(int) setState,
+      Function(int) _navigatePage) {
+    return Center(
+      child: Container(
+        height: height / 8, // Slightly taller for better content visibility
+        width: width / 1.15, // Slightly narrower for a sleek look
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24)), // Softer, fully rounded corners
+          gradient: LinearGradient(
+            colors: [
+              notifire.getorangeprimerycolor, // Coral start
+              Color.fromARGB(255, 240, 120, 72), // Orange end
             ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              offset: Offset(4, 4),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+            BoxShadow(
+              color: Colors.white.withOpacity(0.2),
+              offset: Offset(-4, -4),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+          ], // Neumorphic shadow effect
         ),
-      );
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(index); // Actualiza el estado al deslizar
+              },
+              itemCount: cuotas.length,
+              itemBuilder: (_, index) => _buildPaymentInfo(index, height),
+              physics:
+                  const BouncingScrollPhysics(), // Smooth, elastic scrolling
+            ),
+            if (_currentPage > 0)
+              Positioned(
+                left: 12,
+                top: 0,
+                bottom: 0,
+                child: _buildNavigationButton(
+                  icon: Icons.arrow_back_ios_new,
+                  onPressed: () => _navigatePage(-1),
+                  isLeft: true,
+                ),
+              ),
+            if (_currentPage < cuotas.length - 1)
+              Positioned(
+                right: 12,
+                top: 0,
+                bottom: 0,
+                child: _buildNavigationButton(
+                  icon: Icons.arrow_forward_ios_rounded,
+                  onPressed: () => _navigatePage(1),
+                  isLeft: false,
+                ),
+              ),
+            Positioned(
+              bottom: 8,
+              left: 0,
+              right: 0,
+              child: _buildPageIndicators(cuotas.length, _currentPage),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildNavigationButton({
     required IconData icon,
@@ -229,42 +414,44 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }) {
     return SizedBox(
       width: 36,
-      height: height / 9,
       child: IconButton(
         icon: Icon(
           icon,
           color: Colors.white,
-          size: 20, // Slightly smaller for elegance
+          size: 20,
         ),
         onPressed: onPressed,
-        splashRadius: 20, // Smaller splash effect
-        padding: EdgeInsets.zero, // Remove default padding
+        splashRadius: 20,
+        padding: EdgeInsets.zero,
       ),
     );
   }
 
-  Widget _buildPageIndicators() {
+  Widget _buildPageIndicators(int itemCount, int currentPage) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
-        cuotas.length,
+        itemCount,
         (index) => AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: _currentPage == index ? 10 : 6,
-          height: 6,
+          duration: Duration(milliseconds: 300),
+          margin: EdgeInsets.symmetric(horizontal: 4),
+          height: 8,
+          width: currentPage == index ? 24 : 8,
           decoration: BoxDecoration(
-            color: _currentPage == index
+            color: currentPage == index
                 ? Colors.white
                 : Colors.white.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildPaymentInfo(int index) {
+  Widget _buildPaymentInfo(int index, double height) {
+    if (json2.isEmpty || index >= json2.length) {
+      return const Center(child: Text('No hay datos disponibles'));
+    }
     final hasAtraso = json2[index]['fcCuotasEnAtraso'] != '' &&
         json2[index]['fitotal_debe'] != 0.0;
     final currencySymbol = json2[index]['fiIDMoneda'] == 2 ? '\$' : 'L';
@@ -313,12 +500,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildIconButtons() => Center(
+  Widget _buildIconButtons(double height, double width) => Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: width / 38),
           child: Container(
-            padding: const EdgeInsets.symmetric(
-                vertical: 16), // Dynamic padding instead of fixed height
+            padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: notifire.getwhite,
@@ -332,8 +518,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment
-                  .center, // Vertically centers children within Row
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (widget.fbprincipal)
                   _buildIconButton(
@@ -344,16 +529,29 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       MaterialPageRoute(
                           builder: (_) => const referidos_Screen()),
                     ),
+                    height,
+                    width,
                   ),
                 _buildIconButton(
                   "images/high-speed.png",
                   'Test',
                   () => _navigateOrShowToast(const WebviewTest_screen()),
+                  height,
+                  width,
                 ),
+                //  _buildIconButton(
+                //   "images/high-speed.png",
+                //   'Test',
+                //   () => _navigateOrShowToast( HikvisionStreamWidget(rtspUrl: 'rtsp://716f898c7b71.entrypoint.cloud.wowza.com:1935/app-8F9K44lJ/304679fe_stream2',)),
+                //   height,
+                //   width,
+                // ),
                 _buildIconButton(
                   "images/apoyo.png",
                   'Comunícate',
                   () => _showWPDialog(context),
+                  height,
+                  width,
                 ),
                 _buildIconButton(
                   "images/caja.png",
@@ -364,14 +562,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       builder: (_) => AddServices_Screen(
                         'Servicios',
                         fbprincipal: widget.fbprincipal,
+                        productoBuscado: '',
                       ),
                     ),
                   ),
+                  height,
+                  width,
                 ),
                 _buildIconButton(
                   "images/pagar.png",
                   CustomStrings.pay,
                   () => _handlePayment(),
+                  height,
+                  width,
                 ),
               ],
             ),
@@ -379,7 +582,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         ),
       );
 
-  Widget _buildIconButton(String imagePath, String label, VoidCallback onTap) =>
+  Widget _buildIconButton(dynamic iconOrImage, String label, VoidCallback onTap,
+          double height, double width) =>
       Flexible(
         child: Column(
           children: [
@@ -393,15 +597,28 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: const [
                     BoxShadow(
-                        color: Colors.black26,
+                        color: Color.fromARGB(43, 0, 0, 0),
                         blurRadius: 15,
                         offset: Offset(0, 0.5),
                         spreadRadius: 0.12)
                   ],
                 ),
                 child: Center(
-                    child: Image.asset(imagePath,
-                        color: const Color(0xFFfaa61a), height: height / 20)),
+                  child: iconOrImage is IconData
+                      ? Icon(iconOrImage,
+                          color: notifire.isDark
+                              ? const Color.fromARGB(190, 255, 255, 255)
+                              : const Color(0xFFfaa61a),
+                          size: height / 20)
+                      : Image.asset(
+                          iconOrImage,
+                          color: notifire.isDark
+                              ? const Color.fromARGB(190, 255, 255, 255)
+                              : const Color(0xFFfaa61a),
+                          height: height / 20,
+                          width: height / 20,
+                        ),
+                ),
               ),
             ),
             SizedBox(height: height / 60),
@@ -414,175 +631,207 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         ),
       );
 
-  Widget _buildServiceSection() => Padding(
+  Widget _buildServiceSection(double height, double width) => Padding(
         padding: EdgeInsets.symmetric(horizontal: width / 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            
+            PublicidadProductosWidget(
+              titleColor: notifire.getdarkscolor,
+              cardSize: 120,
+              spacing: 12,
+            ),
             SizedBox(height: height / 30),
             Text(CustomStrings.service,
                 style: TextStyle(
                     fontFamily: "Gilroy Bold",
                     color: notifire.getdarkscolor,
                     fontSize: height / 40)),
-            SizedBox(height: height / 50),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: json2.length,
-              itemBuilder: (_, index) => _buildServiceCard(index),
+              itemBuilder: (_, index) =>
+                  _buildServiceCard(index, height, width),
             ),
             SizedBox(height: height / 80),
           ],
         ),
       );
 
- Widget _buildServiceCard(int index) {
-  final detalles = json.decode(json2[index]["Detalles"]);
-  return Padding(
-    padding: EdgeInsets.symmetric(
-      horizontal: width * 0.01,
-      vertical: height * 0.01,
-    ),
-    child: Card(
-      color: notifire.getbackcolor,
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(width: 1, color: Colors.grey.withOpacity(0.1)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ExpansionTile(
-        initiallyExpanded: _isExpanded,
-        onExpansionChanged: (expanded) => setState(() => _isExpanded = expanded),
-        tilePadding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: 8),
-        childrenPadding: EdgeInsets.all(width * 0.04),
-        backgroundColor: notifire.getbackcolor.withOpacity(0.95),
-        collapsedBackgroundColor: notifire.getbackcolor,
-        iconColor: notifire.getdarkscolor,
-        collapsedIconColor: notifire.getorangeprimerycolor,
-        collapsedTextColor: notifire.getorangeprimerycolor,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(child: _buildServiceTitle(index)), // Original title content
-            
-          ],
-        ),
-        children: [
-          _buildServiceDetails(index),
-          Divider(color: Colors.grey.withOpacity(0.3), height: 1),
-          _buildProductosSection(detalles),
-        ],
-      ),
-    ),
-  );
-}
+  Widget _buildServiceCard(int index, double height, double width) {
+    List detalles;
+    try {
+      detalles = json.decode(json2[index]["Detalles"]) as List<dynamic>;
+    } catch (e) {
+      detalles = [];
+      debugPrint('Error decoding Detalles: $e');
+    }
 
-Widget _buildServiceTitle(int index) => Padding(
-  padding: EdgeInsets.symmetric(vertical: height * 0.005),
-  child: Row(
-    children: [
-      Container(
-        height: height * 0.07,
-        width: height * 0.07,
-        decoration: BoxDecoration(
-          color: notifire.getprimerycolor.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(10),
+    return Padding(
+      padding: const EdgeInsets.symmetric(),
+      child: Card(
+        key: ValueKey(index),
+        color: notifire.getbackcolor,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.withOpacity(0.15), width: 1),
         ),
-        child: Icon(Icons.wifi, color: notifire.getdarkscolor, size: height * 0.035),
-      ),
-      SizedBox(width: width * 0.03),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Estado Actual de Servicio #${json2[index]["fcIDPrestamo"]}",
-              style: TextStyle(
-                fontFamily: "Gilroy Bold",
-                color: notifire.getdarkscolor,
-                fontSize: height * 0.018,
-              ),
-            ),
-            SizedBox(height: height * 0.005),
-            Text(
-              'Fecha Inicio Servicio: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(json2[index]["fdFechaCreacionSolicitud"]))}',
-              style: TextStyle(
-                fontFamily: "Gilroy Medium",
-                color: notifire.getdarkscolor.withOpacity(0.7),
-                fontSize: height * 0.014,
-              ),
-            ),
-          ],
-        ),
-      ),
-      SizedBox(width: width * 0.02),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: json2[index]["fiEstadoServicio"] == 1 ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              json2[index]["fiEstadoServicio"] == 1 ? 'Activo' : 'Inactivo',
-              style: TextStyle(
-                fontFamily: "Gilroy Bold",
-                color: json2[index]["fiEstadoServicio"] == 1 ? Colors.green : Colors.red,
-                fontSize: height * 0.016,
-              ),
-            ),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            dividerColor:
+                Colors.transparent, // Quita las barras de ExpansionTile
           ),
-          SizedBox(height: height * 0.005),
-          GestureDetector(
-            onTap: () => _openGoogleMaps(json2[index]["fcGeolocalizacion"]),
-            child: Container(
-              width: height * 0.065, // Square size, medium (e.g., ~32dp on average screens)
-              height: height * 0.045,
+          child: ExpansionTile(
+            initiallyExpanded: _isExpanded,
+            onExpansionChanged: (expanded) =>
+                setState(() => _isExpanded = expanded),
+            tilePadding:
+                EdgeInsets.symmetric(horizontal: width * 0.04, vertical: 8),
+            childrenPadding: EdgeInsets.all(width * 0.04),
+            iconColor: notifire.getdarkscolor,
+            collapsedIconColor: notifire.getorangeprimerycolor,
+            collapsedTextColor: notifire.getorangeprimerycolor,
+            collapsedShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: _buildServiceTitle(index, height, width)),
+              ],
+            ),
+            children: [
+              _buildServiceDetails(index, width),
+              // Divider eliminado para quitar la barra
+              _buildProductosSection(detalles, height, width),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServiceTitle(int index, double height, double width) => Padding(
+        padding: EdgeInsets.symmetric(vertical: height * 0.003),
+        child: Row(
+          children: [
+            Container(
+              height: height * 0.05, // Reducido
+              width: height * 0.05, // Reducido
               decoration: BoxDecoration(
-                color: notifire.getorangeprimerycolor,
-                borderRadius: BorderRadius.circular(8), // Rounded borders
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                color: notifire.getprimerycolor.withOpacity(0.9),
+                borderRadius:
+                    BorderRadius.circular(8), // Bordes redondeados más suaves
+              ),
+              child: Icon(Icons.wifi,
+                  color: notifire.getdarkscolor,
+                  size: height * 0.025), // Tamaño reducido
+            ),
+            SizedBox(width: width * 0.02), // Espaciado reducido
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${json2[index]["fcBarrio"].toString().capitalizeFirst!} \n#${json2[index]["fcIDPrestamo"]}",
+                    style: TextStyle(
+                      fontFamily: "Gilroy Bold",
+                      color: notifire.getdarkscolor,
+                      fontSize: height * 0.016, // Tamaño de fuente reducido
+                    ),
+                    maxLines: null,
+                    overflow: TextOverflow.visible,
+                  ),
+                  SizedBox(height: height * 0.004), // Espaciado reducido
+                  Text(
+                    'Inicio: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(json2[index]["fdFechaCreacionSolicitud"]))}',
+                    style: TextStyle(
+                      fontFamily: "Gilroy Medium",
+                      color: notifire.getdarkscolor.withOpacity(0.7),
+                      fontSize: height * 0.012, // Tamaño de fuente reducido
+                    ),
                   ),
                 ],
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.location_on,
-                  color: Colors.white,
-                  size: 18, // Medium icon size
-                ),
-              ),
             ),
-          ),
-        ],
-      ),
-    ],
-  ),
-);
+            SizedBox(width: width * 0.015), // Espaciado reducido
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: json2[index]["fiEstadoServicio"] == 1
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    json2[index]["fiEstadoServicio"] == 1
+                        ? 'Activo'
+                        : 'Inactivo',
+                    style: TextStyle(
+                      fontFamily: "Gilroy Bold",
+                      color: json2[index]["fiEstadoServicio"] == 1
+                          ? Colors.green
+                          : Colors.red,
+                      fontSize: height * 0.016,
+                    ),
+                  ),
+                ),
+                SizedBox(height: height * 0.005),
+                GestureDetector(
+                  onTap: () =>
+                      _openGoogleMaps(json2[index]["fcGeolocalizacion"]),
+                  child: Container(
+                    width: height * 0.065,
+                    height: height * 0.045,
+                    decoration: BoxDecoration(
+                      color: notifire.getorangeprimerycolor,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.location_on,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
 
-  Widget _buildServiceDetails(int index) => Padding(
-        padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+  Widget _buildServiceDetails(int index, double width) => Padding(
+        padding: EdgeInsets.symmetric(horizontal: width * 0.015), // Reducido
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildDetailRow("Plazo Seleccionado",
                 json2[index]["fiPlazoSeleccionado"].toString()),
-            const SizedBox(height: 10),
+            SizedBox(height: 8), // Reducido
             _buildDetailRow(
                 "Departamento", json2[index]["fcDepartamento"].toString()),
-            const SizedBox(height: 10),
+            SizedBox(height: 8), // Reducido
             _buildDetailRow(
                 "Municipio", json2[index]["fcMunicipio"].toString()),
-            const SizedBox(height: 10),
+            SizedBox(height: 8), // Reducido
             _buildDetailRow("Barrio", json2[index]["fcBarrio"].toString()),
-            const SizedBox(height: 10),
+            SizedBox(height: 8), // Reducido
             _buildDetailRow("Dirección Exacta",
                 json2[index]["fcDireccionDetallada"].toString().toUpperCase()),
           ],
@@ -592,55 +841,76 @@ Widget _buildServiceTitle(int index) => Padding(
   Widget _buildDetailRow(String label, String value) => Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: _buildDetailText(label)),
-          Expanded(child: _buildDetailText(value)),
+          Expanded(
+            child: Text(
+              "$label: ",
+              style: TextStyle(
+                fontFamily: "Gilroy Medium",
+                color: notifire.getdarkscolor.withOpacity(0.6),
+                fontSize: MediaQuery.of(context).size.height *
+                    0.012, // Tamaño reducido
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontFamily: "Gilroy Medium",
+                color: notifire.getdarkscolor,
+                fontSize: MediaQuery.of(context).size.height *
+                    0.012, // Tamaño reducido
+              ),
+              overflow: TextOverflow.visible,
+              maxLines: null,
+            ),
+          ),
         ],
       );
 
-  Widget _buildDetailText(String text) => Padding(
-        padding: EdgeInsets.symmetric(horizontal: width * 0.02),
-        child: Text(text,
-            style: TextStyle(
-                fontFamily: "Gilroy Medium",
-                color: notifire.getdarkscolor.withOpacity(0.6),
-                fontSize: height * 0.013)),
-      );
-
-  Widget _buildProductosSection(List detalles) => Column(
+  Widget _buildProductosSection(List detalles, double height, double width) =>
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+            padding:
+                EdgeInsets.symmetric(horizontal: width * 0.015), // Reducido
             child: Text('Productos',
                 style: TextStyle(
                     fontFamily: "Gilroy Medium",
                     color: notifire.getdarkscolor.withOpacity(0.6),
-                    fontSize: height * 0.013)),
+                    fontSize: height * 0.012)), // Tamaño reducido
           ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: (detalles.length / 2).ceil(),
-            itemBuilder: (_, index) => _buildProductoRow(detalles, index),
+          SizedBox(height: height * 0.008), // Espaciado reducido
+          Wrap(
+            spacing: width * 0.015,
+            runSpacing: height * 0.008,
+            children: List.generate(
+              (detalles.length / 2).ceil(),
+              (index) => _buildProductoRow(detalles, index, height, width),
+            ),
           ),
         ],
       );
 
-  Widget _buildProductoRow(List detalles, int index) {
+  Widget _buildProductoRow(
+      List detalles, int index, double height, double width) {
     final firstIndex = index * 2;
     final secondIndex = firstIndex + 1;
     return Padding(
       padding: EdgeInsets.symmetric(
-          vertical: height * 0.01, horizontal: width * 0.02),
+          vertical: height * 0.008, horizontal: width * 0.015), // Reducido
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-              child: _buildProductoItem(detalles[firstIndex]["fcProducto"])),
-          SizedBox(width: width * 0.02),
+              child:
+                  _buildProductoItem(detalles[firstIndex]["fcProducto"] ?? '')),
+          SizedBox(width: width * 0.015), // Espaciado reducido
           Expanded(
               child: secondIndex < detalles.length
-                  ? _buildProductoItem(detalles[secondIndex]["fcProducto"])
+                  ? _buildProductoItem(
+                      detalles[secondIndex]["fcProducto"] ?? '')
                   : Container()),
         ],
       ),
@@ -650,16 +920,20 @@ Widget _buildServiceTitle(int index) => Padding(
   Widget _buildProductoItem(String producto) => Row(
         children: [
           Icon(Icons.arrow_forward_ios_rounded,
-              color: notifire.getdarkscolor, size: 10),
-          SizedBox(width: width * 0.02),
+              color: notifire.getdarkscolor.withOpacity(0.6),
+              size: 9), // Tamaño reducido
+          SizedBox(
+              width: MediaQuery.of(context).size.width *
+                  0.015), // Espaciado reducido
           Expanded(
             child: Text(
               producto,
               style: TextStyle(
                   fontFamily: "Gilroy Medium",
                   color: notifire.getdarkscolor.withOpacity(0.6),
-                  fontSize: height * 0.013,
-                  letterSpacing: 1.5),
+                  fontSize: MediaQuery.of(context).size.height *
+                      0.012, // Tamaño reducido
+                  letterSpacing: 1.2),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -676,22 +950,58 @@ Widget _buildServiceTitle(int index) => Padding(
           child: Container(
             decoration: BoxDecoration(
               color: notifire.getbackcolor,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: notifire.getdarkscolor.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             margin: const EdgeInsets.all(15),
-            padding: const EdgeInsets.all(25),
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Opciones de Contacto',
+                      style: TextStyle(
+                        fontFamily: 'Gilroy Bold',
+                        fontSize: 18,
+                        color: notifire.getdarkscolor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 _buildWPButton('SOPORTE TÉCNICO', 'SOPORTE'),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 _buildWPButton('SOPORTE PAGOS', 'PAGOS'),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 _buildWPButton('CONTRATAR', 'CONTRATAR'),
-                const SizedBox(height: 15),
-                _buildChatButton(),
-                const SizedBox(height: 15),
-                _buildCallButton(), // New button for phone call
+                const SizedBox(height: 12),
+                _buildCallButton(),
+                // const SizedBox(height: 12),
+                // _buildChatButton()
+                Align(
+                  alignment: Alignment.center,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        color: notifire.getorangeprimerycolor,
+                        fontFamily: 'Gilroy Medium',
+                        fontSize: height * 0.016,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -705,17 +1015,23 @@ Widget _buildServiceTitle(int index) => Padding(
             ? _showWPDialogNumeroTexto(context, option)
             : _showWPDialogNumero(context, option),
         child: Container(
-          height: 40,
-          width: 180,
+          height: 48,
           decoration: BoxDecoration(
             color: Colors.black,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('images/wp.png', height: 20, width: 20),
-              const SizedBox(width: 10),
+              Image.asset('images/wp.png', height: 24, width: 24),
+              const SizedBox(width: 12),
               Text(label,
                   style: const TextStyle(
                       color: Colors.white,
@@ -726,20 +1042,217 @@ Widget _buildServiceTitle(int index) => Padding(
         ),
       );
 
-  Widget _buildCallButton() => GestureDetector(
-        onTap: () => _makePhoneCall('25406682'),
+
+Future<void> dialogUsuariosFamiliares(BuildContext context) async {
+  // Obtener el tamaño de la pantalla para hacerlo responsivo
+  final screenSize = MediaQuery.of(context).size;
+  final screenHeight = screenSize.height;
+  final screenWidth = screenSize.width;
+  
+  // Determinar si es dispositivo móvil o tablet/escritorio
+  final bool isMobile = screenWidth < 600;
+  final bool isTablet = screenWidth >= 600 && screenWidth < 1200;
+  
+  await showDialog(
+    context: context,
+    builder: (_) => Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : screenWidth * 0.2,
+        vertical: 24,
+      ),
+      child: SingleChildScrollView(
         child: Container(
-          height: 40,
-          width: 180,
+          width: isMobile ? double.infinity : (isTablet ? 500 : 600),
+          decoration: BoxDecoration(
+            color: notifire.getbackcolor,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: notifire.getdarkscolor.withOpacity(0.15),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          margin: const EdgeInsets.all(15),
+          padding: EdgeInsets.all(isMobile ? 20 : 25),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Título con icono decorativo opcional
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Espacio vacío para equilibrar el icono de cierre (opcional)
+                  const SizedBox(width: 24),
+                  
+                  Text(
+                    'Usuarios Familiares',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Gilroy Bold',
+                      fontSize: isMobile ? 18 : (isTablet ? 22 : 24),
+                      color: notifire.getdarkscolor,
+                    ),
+                  ),
+                  
+                  // Botón de cierre rápido (opcional pero recomendado para UX)
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: notifire.getdarkscolor.withOpacity(0.5),
+                      size: isMobile ? 20 : 24,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 20),
+              
+              // Botones con altura responsiva
+              buildButtonUsuarios(
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QrCodeGenerator(),
+                  ),
+                ), 
+                'Comparte con Familiar', 
+                Icon(
+                  Icons.qr_code, 
+                  color: Colors.white, 
+                  size: isMobile ? 24 : 28,
+                ),
+                isMobile: isMobile,
+                screenHeight: screenHeight,
+              ),
+              
+              const SizedBox(height: 16),
+              
+              buildButtonUsuarios(
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => usuarios_Screen(
+                      fbprincipal: widget.fbprincipal,
+                    ),
+                  ),
+                ), 
+                'Ver Usuarios Familiares', 
+                Icon(
+                  Icons.people_alt_outlined, 
+                  color: Colors.white, 
+                  size: isMobile ? 24 : 28,
+                ),
+                isMobile: isMobile,
+                screenHeight: screenHeight,
+              ),
+              
+              const SizedBox(height: 20),
+              
+              // Botón Cancelar mejorado
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 20 : 30,
+                      vertical: isMobile ? 12 : 15,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(
+                      color: notifire.getorangeprimerycolor,
+                      fontFamily: 'Gilroy Medium',
+                      fontSize: isMobile ? 14 : (screenHeight * 0.018),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+// Función auxiliar mejorada para los botones
+Widget buildButtonUsuarios(
+  VoidCallback onPressed,
+  String text,
+  Icon icon, {
+  required bool isMobile,
+  required double screenHeight,
+}) {
+  return ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: notifire.getorangeprimerycolor,
+      foregroundColor: Colors.white,
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 16 : 24,
+        vertical: isMobile ? 14 : screenHeight * 0.018,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 2,
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        icon,
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Gilroy SemiBold',
+              fontSize: isMobile ? 14 : 16,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        // Espacio para equilibrar el icono (opcional)
+        const SizedBox(width: 24),
+      ],
+    ),
+  );
+}
+
+  Widget _buildCallButton() => GestureDetector(
+        onTap: () =>
+            _makePhoneCall('+50425046682'), // Prefijo internacional agregado
+        child: Container(
+          height: 48,
           decoration: BoxDecoration(
             color: Colors.black,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
-              Icon(Icons.phone, color: Colors.white, size: 20), // Phone icon
-              SizedBox(width: 10),
+              Icon(Icons.phone, color: Colors.white, size: 24),
+              SizedBox(width: 12),
               Text(
                 'LLAMAR',
                 style: TextStyle(
@@ -752,7 +1265,55 @@ Widget _buildServiceTitle(int index) => Padding(
         ),
       );
 
- 
+      
+  Widget _buildChatButton() => GestureDetector(
+        onTap: () async {
+          // Inicializamos SignalR después de un login exitoso
+          ChatSignalRService chatSignalRService =
+              ChatSignalRService("https://ptdto.com/ChatOrion/chathub");
+          //ChatSignalRService chatSignalRService = ChatSignalRService("http://172.20.2.214:5035/chathub");
+
+          // Llamamos al método de inicialización de SignalR
+          await chatSignalRService.init();
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  ChatScreen(chatSignalRService: chatSignalRService),
+            ),
+          );
+        },
+        child: Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.build_circle_outlined, color: Colors.white, size: 24),
+              SizedBox(width: 12),
+              Text(
+                'CHAT SOPORTE',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Gilroy Bold',
+                    fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+
   Future<void> _showWPDialogNumeroTexto(
       BuildContext context, String opcion) async {
     final textoController = TextEditingController();
@@ -761,7 +1322,7 @@ Widget _buildServiceTitle(int index) => Padding(
       builder: (_) => _buildTextDialog(
           textoController, opcion, 'Ingrese un comentario', () {
         if (textoController.text.isEmpty) {
-          _showWarningToast('Necesita Ingresar un comentario');
+          _showWarningToast('Necesita ingresar un comentario');
           return;
         }
         _launchUrl(opcion, textoController.text);
@@ -780,15 +1341,15 @@ Widget _buildServiceTitle(int index) => Padding(
         final numero = numeroController.text;
         final texto = textoController.text;
         if (numero.isEmpty) {
-          _showWarningToast('Ingrese un numero de teléfono');
+          _showWarningToast('Ingrese un número de teléfono');
           return;
         }
         if (numero.length != 8) {
-          _showWarningToast('Son necesarios 8 digitos');
+          _showWarningToast('Son necesarios 8 dígitos');
           return;
         }
         if (texto.isEmpty) {
-          _showWarningToast('Necesita Ingresar un comentario');
+          _showWarningToast('Necesita ingresar un comentario');
           return;
         }
         _launchUrlSecundario(opcion, numero, texto);
@@ -828,24 +1389,9 @@ Widget _buildServiceTitle(int index) => Padding(
               ),
               const SizedBox(height: 15),
               GestureDetector(
-                onTap: () {
-                  final texto = controller.text;
-                  if (texto.isEmpty) {
-                    CherryToast.warning(
-                      backgroundColor: notifire.getbackcolor,
-                      title: Text('Necesita Ingresar un comentario',
-                          style: TextStyle(color: notifire.getdarkscolor),
-                          textAlign: TextAlign.start),
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
-                  }
-
-                  _launchUrl(opcion, texto);
-                  Navigator.of(context).pop();
-                },
-                child: Custombutton.button(
-                    notifire.getorangeprimerycolor, 'Confirmar', width / 2),
+                onTap: onConfirm,
+                child: Custombutton.button(notifire.getorangeprimerycolor,
+                    'Confirmar', MediaQuery.of(context).size.width / 2),
               ),
             ],
           ),
@@ -894,44 +1440,9 @@ Widget _buildServiceTitle(int index) => Padding(
               ),
               const SizedBox(height: 15),
               GestureDetector(
-                onTap: () {
-                  final texto = textoController.text;
-                  final numero = numeroController.text;
-                  if (numero.isEmpty) {
-                    CherryToast.warning(
-                      backgroundColor: notifire.getbackcolor,
-                      title: Text('Ingrese un numero de teléfono',
-                          style: TextStyle(color: notifire.getdarkscolor),
-                          textAlign: TextAlign.start),
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
-                  }
-                  if (numero.length != 8) {
-                    CherryToast.warning(
-                      backgroundColor: notifire.getbackcolor,
-                      title: Text('Son necesarios 8 digitos',
-                          style: TextStyle(color: notifire.getdarkscolor),
-                          textAlign: TextAlign.start),
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
-                  }
-                  if (texto.isEmpty) {
-                    CherryToast.warning(
-                      backgroundColor: notifire.getbackcolor,
-                      title: Text('Necesita Ingresar un comentario',
-                          style: TextStyle(color: notifire.getdarkscolor),
-                          textAlign: TextAlign.start),
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
-                  }
-                  _launchUrlSecundario(opcion, numero, texto);
-                  Navigator.of(context).pop();
-                },
-                child: Custombutton.button(
-                    notifire.getorangeprimerycolor, 'Confirmar', width / 2),
+                onTap: onConfirm,
+                child: Custombutton.button(notifire.getorangeprimerycolor,
+                    'Confirmar', MediaQuery.of(context).size.width / 2),
               ),
             ],
           ),
@@ -945,42 +1456,9 @@ Widget _buildServiceTitle(int index) => Padding(
         hintText: hint,
       );
 
-  Widget _buildChatButton() => GestureDetector(
-        onTap: () async {
-          final chatSignalRService =
-              ChatSignalRService("https://ptdto.com/ChatOrion/chathub");
-          await chatSignalRService.init();
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) =>
-                      ChatScreen(chatSignalRService: chatSignalRService)));
-        },
-        child: Container(
-          height: 40,
-          width: 180,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('images/wp.png', height: 20, width: 20),
-              const SizedBox(width: 10),
-              const Text('Prueba',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Gilroy Bold',
-                      fontSize: 16)),
-            ],
-          ),
-        ),
-      );
-
   Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(phoneUri)) {
+    if (await launchUrl(phoneUri)) {
       await launchUrl(phoneUri);
     } else {
       CherryToast.error(
@@ -1015,15 +1493,28 @@ Widget _buildServiceTitle(int index) => Padding(
     _showLoadingDialog();
     try {
       final response = await http.post(uri, body: body, headers: headers);
-      Navigator.pop(context); // Close loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
       if (response.statusCode == 200) {
         _showSuccessDialog();
       } else {
-        throw Exception('Failed to send message: ${response.statusCode}');
+        CherryToast.error(
+          backgroundColor: notifire.getbackcolor,
+          title: Text(
+            'Error al enviar el mensaje: ${response.statusCode}',
+            style: TextStyle(color: notifire.getdarkscolor),
+          ),
+        ).show(context);
       }
     } catch (e) {
-      Navigator.pop(context);
-      debugPrint(e.toString());
+      Navigator.of(context, rootNavigator: true).pop();
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'Error de conexión: $e',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
+      debugPrint('Error in _launchUrl: $e');
     }
   }
 
@@ -1054,15 +1545,28 @@ Widget _buildServiceTitle(int index) => Padding(
     _showLoadingDialog();
     try {
       final response = await http.post(uri, body: body, headers: headers);
-      Navigator.pop(context); // Close loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
       if (response.statusCode == 200) {
         _showSuccessDialog();
       } else {
-        throw Exception('Failed to send message: ${response.statusCode}');
+        CherryToast.error(
+          backgroundColor: notifire.getbackcolor,
+          title: Text(
+            'Error al enviar el mensaje: ${response.statusCode}',
+            style: TextStyle(color: notifire.getdarkscolor),
+          ),
+        ).show(context);
       }
     } catch (e) {
-      Navigator.pop(context);
-      debugPrint(e.toString());
+      Navigator.of(context, rootNavigator: true).pop();
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'Error de conexión: $e',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
+      debugPrint('Error in _launchUrlSecundario: $e');
     }
   }
 
@@ -1138,12 +1642,21 @@ Widget _buildServiceTitle(int index) => Padding(
   }
 
   Future<void> _launchUrlManual(String url) async {
-    if (!await launchUrl(Uri.parse(url))) {
-      throw Exception('Could not launch $url');
+    final uri = Uri.parse(url);
+    if (await launchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      CherryToast.error(
+        backgroundColor: notifire.getbackcolor,
+        title: Text(
+          'No se pudo abrir el enlace: $url',
+          style: TextStyle(color: notifire.getdarkscolor),
+        ),
+      ).show(context);
     }
   }
 
-  Future<void> _openGoogleMaps(String geolocalizacion) async {
+  Future<void> _openGoogleMaps(String? geolocalizacion) async {
     if (geolocalizacion == null || geolocalizacion.isEmpty) {
       CherryToast.error(
         backgroundColor: notifire.getbackcolor,
@@ -1155,7 +1668,6 @@ Widget _buildServiceTitle(int index) => Padding(
       return;
     }
 
-    // Assuming fcGeolocalizacion is in "lat,lng" format
     final coords = geolocalizacion.split(',');
     if (coords.length != 2) {
       CherryToast.error(
@@ -1170,7 +1682,8 @@ Widget _buildServiceTitle(int index) => Padding(
 
     final lat = coords[0].trim();
     final lng = coords[1].trim();
-    final googleMapsUri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    final googleMapsUri =
+        Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
 
     if (await launchUrl(googleMapsUri)) {
       await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
@@ -1182,6 +1695,22 @@ Widget _buildServiceTitle(int index) => Padding(
           style: TextStyle(color: notifire.getdarkscolor),
         ),
       ).show(context);
+    }
+  }
+
+  Future<void> _launchTest() async {
+    if (!await launchUrl(
+        Uri.parse('https://www.fast.com/es/'))) {
+      throw Exception(
+          'Could not launch https://www.fast.com/es/');
+    }
+  }
+
+  Future<void> _launchPago(fcLlaveUnica) async {
+    if (!await launchUrl(
+        Uri.parse('https://ppos.novanetgroup.com/PagoCuotav2?id=$fcLlaveUnica'))) {
+      throw Exception(
+          'Could not launch https://ppos.novanetgroup.com/PagoCuotav2?id=$fcLlaveUnica');
     }
   }
 }

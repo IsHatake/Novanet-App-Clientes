@@ -10,8 +10,7 @@ class ChatSignalRService {
   String? _assignedSupportAgent;
   final List<Message> _messages = [];
   Function(String)? onUserTyping;
-  Function(String)?
-      onAssignedSupportAgent; // ✅ Notificar cuando se asigna un agente
+  Function(String)? onAssignedSupportAgent;
   Function(String)? onUserStoppedTyping;
   Function(Message)? onMessageReceived;
 
@@ -34,21 +33,16 @@ class ChatSignalRService {
       _hubConnection.on("ReceiveMessage", (arguments) {
         if (arguments is List && arguments.isNotEmpty) {
           final data = arguments[0];
-
           if (data is Map<String, dynamic>) {
             final msg = Message.fromJson(data);
             _messages.add(msg);
-            print("📩 Nuevo mensaje de ${msg.senderId}: ${msg.text}");
-
-            if (onMessageReceived != null) {
-              onMessageReceived!(msg);
-            }
+            print("📩 Nuevo mensaje de ${msg.senderId}: ${msg.text} | Tipo: ${msg.messageType}");
+            if (onMessageReceived != null) onMessageReceived!(msg);
           } else {
-            print(
-                "⚠️ Error: El primer argumento recibido no es un Map<String, dynamic>: $data");
+            print("⚠️ Error: El argumento no es un Map: $data");
           }
         } else {
-          print("⚠️ Error: Arguments no es una lista válida o está vacía.");
+          print("⚠️ Error: Arguments no válidos.");
         }
       });
 
@@ -65,22 +59,21 @@ class ChatSignalRService {
         }
       });
 
-       // 🖊️ Escuchar eventos de escritura
-    _hubConnection.on("UserTyping", (arguments) {
-      if (arguments != null && arguments is List<dynamic>) {
-        final username = arguments[0] as String;
-        if (onUserTyping != null) onUserTyping!(username);
-      }
-    });
+      // 🖊️ Escuchar eventos de escritura
+      _hubConnection.on("UserTyping", (arguments) {
+        if (arguments != null && arguments is List<dynamic>) {
+          final username = arguments[0] as String;
+          if (onUserTyping != null) onUserTyping!(username);
+        }
+      });
 
-    // 🛑 Escuchar eventos de detención de escritura
-    _hubConnection.on("UserStoppedTyping", (arguments) {
-      if (arguments != null && arguments is List<dynamic>) {
-        final username = arguments[0] as String;
-        if (onUserStoppedTyping != null) onUserStoppedTyping!(username);
-      }
-    });
-  
+      // 🛑 Escuchar eventos de detención de escritura
+      _hubConnection.on("UserStoppedTyping", (arguments) {
+        if (arguments != null && arguments is List<dynamic>) {
+          final username = arguments[0] as String;
+          if (onUserStoppedTyping != null) onUserStoppedTyping!(username);
+        }
+      });
 
       await _connect();
     } catch (e) {
@@ -90,7 +83,7 @@ class ChatSignalRService {
 
   /// Conectar con el servidor y asignar usuario
   Future<void> _connect() async {
-    if (_isConnected) return; // Evitar múltiples intentos de conexión
+    if (_isConnected) return;
 
     try {
       await _hubConnection.start();
@@ -102,7 +95,6 @@ class ChatSignalRService {
 
       print("🔍 Buscando agente para $userName...");
 
-      // Unirse como cliente y esperar asignación de agente
       await _hubConnection.invoke("JoinAsClient", args: [userName]);
     } catch (e) {
       print("❌ Error al conectar con SignalR: $e");
@@ -127,38 +119,32 @@ class ChatSignalRService {
     }
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      String user = prefs.getString("fcUsuarioAcceso") ?? "Cliente Anónimo";
-
-
- 
       await _hubConnection.invoke("SendMessage", args: [message.toJson()]);
-      print("📤 Mensaje enviado a $_assignedSupportAgent: $message");
+      print("📤 Mensaje enviado a $_assignedSupportAgent: ${message.text} | Tipo: ${message.messageType}");
+      _messages.add(message);
     } catch (e) {
       print("❌ Error al enviar mensaje: $e");
     }
   }
 
-
- Timer? _typingTimer;
+  Timer? _typingTimer;
   void sendTyping() async {
     if (_assignedSupportAgent == null) return;
-         final prefs = await SharedPreferences.getInstance();
-      String user = prefs.getString("fcUsuarioAcceso") ?? "Cliente Anónimo";
+    final prefs = await SharedPreferences.getInstance();
+    String user = prefs.getString("fcUsuarioAcceso") ?? "Cliente Anónimo";
 
     await _hubConnection.invoke("Typing", args: [user]);
-    
+
     _typingTimer?.cancel();
     _typingTimer = Timer(const Duration(seconds: 2), () {
       sendStopTyping();
     });
   }
 
-  // 🛑 Enviar evento de detener escritura
   void sendStopTyping() async {
     if (_assignedSupportAgent == null) return;
-         final prefs = await SharedPreferences.getInstance();
-      String user = prefs.getString("fcUsuarioAcceso") ?? "Cliente Anónimo";
+    final prefs = await SharedPreferences.getInstance();
+    String user = prefs.getString("fcUsuarioAcceso") ?? "Cliente Anónimo";
 
     _typingTimer?.cancel();
     await _hubConnection.invoke("StopTyping", args: [user]);
@@ -171,9 +157,9 @@ class ChatSignalRService {
 
   /// Obtener el agente asignado
   String? getAssignedAgent() {
-      return _assignedSupportAgent;
+    return _assignedSupportAgent;
   }
-  
+
   /// Cerrar conexión
   Future<void> stop() async {
     await _hubConnection.stop();

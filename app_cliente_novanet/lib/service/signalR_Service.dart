@@ -1,37 +1,93 @@
-// ignore_for_file: file_names, empty_catches
-
+import 'dart:async';
 import 'package:app_cliente_novanet/service/notificaciones_Service.dart';
-//import 'package:flutter/foundation.dart';
 import 'package:signalr_netcore/signalr_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart'; // para debugPrint
 
 class SignalRService {
-  final HubConnection _hubConnection;
+  HubConnection? _hubConnection;
+  final String serverUrl;
+  Timer? _reconnectTimer;
+  bool _isDisposed = false;
 
-  SignalRService(String serverUrl)
-      : _hubConnection = HubConnectionBuilder().withUrl(serverUrl).build();
+  SignalRService(this.serverUrl);
 
-  Future<void> init() async {
+  Future<void> initialize() async {
+    if (_hubConnection != null) return;
+
+    _hubConnection = HubConnectionBuilder()
+        .withUrl(
+          serverUrl,
+          
+        )
+        .withAutomaticReconnect(
+          retryDelays: [0, 2000, 5000, 10000, 30000], // milisegundos
+        )
+        .build();
+
+    _hubConnection!.onclose(({Exception? error}) {
+      debugPrint("SignalR cerrado: $error");
+      if (!_isDisposed) _scheduleReconnect();
+    });
+
+    _hubConnection!.on("ReceiveMessage", _handleReceiveMessage);
+
+    await _startConnection();
+  }
+
+  Future<void> _startConnection() async {
+    if (_hubConnection == null) return;
+
     try {
-      await _hubConnection.start();
+      if (_hubConnection!.state != HubConnectionState.Connected) {
+        await _hubConnection!.start();
+        debugPrint("SignalR conectado!");
+      }
+    } catch (e) {
+      debugPrint("Error al conectar SignalR: $e");
+      _scheduleReconnect();
+    }
+  }
 
-      _hubConnection.on("ReceiveMessage", (arguments) async {
-        try {
-          if (arguments != null && arguments.length == 2) {
-            List<String> users = List<String>.from(arguments[0] as List);
-            String message = arguments[1] as String;
+  void _scheduleReconnect() {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(const Duration(seconds: 8), () async {
+      if (!_isDisposed) await _startConnection();
+    });
+  }
 
-            final prefs = await SharedPreferences.getInstance();
-            String fcNombreUsuarioFull =
-                prefs.getString('fcUsuarioAcceso') ?? '';
+  Future<void> _handleReceiveMessage(List<Object?>? arguments) async {
+    if (arguments == null || arguments.length < 2) return;
 
-            if (users.isEmpty || users.contains(fcNombreUsuarioFull)) {
-              NotificationService()
-                  .showNotification("Nueva notificación", message);
-            } else {}
-          } else {}
-        } catch (e) {}
-      });
-    } catch (e) {}
+    try {
+      final usersRaw = arguments[0];
+      final message = arguments[1] as String? ?? '';
+
+      List<String> users = [];
+      if (usersRaw is List) {
+        users = usersRaw.cast<String>();
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final usuario = prefs.getString('fcUsuarioAcceso') ?? '';
+
+      if (users.isEmpty || users.contains(usuario)) {
+        await NotificationService()
+            .showNotification("Nueva notificación", message);
+      }
+    } catch (e) {
+      debugPrint("Error procesando notificación: $e");
+    }
+  }
+
+  Future<void> dispose() async {
+    _isDisposed = true;
+    _reconnectTimer?.cancel();
+    if (_hubConnection != null) {
+      try {
+        await _hubConnection!.stop();
+      } catch (_) {}
+      _hubConnection = null;
+    }
   }
 }

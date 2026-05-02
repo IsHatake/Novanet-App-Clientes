@@ -10,10 +10,11 @@ import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';
 import 'package:app_cliente_novanet/utils/button.dart';
 
 import 'package:app_cliente_novanet/utils/textfeilds.dart';
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 import 'package:app_cliente_novanet/utils/colornotifire.dart';
 import 'package:http/http.dart' as http;
 
@@ -170,6 +171,8 @@ class _QrCodeScannerState extends State<QrCodeScanner>
             ),
           ),
           bottom: TabBar(
+            labelColor: notifire.getwhite,
+            unselectedLabelColor: notifire.getwhite.withOpacity(0.7),
             controller: _tabController,
             indicatorColor: Colors.black,
             tabs: const [

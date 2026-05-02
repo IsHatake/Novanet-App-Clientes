@@ -1,5 +1,6 @@
 // ignore_for_file: camel_case_types, file_names
 
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:app_cliente_novanet/service/usuarioService.dart';
 import 'package:app_cliente_novanet/toastconfig/toastconfig.dart';

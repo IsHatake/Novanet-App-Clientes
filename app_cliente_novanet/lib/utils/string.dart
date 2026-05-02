@@ -236,7 +236,7 @@ class CustomStrings {
   static const String deals = 'Deals';
   static const String lasttransaction = 'Last Transaction';
   static const String lastpayes = 'Ultimos pagos';
-  static const String service = 'Estado actual de servicio';
+  static const String service = 'Mis Servicios';
 
   static const String skips = 'Skip';
   static const String option = 'Option';

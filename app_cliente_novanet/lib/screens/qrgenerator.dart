@@ -54,13 +54,15 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
       final file = await File('${tempDir.path}/qr_code.png').create();
       await file.writeAsBytes(pngBytes);
 
-      await Share.shareFiles([file.path],
-          text: 'Descarga la Aplicación de Novanet\n'
-              'PLAY STORE https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet \n'
-              'APP STORE  https://apps.apple.com/us/app/novanet/id6736670238 \n'
-              '\n'
-              'CREA TU USUARIO FAMILIAR AQUI \n'
-              'https://novanetgroup.com/NovanetApp/formulario_usuario_secundario.html?id=$fcIdentidad');
+
+        final String shareText = 'Descarga la Aplicación de Novanet\n'
+                'Play Store : https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet\n\n'
+                'App Store : https://apps.apple.com/hn/app/novanet/id6736670238\n\n'
+                'O escanea este QR para registrarte como usuario familiar.';
+              await Share.shareXFiles(
+        [XFile(file.path)],
+        text: shareText,
+      );
     } catch (e) {
     }
   }
@@ -79,11 +81,11 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
           style: TextStyle(
             fontSize: 15,
             fontFamily: 'Gilroy Bold',
-            color: notifire.getwhite,
+            color: notifire.getdarkscolor,
             fontWeight: FontWeight.w400,
           ),
         ),
-        backgroundColor: notifire.getorangeprimerycolor,
+        backgroundColor: notifire.getbackcolor,
         leading: GestureDetector(
           onTap: () {
             Navigator.pop(context);
@@ -93,10 +95,9 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
             width: 40,
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
               border: Border.all(color: notifire.getwhite),
             ),
-            child: Icon(Icons.arrow_back, color: notifire.getwhite),
+            child: Icon(Icons.arrow_back, color: notifire.getdarkscolor),
           ),
         ),
         actions: const [
@@ -113,7 +114,8 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
           ElevatedButton.icon(
             onPressed: _captureAndSharePng,
             icon: const Icon(Icons.share, color: Colors.white),
-            label: const Text('Compartir QR y Links de Descarga'),
+            label: const Text('Compartir QR y Links de Descarga',
+                style: TextStyle(color: Colors.white)),
             style: ElevatedButton.styleFrom(
               backgroundColor: notifire.getorangeprimerycolor,
             ),
@@ -163,10 +165,10 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      '1. Abre la aplicación de Novanet.\n'
+                      '1. Descarga y abre la aplicación de Novanet.\n'
                       '2. Selecciona la opción de QR Usuario Familiar en el Inicio de Sesión.\n'
-                      '3. Escanea el código QR mostrado arriba.\n'
-                      '4. Llena el Formulario.\n'
+                      '3. El usuario familiar debe escanear el código QR mostrado arriba.\n'
+                      '4. Llena el Formulario con los datos solicitados.\n'
                       '5. Ingresa el Token enviado al correo ingresado.\n',
                       style: TextStyle(fontSize: 15, color: Colors.black87),
                     ),

@@ -51,7 +51,7 @@ class Customtextfilds {
 
 class LoginTxt {
   static Widget textField(
-      textclr, hintclr, borderclr, img, hinttext, fillcolor, TextEditingController controller) {
+      textclr, hintclr, borderclr, img, hinttext, fillcolor, TextEditingController controller, FocusNode? focusNode) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: width / 18),
       child: Container(

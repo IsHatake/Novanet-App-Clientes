@@ -1,41 +1,51 @@
 class Message {
-  final String? senderId;
-  final String? receiverId;
-  final String? text;
-  final String? base64Content; // Nuevo campo para imágenes en Base64
-  final String? messageType;   // "Text" o "Image"
-  final DateTime? date;
+  int? id;
+  String? text;
+  DateTime? date;
+  String? fileUrl; // Nueva propiedad para la URL del archivo
+  String? fileName; // Nombre original del archivo
+  String? contentType; // Tipo de contenido del archivo (ej. "image/jpeg", "application/pdf")
+  String? messageType; // "Text", "File"
+  String? senderId;
+  String? receiverId;
 
   Message({
+    this.id,
+    this.text,
+    this.date,
+    this.fileUrl,
+    this.fileName,
+    this.contentType,
+    this.messageType,
     this.senderId,
     this.receiverId,
-    this.text,
-    this.base64Content,
-    this.messageType,
-    this.date,
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      senderId: json['senderId'] as String?,
-      receiverId: json['receiverId'] as String?,
-      text: json['text'] as String?,
-      base64Content: json['base64Content'] as String?,
-      messageType: json['messageType'] as String?,
-      date: json['timestamp'] != null
-          ? DateTime.parse(json['timestamp'] as String)
-          : DateTime.now().toUtc(),
+      id: json['id'],
+      text: json['text'],
+      date: json['date'] != null ? DateTime.parse(json['date']) : null,
+      fileUrl: json['fileUrl'],
+      fileName: json['fileName'],
+      contentType: json['contentType'],
+      messageType: json['messageType'],
+      senderId: json['senderId'],
+      receiverId: json['receiverId'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
+      'text': text,
+      'date': date?.toIso8601String(),
+      'fileUrl': fileUrl,
+      'fileName': fileName,
+      'contentType': contentType,
+      'messageType': messageType,
       'senderId': senderId,
       'receiverId': receiverId,
-      'text': text,
-      'base64Content': base64Content,
-      'messageType': messageType,
-      'timestamp': date?.toIso8601String(),
     };
   }
 }
