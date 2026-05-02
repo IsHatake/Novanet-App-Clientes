@@ -40,8 +40,8 @@ android {
         applicationId "com.prestaditonovanet.novanet"
         minSdkVersion 21
         targetSdkVersion 35
-        versionCode 29
-        versionName "2.0.9"
+        versionCode 30
+        versionName "2.10.0"
     }
 
     signingConfigs {

@@ -90,9 +90,9 @@ decoration: BoxDecoration(
               GestureDetector(
                 onTap: () async {
                   if (!await launchUrl(Uri.parse(
-                      'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica'))) {
+                      'https://ppos.novanetgroup.com/PagoCuotav2?id=$fcLlaveUnica'))) {
                     throw Exception(
-                        'https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica');
+                        'https://ppos.novanetgroup.com/PagoCuotav2?id=$fcLlaveUnica');
                   }
                 },
                 child: Container(

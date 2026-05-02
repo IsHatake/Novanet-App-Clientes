@@ -166,7 +166,7 @@ class _CamarasWebView_screenState extends State<CamarasWebView_screen> {
             width: 40,
             margin: const EdgeInsets.all(8),
             
-            child: const Icon(Icons.arrow_back, color: Colors.white),
+            child: Icon(Icons.arrow_back, color: notifire.getdarkscolor),
           ),
         ),
       ),

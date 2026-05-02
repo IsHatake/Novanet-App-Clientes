@@ -1708,9 +1708,9 @@ Widget buildButtonUsuarios(
 
   Future<void> _launchPago(fcLlaveUnica) async {
     if (!await launchUrl(
-        Uri.parse('https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica'))) {
+        Uri.parse('https://ppos.novanetgroup.com/PagoCuotav2?id=$fcLlaveUnica'))) {
       throw Exception(
-          'Could not launch https://ppos.novanetgroup.com/PagoCuota?id=$fcLlaveUnica');
+          'Could not launch https://ppos.novanetgroup.com/PagoCuotav2?id=$fcLlaveUnica');
     }
   }
 }
