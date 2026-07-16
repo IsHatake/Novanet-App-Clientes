@@ -979,11 +979,13 @@ Widget _notificationIcon(hasNotifications) {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildWPButton('SOPORTE TÉCNICO', 'SOPORTE'),
-                const SizedBox(height: 12),
-                _buildWPButton('SOPORTE PAGOS', 'PAGOS'),
-                const SizedBox(height: 12),
-                _buildWPButton('CONTRATAR', 'CONTRATAR'),
+                // _buildWPButton('SOPORTE TÉCNICO', 'SOPORTE'),
+                // const SizedBox(height: 12),
+                // _buildWPButton('SOPORTE PAGOS', 'PAGOS'),
+                // const SizedBox(height: 12),
+                // _buildWPButton('CONTRATAR', 'CONTRATAR'),
+                _buildWPButton('WHATSAPP', 'WHATSAPP'),
+
                 const SizedBox(height: 12),
                 _buildCallButton(),
                 // const SizedBox(height: 12),
@@ -1011,9 +1013,22 @@ Widget _notificationIcon(hasNotifications) {
   }
 
   Widget _buildWPButton(String label, String option) => GestureDetector(
-        onTap: () => widget.fbprincipal
-            ? _showWPDialogNumeroTexto(context, option)
-            : _showWPDialogNumero(context, option),
+        onTap: ()async => {
+
+            if (option == 'WHATSAPP'){
+              if (!await launchUrl(
+                      Uri.parse('https://api.whatsapp.com/send/?phone=50489081273&text&type=phone_number&app_absent=0'))) {
+                    throw Exception(
+                        'Could not launch https://api.whatsapp.com/send/?phone=50489081273&text&type=phone_number&app_absent=0')
+                  }
+            }
+            else{
+              widget.fbprincipal
+              ? _showWPDialogNumeroTexto(context, option)
+              : _showWPDialogNumero(context, option),
+            }
+     
+        },
         child: Container(
           height: 48,
           decoration: BoxDecoration(
