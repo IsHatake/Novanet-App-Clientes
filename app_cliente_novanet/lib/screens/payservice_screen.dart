@@ -19,7 +19,7 @@ class PayWebview_screen extends StatefulWidget {
 class _PayWebview_screenState extends State<PayWebview_screen> {
   late ColorNotifire notifire;
   String url =
-      'https://ppos.novanetgroup.com/PagoCuota?id=';
+      'https://ppos.novanetgroup.com/PagoCuotav2?id=';
 
   Future<void> getDarkModePreviousState() async {
     final prefs = await SharedPreferences.getInstance();
