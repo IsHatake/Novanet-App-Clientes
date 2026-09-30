@@ -17,8 +17,29 @@ String url = 'https://www.fast.com/es/';
 
 class _WebviewTest_screenState extends State<WebviewTest_screen> {
   late ColorNotifire notifire;
-  late WebViewController _controller;
+  late final WebViewController _controller;
   final GlobalKey webViewKey = GlobalKey();
+  int _progress = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // El controller se crea una sola vez; si se crea en build() la página
+    // se vuelve a cargar en cada reconstrucción.
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            if (mounted) setState(() => _progress = progress);
+          },
+          onWebResourceError: (WebResourceError error) {
+            debugPrint("Error WebView: ${error.errorCode} ${error.description}");
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(url));
+  }
 
   Future<void> getDarkModePreviousState() async {
     final prefs = await SharedPreferences.getInstance();
@@ -86,26 +107,15 @@ class _WebviewTest_screenState extends State<WebviewTest_screen> {
           ),
         ),
       ),
-      body: WebViewWidget(
-        key: webViewKey,
-        controller: WebViewController()
-          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-          ..setBackgroundColor(const Color(0x00000000))
-          ..setNavigationDelegate(
-            NavigationDelegate(
-              onProgress: (int progress) {},
-              onPageStarted: (String url) {},
-              onPageFinished: (String url) {},
-              onWebResourceError: (WebResourceError error) {},
-              onNavigationRequest: (NavigationRequest request) {
-                if (request.url.contains(url)) {
-                  return NavigationDecision.prevent;
-                }
-                return NavigationDecision.navigate;
-              },
-            ),
-          )
-          ..loadRequest(Uri.parse(url)),
+      body: Stack(
+        children: [
+          WebViewWidget(
+            key: webViewKey,
+            controller: _controller,
+          ),
+          if (_progress < 100)
+            LinearProgressIndicator(value: _progress / 100),
+        ],
       ),
     );
   }
