@@ -44,59 +44,61 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
   }
 
   Future<void> _captureAndSharePng() async {
-  try {
-  // Capturar la imagen del QR
-    RenderRepaintBoundary boundary =
-        _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-    ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    Uint8List pngBytes = byteData!.buffer.asUint8List();
+    try {
+      // Capturar la imagen del QR
+      RenderRepaintBoundary boundary = _globalKey.currentContext!
+          .findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-    // Guardar temporalmente
-    final tempDir = await getTemporaryDirectory();
-    final file = File('${tempDir.path}/qr_code_novanet.png');
-    await file.writeAsBytes(pngBytes);
+      // Guardar temporalmente
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/qr_code_novanet.png');
+      await file.writeAsBytes(pngBytes);
 
-    final String shareText = 'Descarga la Aplicación de Novanet\n'
-        'Play Store : https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet\n\n'
-        'App Store : https://apps.apple.com/hn/app/novanet/id6736670238\n\n'
-        'O escanea este QR para registrarte como usuario familiar.';
+      final String shareText = 'Descarga la Aplicación de Novanet\n'
+          'Play Store : https://play.google.com/store/apps/details?id=com.prestaditonovanet.novanet\n\n'
+          'App Store : https://apps.apple.com/hn/app/novanet/id6736670238\n\n'
+          'O escanea este QR para registrarte como usuario familiar.';
 
-    if (Platform.isIOS) {
-      // Obtener posición y tamaño real del contenedor QR (esto soluciona el error)
-      final RenderBox box = _globalKey.currentContext!.findRenderObject() as RenderBox;
-      final Offset position = box.localToGlobal(Offset.zero);
-      final Size size = box.size;
+      if (Platform.isIOS) {
+        // Obtener posición y tamaño real del contenedor QR (esto soluciona el error)
+        final RenderBox box =
+            _globalKey.currentContext!.findRenderObject() as RenderBox;
+        final Offset position = box.localToGlobal(Offset.zero);
+        final Size size = box.size;
 
-      // Rectángulo de origen válido (centro del QR)
-      final Rect shareOrigin = Rect.fromCenter(
-        center: Offset(position.dx + size.width / 2, position.dy + size.height / 2),
-        width: size.width,
-        height: size.height,
-      );
+        // Rectángulo de origen válido (centro del QR)
+        final Rect shareOrigin = Rect.fromCenter(
+          center: Offset(
+              position.dx + size.width / 2, position.dy + size.height / 2),
+          width: size.width,
+          height: size.height,
+        );
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: shareText,
-        subject: 'Código QR Novanet',
-        sharePositionOrigin: shareOrigin, // ← Esto es obligatorio en iOS
-      );
-    } else {
-      // Android: sin posición (funciona sin problema)
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: shareText,
-        subject: 'Código QR Novanet',
-      );
-    }
-  } catch (e) {
-    print('Error al compartir QR: $e');
-    CherryToast.error(
+        await Share.shareXFiles(
+          [XFile(file.path)],
+          text: shareText,
+          subject: 'Código QR Novanet',
+          sharePositionOrigin: shareOrigin, // ← Esto es obligatorio en iOS
+        );
+      } else {
+        // Android: sin posición (funciona sin problema)
+        await Share.shareXFiles(
+          [XFile(file.path)],
+          text: shareText,
+          subject: 'Código QR Novanet',
+        );
+      }
+    } catch (e) {
+      print('Error al compartir QR: $e');
+      CherryToast.error(
         title: Text('No se pudo compartir el QR'),
-    
-    ).show(context);
+      ).show(context);
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -138,99 +140,114 @@ class _QrCodeGeneratorState extends State<QrCodeGenerator> {
             ),
         ],
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Botón de compartir (solo iOS, o puedes mostrar mensaje en Android)
-          if (Platform.isIOS)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: ElevatedButton.icon(
-                onPressed: _captureAndSharePng,
-                icon: const Icon(Icons.share, color: Colors.white),
-                label: const Text(
-                  'Compartir QR y Links de Descarga',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: notifire.getorangeprimerycolor,
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-          if (!Platform.isIOS)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Text(
-                'Función de compartir disponible solo en iOS',
-                style: TextStyle(
-                  color: notifire.getdarkscolor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          const SizedBox(height: 20),
-          Center(
-            child: RepaintBoundary(
-              key: _globalKey,
-              child: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset('images/logos.png', height: 100),
-                    const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: notifire.getorangeprimerycolor),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Escanéame',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: notifire.getorangeprimerycolor,
-                            ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: ConstrainedBox(
+              // Mantiene el contenido centrado cuando cabe en pantalla
+              constraints:
+                  BoxConstraints(minHeight: constraints.maxHeight - 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Botón de compartir (solo iOS, o puedes mostrar mensaje en Android)
+                  if (Platform.isIOS)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: ElevatedButton.icon(
+                        onPressed: _captureAndSharePng,
+                        icon: const Icon(Icons.share, color: Colors.white),
+                        label: const Text(
+                          'Compartir QR y Links de Descarga',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: notifire.getorangeprimerycolor,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 24),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          const SizedBox(height: 10),
-                          QrCode(fcIdentidad: fcIdentidad),
-                        ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Instrucciones:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: notifire.getorangeprimerycolor,
+                  if (!Platform.isIOS)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'Función de compartir disponible solo en iOS',
+                        style: TextStyle(
+                          color: notifire.getdarkscolor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      '1. Descarga y abre la aplicación de Novanet.\n'
-                      '2. Selecciona la opción de QR Usuario Familiar en el Inicio de Sesión.\n'
-                      '3. El usuario familiar debe escanear el código QR mostrado arriba.\n'
-                      '4. Llena el Formulario con los datos solicitados.\n'
-                      '5. Ingresa el Token enviado al correo ingresado.\n',
-                      style: TextStyle(fontSize: 15, color: Colors.black87),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: RepaintBoundary(
+                      key: _globalKey,
+                      child: Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset('images/logos.png', height: 100),
+                            const SizedBox(height: 20),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: notifire.getorangeprimerycolor),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Escanéame',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: notifire.getorangeprimerycolor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  QrCode(fcIdentidad: fcIdentidad),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Instrucciones:',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: notifire.getorangeprimerycolor,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              '1. Descarga y abre la aplicación de Novanet.\n'
+                              '2. Selecciona la opción de QR Usuario Familiar en el Inicio de Sesión.\n'
+                              '3. El usuario familiar debe escanear el código QR mostrado arriba.\n'
+                              '4. Llena el Formulario con los datos solicitados.\n'
+                              '5. Ingresa el Token enviado al correo ingresado.\n',
+                              style: TextStyle(
+                                  fontSize: 15, color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

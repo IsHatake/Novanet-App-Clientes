@@ -1048,6 +1048,7 @@ Future<void> dialogUsuariosFamiliares(BuildContext context) async {
       context: context,
       builder: (_) => Dialog(
         backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: SingleChildScrollView(
           child: Container(
             decoration: BoxDecoration(
@@ -1067,18 +1068,14 @@ Future<void> dialogUsuariosFamiliares(BuildContext context) async {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Opciones de Usuario Familiar',
-                      style: TextStyle(
-                        fontFamily: 'Gilroy Bold',
-                        fontSize: 18,
-                        color: notifire.getdarkscolor,
-                      ),
-                    ),
-                  ],
+                Text(
+                  'Opciones de Usuario Familiar',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Gilroy Bold',
+                    fontSize: 18,
+                    color: notifire.getdarkscolor,
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -1157,7 +1154,8 @@ Future<void> dialogUsuariosFamiliares(BuildContext context) async {
       Widget buildButtonUsuarios(Function() function, String text, Icon icon) => GestureDetector(
         onTap: () => function(),
         child: Container(
-          height: 48,
+          constraints: const BoxConstraints(minHeight: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.black,
             borderRadius: BorderRadius.circular(12),
@@ -1173,13 +1171,16 @@ Future<void> dialogUsuariosFamiliares(BuildContext context) async {
             mainAxisAlignment: MainAxisAlignment.center,
             children:  [
               icon,
-              SizedBox(width: 12),
-              Text(
-                text,
-                style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'Gilroy Bold',
-                    fontSize: 16),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Gilroy Bold',
+                      fontSize: 16),
+                ),
               ),
             ],
           ),
