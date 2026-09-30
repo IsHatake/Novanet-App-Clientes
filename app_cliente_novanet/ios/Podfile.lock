@@ -112,7 +112,6 @@ PODS:
   - mobile_scanner (5.2.3):
     - Flutter
     - GoogleMLKit/BarcodeScanning (~> 6.0.0)
-  - MTBBarcodeScanner (5.0.11)
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
@@ -121,9 +120,8 @@ PODS:
   - permission_handler_apple (9.3.0):
     - Flutter
   - PromisesObjC (2.4.0)
-  - qr_code_scanner (0.2.0):
+  - qr_code_scanner_plus (0.2.6):
     - Flutter
-    - MTBBarcodeScanner
   - SDWebImage (5.21.7):
     - SDWebImage/Core (= 5.21.7)
   - SDWebImage/Core (5.21.7)
@@ -156,7 +154,7 @@ DEPENDENCIES:
   - local_auth_darwin (from `.symlinks/plugins/local_auth_darwin/darwin`)
   - mobile_scanner (from `.symlinks/plugins/mobile_scanner/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
-  - qr_code_scanner (from `.symlinks/plugins/qr_code_scanner/ios`)
+  - qr_code_scanner_plus (from `.symlinks/plugins/qr_code_scanner_plus/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
@@ -179,7 +177,6 @@ SPEC REPOS:
     - MLKitBarcodeScanning
     - MLKitCommon
     - MLKitVision
-    - MTBBarcodeScanner
     - nanopb
     - PromisesObjC
     - SDWebImage
@@ -207,8 +204,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/mobile_scanner/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
-  qr_code_scanner:
-    :path: ".symlinks/plugins/qr_code_scanner/ios"
+  qr_code_scanner_plus:
+    :path: ".symlinks/plugins/qr_code_scanner_plus/ios"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
   shared_preferences_foundation:
@@ -244,11 +241,10 @@ SPEC CHECKSUMS:
   MLKitCommon: afec63980417d29ffbb4790529a1b0a2291699e1
   MLKitVision: e858c5f125ecc288e4a31127928301eaba9ae0c1
   mobile_scanner: 92e8812bf22a8f84131e2a7f9d0f44dad1a4742b
-  MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  qr_code_scanner: d77f94ecc9abf96d9b9b8fc04ef13f611e5a147a
+  qr_code_scanner_plus: 1fb59fd4576edb53ec7560c3746f454dee54300c
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageWebPCoder: 0e06e365080397465cc73a7a9b472d8a3bd0f377
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
